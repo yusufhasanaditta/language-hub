@@ -15,6 +15,21 @@ function lh_not_found(): never {
     exit;
 }
 
+// Preview mode: until a database is connected (PROD_DB_HOST not set), show the
+// pre-rendered pages from preview/pages so the design can be shared. Built by
+// preview/build.php. Forms don't submit in this mode.
+if (getenv('PROD_DB_HOST') === false || getenv('PROD_DB_HOST') === '') {
+    require $root . '/preview/key.php';
+    $pages = $root . '/preview/pages/';
+    $f = $pages . lh_preview_key($path, (string)($_SERVER['QUERY_STRING'] ?? '')) . '.html';
+    if (!is_file($f)) $f = $pages . 'index.html';
+    header('Content-Type: text/html; charset=utf-8');
+    header('Cache-Control: no-store');
+    header('X-Robots-Tag: noindex');
+    readfile($f);
+    exit;
+}
+
 // Clean URLs (same as .htaccess)
 $extraGet = [];
 if (preg_match('#^/course/([A-Za-z0-9-]+)/?$#', $path, $m))        { $file = 'course.php';          $extraGet = ['slug' => $m[1]]; }
@@ -27,7 +42,7 @@ else {
 }
 
 // Private areas and leftover debug scripts are never reachable
-if (preg_match('#(^|/)\.|^(config|includes|cache|uploads|vendor)/|^api/index\.php$#i', $file)
+if (preg_match('#(^|/)\.|^(config|includes|cache|uploads|vendor|preview)/|^api/index\.php$#i', $file)
     || preg_match('#(^|/)(test_[^/]*|diagnos[^/]*|fix_db|get_schema|patch_db|add_col|cpanel_db_sync|setup|debug|db_update|alter_db|migrate_[^/]*|run_cmd|fix_paths|get_users)\.php$#i', $file)) {
     lh_not_found();
 }
