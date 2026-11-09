@@ -1,0 +1,9 @@
+.git
+config/secrets.php
+cache/*
+!cache/.gitkeep
+uploads
+*.log
+*.zip
+*.sql
+!config/migrate_*.sql

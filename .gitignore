@@ -1,0 +1,15 @@
+# Secrets — server only
+config/secrets.php
+
+# Database dumps & backups (contain live credentials and user data)
+*.sql
+!config/migrate_*.sql
+*.zip
+schema.json
+
+# Runtime / user content
+cache/*
+!cache/.gitkeep
+uploads/
+*.log
+output.html
