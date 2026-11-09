@@ -13,3 +13,8 @@ cache/*
 uploads/
 *.log
 output.html
+
+# Vercel CLI link
+.vercel
+
+.vercel
