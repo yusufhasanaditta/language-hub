@@ -53,7 +53,8 @@ function lh_course_card(array $c): string {
         : '<span class="lh-ticket-glyph" aria-hidden="true">' . e($L['glyph']) . '</span><span class="lh-ticket-hello" aria-hidden="true">' . e($L['hello']) . '</span>';
 
     ob_start(); ?>
-    <a class="lh-ticket" href="<?= e(course_url($c)) ?>" style="--lang:var(<?= $L['var'] ?>)">
+    <a class="lh-ticket" href="<?= e(course_url($c)) ?>" style="--lang:var(<?= $L['var'] ?>)"
+       data-lang="<?= e($c['cat_slug'] ?? '') ?>" data-type="<?= $c['type'] === 'live' ? 'live' : 'recorded' ?>" data-free="<?= $isFree ? 1 : 0 ?>">
         <div class="lh-ticket-art"><?= $thumb ?><?= $type ?></div>
         <div class="lh-ticket-body">
             <p class="lh-ticket-meta"><?= t($c['cat_name'] ?? '', $c['cat_name_en'] ?? '') ?> · <?= t_num((int)$c['total_lessons']) ?> <?= t('ক্লাস', 'lessons') ?></p>

@@ -47,7 +47,7 @@
     <!-- App layer: responsive shell + new components (must load after main.css) -->
     <link rel="stylesheet" href="/assets/css/app.css?v=1.2.1">
     <!-- Language Hub design layer: tokens, dark mode, nav, home (loads last) -->
-    <link rel="stylesheet" href="/assets/css/lh.css?v=1794253953">
+    <link rel="stylesheet" href="/assets/css/lh.css?v=1794306845">
 
     <!-- Google Fonts + Material Icons: loaded non-render-blocking (preload + swap on load).
          These were blocking first paint on every page for a webfont that isn't needed
@@ -62,7 +62,7 @@
     
     <script>
         const APP_URL    = '';
-        const CSRF_TOKEN = 'db8e084e18054efdada04b9821f06d41b0d00a011eeacf234110e6cb31a56666';
+        const CSRF_TOKEN = 'e4f085321f8335b5a1356d75ff4bbc45b10c3058079e9c3b2d862338cf72e391';
         const IS_LOGGED_IN = false;
         const VAPID_PUBLIC_KEY = '';
     </script>
@@ -250,7 +250,8 @@
 
 <section class="container lh-list-body">
         <div class="lh-grid" data-reveal-group>
-            <a class="lh-ticket" href="/course/demo-japanese-kana" style="--lang:var(--lang-ja)">
+            <a class="lh-ticket" href="/course/demo-japanese-kana" style="--lang:var(--lang-ja)"
+       data-lang="japanese" data-type="recorded" data-free="0">
         <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">あ</span><span class="lh-ticket-hello" aria-hidden="true">こんにちは</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
         <div class="lh-ticket-body">
             <p class="lh-ticket-meta"><span class="i18n" lang="bn">জাপানিজ</span><span class="i18n" lang="en">Japanese</span> · <span class="i18n" lang="bn">১৮</span><span class="i18n" lang="en">18</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
@@ -262,7 +263,8 @@
                 <s>৳<span class="i18n" lang="bn">১,২০০</span><span class="i18n" lang="en">1,200</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
         </div>
     </a>
-        <a class="lh-ticket" href="/course/demo-japanese-n5-live" style="--lang:var(--lang-ja)">
+        <a class="lh-ticket" href="/course/demo-japanese-n5-live" style="--lang:var(--lang-ja)"
+       data-lang="japanese" data-type="live" data-free="0">
         <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">あ</span><span class="lh-ticket-hello" aria-hidden="true">こんにちは</span><span class="lh-chip lh-chip-live"><i></i><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span></div>
         <div class="lh-ticket-body">
             <p class="lh-ticket-meta"><span class="i18n" lang="bn">জাপানিজ</span><span class="i18n" lang="en">Japanese</span> · <span class="i18n" lang="bn">৩০</span><span class="i18n" lang="en">30</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
@@ -380,7 +382,7 @@
 <!-- Main JS -->
 <script src="/assets/js/main.js?v=1.2.1" defer></script>
 <script src="/assets/js/app.js?v=1.2.1" defer></script>
-<script src="/assets/js/lh.js?v=1794253705" defer></script>
+<script src="/assets/js/lh.js?v=1794306821" defer></script>
 </body>
 
 </html>

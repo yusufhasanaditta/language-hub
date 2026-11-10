@@ -167,6 +167,47 @@
     }
   });
 
+  // ── Homepage course filter: instant, no reload; "show more" after N ───────
+  $$('[data-course-filter]').forEach(function (box) {
+    var chips = $$('[data-filter]', box);
+    var items = $$('[data-items] > *', box);
+    var more = box.querySelector('[data-more]'), empty = box.querySelector('[data-empty]');
+    var size = +box.getAttribute('data-page-size') || 12, limit = size, current = 'all';
+    function match(el, f) {
+      if (f === 'all') return true;
+      if (f === 'free') return el.getAttribute('data-free') === '1';
+      var p = f.split(':');
+      return el.getAttribute('data-' + p[0]) === p[1];
+    }
+    function render(animate) {
+      var shown = 0, total = 0;
+      items.forEach(function (el) {
+        var ok = match(el, current);
+        if (ok) total++;
+        var vis = ok && total <= limit;
+        el.hidden = !vis;
+        if (vis && animate && !reduce) {
+          el.classList.remove('lh-pop'); void el.offsetWidth;
+          el.style.setProperty('--i', Math.min(shown, 8));
+          el.classList.add('lh-pop');
+        }
+        if (vis) shown++;
+      });
+      more.hidden = total <= limit;
+      empty.hidden = total > 0;
+    }
+    chips.forEach(function (c) {
+      c.addEventListener('click', function () {
+        current = c.getAttribute('data-filter'); limit = size;
+        chips.forEach(function (o) { var on = o === c; o.classList.toggle('is-on', on); o.setAttribute('aria-pressed', on); });
+        c.scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduce ? 'auto' : 'smooth' });
+        render(true);
+      });
+    });
+    more.addEventListener('click', function () { limit += size; render(false); });
+    render(false);
+  });
+
   // ── 3D tilt (boarding pass): follows pointer on desktop, finger on phones ─
   $$('[data-tilt]').forEach(function (el) {
     if (reduce) return;

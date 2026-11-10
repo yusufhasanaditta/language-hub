@@ -47,7 +47,7 @@
     <!-- App layer: responsive shell + new components (must load after main.css) -->
     <link rel="stylesheet" href="/assets/css/app.css?v=1.2.1">
     <!-- Language Hub design layer: tokens, dark mode, nav, home (loads last) -->
-    <link rel="stylesheet" href="/assets/css/lh.css?v=1794253953">
+    <link rel="stylesheet" href="/assets/css/lh.css?v=1794306845">
 
     <!-- Google Fonts + Material Icons: loaded non-render-blocking (preload + swap on load).
          These were blocking first paint on every page for a webfont that isn't needed
@@ -62,7 +62,7 @@
     
     <script>
         const APP_URL    = '';
-        const CSRF_TOKEN = '907566b86b7d283d6b3af8eae961a52236d5c54d7aaecbc2caa955777f48f7e5';
+        const CSRF_TOKEN = 'ddc4cfbcb452d8cb6f5e5475c05a2543cccff25abb3b3da51e0c47a32935b489';
         const IS_LOGGED_IN = false;
         const VAPID_PUBLIC_KEY = '';
     </script>
@@ -250,7 +250,8 @@
 
 <section class="container lh-list-body">
         <div class="lh-grid" data-reveal-group>
-            <a class="lh-ticket" href="/course/demo-korean-hangul" style="--lang:var(--lang-ko)">
+            <a class="lh-ticket" href="/course/demo-korean-hangul" style="--lang:var(--lang-ko)"
+       data-lang="korean" data-type="recorded" data-free="1">
         <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">한</span><span class="lh-ticket-hello" aria-hidden="true">안녕하세요</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
         <div class="lh-ticket-body">
             <p class="lh-ticket-meta"><span class="i18n" lang="bn">কোরিয়ান</span><span class="i18n" lang="en">Korean</span> · <span class="i18n" lang="bn">৭</span><span class="i18n" lang="en">7</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
@@ -262,7 +263,8 @@
                         <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
         </div>
     </a>
-        <a class="lh-ticket" href="/course/demo-korean-topik1-live" style="--lang:var(--lang-ko)">
+        <a class="lh-ticket" href="/course/demo-korean-topik1-live" style="--lang:var(--lang-ko)"
+       data-lang="korean" data-type="live" data-free="0">
         <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">한</span><span class="lh-ticket-hello" aria-hidden="true">안녕하세요</span><span class="lh-chip lh-chip-live"><i></i><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span></div>
         <div class="lh-ticket-body">
             <p class="lh-ticket-meta"><span class="i18n" lang="bn">কোরিয়ান</span><span class="i18n" lang="en">Korean</span> · <span class="i18n" lang="bn">২৮</span><span class="i18n" lang="en">28</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
@@ -380,7 +382,7 @@
 <!-- Main JS -->
 <script src="/assets/js/main.js?v=1.2.1" defer></script>
 <script src="/assets/js/app.js?v=1.2.1" defer></script>
-<script src="/assets/js/lh.js?v=1794253705" defer></script>
+<script src="/assets/js/lh.js?v=1794306821" defer></script>
 </body>
 
 </html>

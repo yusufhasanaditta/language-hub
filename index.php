@@ -22,7 +22,7 @@ $courseSelect = "
     JOIN users u ON u.id = tp.user_id
     WHERE c.status = 'published'";
 
-$home = cache_get('lh_home_v3');
+$home = cache_get('lh_home_v4');
 if (!$home) {
     $home = [
         // Soonest live batch that still has seats → boarding pass
@@ -30,15 +30,15 @@ if (!$home) {
             AND c.type = 'live' AND c.batch_start >= CURDATE()
             AND (c.max_students = 0 OR c.enrolled_count < c.max_students)
             ORDER BY c.batch_start ASC LIMIT 1"),
-        'popular' => db_query($courseSelect . " AND c.is_free = 0 ORDER BY c.is_featured DESC, c.enrolled_count DESC LIMIT 8"),
-        'free'    => db_query($courseSelect . " AND c.is_free = 1 ORDER BY c.enrolled_count DESC LIMIT 8"),
+        // Every published course: featured first, then live batches, then most taken
+        'all' => db_query($courseSelect . " ORDER BY c.is_featured DESC, c.type = 'live' DESC, c.enrolled_count DESC"),
         'langs'   => db_query("
             SELECT cat.*, COUNT(c.id) AS n
             FROM categories cat
             LEFT JOIN courses c ON c.category_id = cat.id AND c.status = 'published'
             GROUP BY cat.id ORDER BY cat.sort_order"),
     ];
-    cache_set('lh_home_v3', $home, 300);
+    cache_set('lh_home_v4', $home, 300);
 }
 $next = $home['next'] ?: null;
 
@@ -124,6 +124,8 @@ $skyGlyphs = [['中', 8, 14, 1.0, 7], ['あ', 84, 10, 0.6, 5.5], ['한', 76, 58,
     </div>
 </section>
 
+<?php require __DIR__ . '/includes/home_all_courses.php'; ?>
+
 <!-- ═══ 2. NEXT LIVE BATCH ════════════════════════════════════════════════ -->
 <?php if ($next): $L = lh_lang($next['cat_slug']); [$now, $was] = lh_price($next);
     $seatsLeft = $next['max_students'] > 0 ? max(0, $next['max_students'] - $next['enrolled_count']) : null; ?>
@@ -167,42 +169,6 @@ $skyGlyphs = [['中', 8, 14, 1.0, 7], ['あ', 84, 10, 0.6, 5.5], ['한', 76, 58,
                 </footer>
             </article>
         </div>
-    </div>
-</section>
-<?php endif; ?>
-
-<!-- ═══ 3. POPULAR COURSES ════════════════════════════════════════════════ -->
-<?php if ($home['popular']): ?>
-<section class="lh-section lh-section-tint">
-    <div class="container">
-        <div class="lh-section-head lh-section-head-row" data-reveal>
-            <div>
-                <p class="lh-eyebrow"><?= t('জনপ্রিয়', 'Popular') ?></p>
-                <h2><?= t('সবচেয়ে বেশি নেওয়া কোর্স', 'Most-taken courses') ?></h2>
-            </div>
-            <a href="<?= APP_URL ?>/courses" class="lh-link"><?= t('সব', 'All') ?> <span class="material-icons-round">arrow_forward</span></a>
-        </div>
-    </div>
-    <div class="lh-rail" data-reveal-group>
-        <?php foreach ($home['popular'] as $c) echo lh_course_card($c); ?>
-    </div>
-</section>
-<?php endif; ?>
-
-<!-- ═══ 4. FREE CLASSES ═══════════════════════════════════════════════════ -->
-<?php if ($home['free']): ?>
-<section class="lh-section">
-    <div class="container">
-        <div class="lh-section-head lh-section-head-row" data-reveal>
-            <div>
-                <p class="lh-eyebrow"><?= t('একদম ফ্রি', 'Completely free') ?></p>
-                <h2><?= t('ভর্তির আগে চেখে দেখুন', 'Try before you enrol') ?></h2>
-            </div>
-            <a href="<?= APP_URL ?>/courses?free=1" class="lh-link"><?= t('সব', 'All') ?> <span class="material-icons-round">arrow_forward</span></a>
-        </div>
-    </div>
-    <div class="lh-rail" data-reveal-group>
-        <?php foreach ($home['free'] as $c) echo lh_course_card($c); ?>
     </div>
 </section>
 <?php endif; ?>

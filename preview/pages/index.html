@@ -47,7 +47,7 @@
     <!-- App layer: responsive shell + new components (must load after main.css) -->
     <link rel="stylesheet" href="/assets/css/app.css?v=1.2.1">
     <!-- Language Hub design layer: tokens, dark mode, nav, home (loads last) -->
-    <link rel="stylesheet" href="/assets/css/lh.css?v=1794253953">
+    <link rel="stylesheet" href="/assets/css/lh.css?v=1794306845">
 
     <!-- Google Fonts + Material Icons: loaded non-render-blocking (preload + swap on load).
          These were blocking first paint on every page for a webfont that isn't needed
@@ -62,7 +62,7 @@
     
     <script>
         const APP_URL    = '';
-        const CSRF_TOKEN = 'b3f5bfc8f29e245db04a63517dd96a9357ce27ed8706e4a18c070ba047bcd931';
+        const CSRF_TOKEN = '649fc5670c87fe3f03d062f0cd7c32c392d6df58a413c659e7882b3e423981cd';
         const IS_LOGGED_IN = false;
         const VAPID_PUBLIC_KEY = '';
     </script>
@@ -299,6 +299,166 @@
     </div>
 </section>
 
+<!-- ═══ ALL COURSES (instant filter) ══════════════════════════════════════ -->
+<section class="lh-section lh-all" id="courses" data-course-filter data-page-size="12">
+    <div class="container">
+        <div class="lh-section-head lh-section-head-row" data-reveal>
+            <div>
+                <p class="lh-eyebrow"><span class="i18n" lang="bn">৮</span><span class="i18n" lang="en">8</span> <span class="i18n" lang="bn">টি কোর্স</span><span class="i18n" lang="en">courses</span></p>
+                <h2><span class="i18n" lang="bn">সব কোর্স এক জায়গায়</span><span class="i18n" lang="en">Every course in one place</span></h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="lh-all-chips" role="toolbar" aria-label="Filter courses">
+                <button type="button" class="lh-fchip is-on" data-filter="all" aria-pressed="true"
+                >
+                        <span class="i18n" lang="bn">সব</span><span class="i18n" lang="en">All</span> <span class="lh-fchip-n"><span class="i18n" lang="bn">৮</span><span class="i18n" lang="en">8</span></span>
+        </button>
+                <button type="button" class="lh-fchip " data-filter="lang:chinese" aria-pressed="false"
+                style="--lang:var(--lang-zh)">
+            <span class="lh-fchip-g">中</span>            <span class="i18n" lang="bn">চাইনিজ</span><span class="i18n" lang="en">Chinese</span> <span class="lh-fchip-n"><span class="i18n" lang="bn">২</span><span class="i18n" lang="en">2</span></span>
+        </button>
+                <button type="button" class="lh-fchip " data-filter="lang:japanese" aria-pressed="false"
+                style="--lang:var(--lang-ja)">
+            <span class="lh-fchip-g">あ</span>            <span class="i18n" lang="bn">জাপানিজ</span><span class="i18n" lang="en">Japanese</span> <span class="lh-fchip-n"><span class="i18n" lang="bn">২</span><span class="i18n" lang="en">2</span></span>
+        </button>
+                <button type="button" class="lh-fchip " data-filter="lang:korean" aria-pressed="false"
+                style="--lang:var(--lang-ko)">
+            <span class="lh-fchip-g">한</span>            <span class="i18n" lang="bn">কোরিয়ান</span><span class="i18n" lang="en">Korean</span> <span class="lh-fchip-n"><span class="i18n" lang="bn">২</span><span class="i18n" lang="en">2</span></span>
+        </button>
+                <button type="button" class="lh-fchip " data-filter="lang:english" aria-pressed="false"
+                style="--lang:var(--lang-en)">
+            <span class="lh-fchip-g">A</span>            <span class="i18n" lang="bn">ইংলিশ</span><span class="i18n" lang="en">English</span> <span class="lh-fchip-n"><span class="i18n" lang="bn">২</span><span class="i18n" lang="en">2</span></span>
+        </button>
+                <button type="button" class="lh-fchip " data-filter="type:live" aria-pressed="false"
+                >
+            <span class="lh-chip-dot"></span>            <span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span> <span class="lh-fchip-n"><span class="i18n" lang="bn">৩</span><span class="i18n" lang="en">3</span></span>
+        </button>
+                <button type="button" class="lh-fchip " data-filter="type:recorded" aria-pressed="false"
+                >
+                        <span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span> <span class="lh-fchip-n"><span class="i18n" lang="bn">৫</span><span class="i18n" lang="en">5</span></span>
+        </button>
+                <button type="button" class="lh-fchip " data-filter="free" aria-pressed="false"
+                >
+                        <span class="i18n" lang="bn">ফ্রি</span><span class="i18n" lang="en">Free</span> <span class="lh-fchip-n"><span class="i18n" lang="bn">৩</span><span class="i18n" lang="en">3</span></span>
+        </button>
+            </div>
+
+    <div class="container">
+        <div class="lh-grid lh-all-grid" data-items>
+                <a class="lh-ticket" href="/course/demo-japanese-n5-live" style="--lang:var(--lang-ja)"
+       data-lang="japanese" data-type="live" data-free="0">
+        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">あ</span><span class="lh-ticket-hello" aria-hidden="true">こんにちは</span><span class="lh-chip lh-chip-live"><i></i><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span></div>
+        <div class="lh-ticket-body">
+            <p class="lh-ticket-meta"><span class="i18n" lang="bn">জাপানিজ</span><span class="i18n" lang="en">Japanese</span> · <span class="i18n" lang="bn">৩০</span><span class="i18n" lang="en">30</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
+            <h3><span class="i18n" lang="bn">জাপানিজ লাইভ ব্যাচ — JLPT N5</span><span class="i18n" lang="en">Japanese Live Batch — JLPT N5</span></h3>
+            <p class="lh-ticket-teacher">Tanvir Hasan</p>
+        </div>
+        <div class="lh-ticket-stub">
+                            <span class="lh-price">৳<span class="i18n" lang="bn">৩,৯০০</span><span class="i18n" lang="en">3,900</span></span>
+                <s>৳<span class="i18n" lang="bn">৫,০০০</span><span class="i18n" lang="en">5,000</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
+        </div>
+    </a>
+        <a class="lh-ticket" href="/course/demo-chinese-hsk1-live" style="--lang:var(--lang-zh)"
+       data-lang="chinese" data-type="live" data-free="0">
+        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">中</span><span class="lh-ticket-hello" aria-hidden="true">你好</span><span class="lh-chip lh-chip-live"><i></i><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span></div>
+        <div class="lh-ticket-body">
+            <p class="lh-ticket-meta"><span class="i18n" lang="bn">চাইনিজ</span><span class="i18n" lang="en">Chinese</span> · <span class="i18n" lang="bn">২৪</span><span class="i18n" lang="en">24</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
+            <h3><span class="i18n" lang="bn">চাইনিজ লাইভ ব্যাচ — HSK 1</span><span class="i18n" lang="en">Chinese Live Batch — HSK 1</span></h3>
+            <p class="lh-ticket-teacher">Mahmuda Rahman</p>
+        </div>
+        <div class="lh-ticket-stub">
+                            <span class="lh-price">৳<span class="i18n" lang="bn">৩,৫০০</span><span class="i18n" lang="en">3,500</span></span>
+                <s>৳<span class="i18n" lang="bn">৪,৫০০</span><span class="i18n" lang="en">4,500</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
+        </div>
+    </a>
+        <a class="lh-ticket" href="/course/demo-korean-topik1-live" style="--lang:var(--lang-ko)"
+       data-lang="korean" data-type="live" data-free="0">
+        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">한</span><span class="lh-ticket-hello" aria-hidden="true">안녕하세요</span><span class="lh-chip lh-chip-live"><i></i><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span></div>
+        <div class="lh-ticket-body">
+            <p class="lh-ticket-meta"><span class="i18n" lang="bn">কোরিয়ান</span><span class="i18n" lang="en">Korean</span> · <span class="i18n" lang="bn">২৮</span><span class="i18n" lang="en">28</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
+            <h3><span class="i18n" lang="bn">কোরিয়ান লাইভ ব্যাচ — TOPIK I</span><span class="i18n" lang="en">Korean Live Batch — TOPIK I</span></h3>
+            <p class="lh-ticket-teacher">Nusrat Jahan</p>
+        </div>
+        <div class="lh-ticket-stub">
+                            <span class="lh-price">৳<span class="i18n" lang="bn">৪,৮০০</span><span class="i18n" lang="en">4,800</span></span>
+                                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
+        </div>
+    </a>
+        <a class="lh-ticket" href="/course/demo-spoken-english" style="--lang:var(--lang-en)"
+       data-lang="english" data-type="recorded" data-free="0">
+        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">A</span><span class="lh-ticket-hello" aria-hidden="true">Hello</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
+        <div class="lh-ticket-body">
+            <p class="lh-ticket-meta"><span class="i18n" lang="bn">ইংলিশ</span><span class="i18n" lang="en">English</span> · <span class="i18n" lang="bn">৪০</span><span class="i18n" lang="en">40</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
+            <h3><span class="i18n" lang="bn">স্পোকেন ইংলিশ মাস্টারক্লাস</span><span class="i18n" lang="en">Spoken English Masterclass</span></h3>
+            <p class="lh-ticket-teacher">Arif Chowdhury</p>
+        </div>
+        <div class="lh-ticket-stub">
+                            <span class="lh-price">৳<span class="i18n" lang="bn">৯৯০</span><span class="i18n" lang="en">990</span></span>
+                <s>৳<span class="i18n" lang="bn">১,৫০০</span><span class="i18n" lang="en">1,500</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
+        </div>
+    </a>
+        <a class="lh-ticket" href="/course/demo-japanese-kana" style="--lang:var(--lang-ja)"
+       data-lang="japanese" data-type="recorded" data-free="0">
+        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">あ</span><span class="lh-ticket-hello" aria-hidden="true">こんにちは</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
+        <div class="lh-ticket-body">
+            <p class="lh-ticket-meta"><span class="i18n" lang="bn">জাপানিজ</span><span class="i18n" lang="en">Japanese</span> · <span class="i18n" lang="bn">১৮</span><span class="i18n" lang="en">18</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
+            <h3><span class="i18n" lang="bn">জাপানিজ হিরাগানা ও কাতাকানা</span><span class="i18n" lang="en">Hiragana &amp; Katakana</span></h3>
+            <p class="lh-ticket-teacher">Tanvir Hasan</p>
+        </div>
+        <div class="lh-ticket-stub">
+                            <span class="lh-price">৳<span class="i18n" lang="bn">৭৯০</span><span class="i18n" lang="en">790</span></span>
+                <s>৳<span class="i18n" lang="bn">১,২০০</span><span class="i18n" lang="en">1,200</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
+        </div>
+    </a>
+        <a class="lh-ticket" href="/course/demo-chinese-first-100" style="--lang:var(--lang-zh)"
+       data-lang="chinese" data-type="recorded" data-free="1">
+        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">中</span><span class="lh-ticket-hello" aria-hidden="true">你好</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
+        <div class="lh-ticket-body">
+            <p class="lh-ticket-meta"><span class="i18n" lang="bn">চাইনিজ</span><span class="i18n" lang="en">Chinese</span> · <span class="i18n" lang="bn">৮</span><span class="i18n" lang="en">8</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
+            <h3><span class="i18n" lang="bn">চাইনিজ প্রথম ১০০ শব্দ</span><span class="i18n" lang="en">Chinese — First 100 Words</span></h3>
+            <p class="lh-ticket-teacher">Mahmuda Rahman</p>
+        </div>
+        <div class="lh-ticket-stub">
+                            <span class="lh-price lh-price-free"><span class="i18n" lang="bn">ফ্রি</span><span class="i18n" lang="en">Free</span></span>
+                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
+        </div>
+    </a>
+        <a class="lh-ticket" href="/course/demo-ielts-speaking-free" style="--lang:var(--lang-en)"
+       data-lang="english" data-type="recorded" data-free="1">
+        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">A</span><span class="lh-ticket-hello" aria-hidden="true">Hello</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
+        <div class="lh-ticket-body">
+            <p class="lh-ticket-meta"><span class="i18n" lang="bn">ইংলিশ</span><span class="i18n" lang="en">English</span> · <span class="i18n" lang="bn">৫</span><span class="i18n" lang="en">5</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
+            <h3><span class="i18n" lang="bn">IELTS স্পিকিং ফ্রি ওয়ার্কশপ</span><span class="i18n" lang="en">IELTS Speaking — Free Workshop</span></h3>
+            <p class="lh-ticket-teacher">Arif Chowdhury</p>
+        </div>
+        <div class="lh-ticket-stub">
+                            <span class="lh-price lh-price-free"><span class="i18n" lang="bn">ফ্রি</span><span class="i18n" lang="en">Free</span></span>
+                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
+        </div>
+    </a>
+        <a class="lh-ticket" href="/course/demo-korean-hangul" style="--lang:var(--lang-ko)"
+       data-lang="korean" data-type="recorded" data-free="1">
+        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">한</span><span class="lh-ticket-hello" aria-hidden="true">안녕하세요</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
+        <div class="lh-ticket-body">
+            <p class="lh-ticket-meta"><span class="i18n" lang="bn">কোরিয়ান</span><span class="i18n" lang="en">Korean</span> · <span class="i18n" lang="bn">৭</span><span class="i18n" lang="en">7</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
+            <h3><span class="i18n" lang="bn">কোরিয়ান হাঙ্গুল ৭ দিনে</span><span class="i18n" lang="en">Hangul in 7 Days</span></h3>
+            <p class="lh-ticket-teacher">Nusrat Jahan</p>
+        </div>
+        <div class="lh-ticket-stub">
+                            <span class="lh-price lh-price-free"><span class="i18n" lang="bn">ফ্রি</span><span class="i18n" lang="en">Free</span></span>
+                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
+        </div>
+    </a>
+            </div>
+        <p class="lh-all-empty" data-empty hidden><span class="i18n" lang="bn">এই ফিল্টারে কোনো কোর্স নেই।</span><span class="i18n" lang="en">No courses in this filter.</span></p>
+        <div class="lh-all-more">
+            <button type="button" class="btn btn-outline" data-more hidden><span class="i18n" lang="bn">আরও দেখুন</span><span class="i18n" lang="en">Show more</span> <span class="material-icons-round">expand_more</span></button>
+        </div>
+    </div>
+</section>
+
 <!-- ═══ 2. NEXT LIVE BATCH ════════════════════════════════════════════════ -->
 <section class="lh-section lh-section-pass">
     <div class="container lh-pass-wrap">
@@ -340,132 +500,6 @@
             </article>
         </div>
     </div>
-</section>
-
-<!-- ═══ 3. POPULAR COURSES ════════════════════════════════════════════════ -->
-<section class="lh-section lh-section-tint">
-    <div class="container">
-        <div class="lh-section-head lh-section-head-row" data-reveal>
-            <div>
-                <p class="lh-eyebrow"><span class="i18n" lang="bn">জনপ্রিয়</span><span class="i18n" lang="en">Popular</span></p>
-                <h2><span class="i18n" lang="bn">সবচেয়ে বেশি নেওয়া কোর্স</span><span class="i18n" lang="en">Most-taken courses</span></h2>
-            </div>
-            <a href="/courses" class="lh-link"><span class="i18n" lang="bn">সব</span><span class="i18n" lang="en">All</span> <span class="material-icons-round">arrow_forward</span></a>
-        </div>
-    </div>
-    <div class="lh-rail" data-reveal-group>
-            <a class="lh-ticket" href="/course/demo-spoken-english" style="--lang:var(--lang-en)">
-        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">A</span><span class="lh-ticket-hello" aria-hidden="true">Hello</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
-        <div class="lh-ticket-body">
-            <p class="lh-ticket-meta"><span class="i18n" lang="bn">ইংলিশ</span><span class="i18n" lang="en">English</span> · <span class="i18n" lang="bn">৪০</span><span class="i18n" lang="en">40</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
-            <h3><span class="i18n" lang="bn">স্পোকেন ইংলিশ মাস্টারক্লাস</span><span class="i18n" lang="en">Spoken English Masterclass</span></h3>
-            <p class="lh-ticket-teacher">Arif Chowdhury</p>
-        </div>
-        <div class="lh-ticket-stub">
-                            <span class="lh-price">৳<span class="i18n" lang="bn">৯৯০</span><span class="i18n" lang="en">990</span></span>
-                <s>৳<span class="i18n" lang="bn">১,৫০০</span><span class="i18n" lang="en">1,500</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
-        </div>
-    </a>
-        <a class="lh-ticket" href="/course/demo-japanese-kana" style="--lang:var(--lang-ja)">
-        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">あ</span><span class="lh-ticket-hello" aria-hidden="true">こんにちは</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
-        <div class="lh-ticket-body">
-            <p class="lh-ticket-meta"><span class="i18n" lang="bn">জাপানিজ</span><span class="i18n" lang="en">Japanese</span> · <span class="i18n" lang="bn">১৮</span><span class="i18n" lang="en">18</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
-            <h3><span class="i18n" lang="bn">জাপানিজ হিরাগানা ও কাতাকানা</span><span class="i18n" lang="en">Hiragana &amp; Katakana</span></h3>
-            <p class="lh-ticket-teacher">Tanvir Hasan</p>
-        </div>
-        <div class="lh-ticket-stub">
-                            <span class="lh-price">৳<span class="i18n" lang="bn">৭৯০</span><span class="i18n" lang="en">790</span></span>
-                <s>৳<span class="i18n" lang="bn">১,২০০</span><span class="i18n" lang="en">1,200</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
-        </div>
-    </a>
-        <a class="lh-ticket" href="/course/demo-japanese-n5-live" style="--lang:var(--lang-ja)">
-        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">あ</span><span class="lh-ticket-hello" aria-hidden="true">こんにちは</span><span class="lh-chip lh-chip-live"><i></i><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span></div>
-        <div class="lh-ticket-body">
-            <p class="lh-ticket-meta"><span class="i18n" lang="bn">জাপানিজ</span><span class="i18n" lang="en">Japanese</span> · <span class="i18n" lang="bn">৩০</span><span class="i18n" lang="en">30</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
-            <h3><span class="i18n" lang="bn">জাপানিজ লাইভ ব্যাচ — JLPT N5</span><span class="i18n" lang="en">Japanese Live Batch — JLPT N5</span></h3>
-            <p class="lh-ticket-teacher">Tanvir Hasan</p>
-        </div>
-        <div class="lh-ticket-stub">
-                            <span class="lh-price">৳<span class="i18n" lang="bn">৩,৯০০</span><span class="i18n" lang="en">3,900</span></span>
-                <s>৳<span class="i18n" lang="bn">৫,০০০</span><span class="i18n" lang="en">5,000</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
-        </div>
-    </a>
-        <a class="lh-ticket" href="/course/demo-chinese-hsk1-live" style="--lang:var(--lang-zh)">
-        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">中</span><span class="lh-ticket-hello" aria-hidden="true">你好</span><span class="lh-chip lh-chip-live"><i></i><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span></div>
-        <div class="lh-ticket-body">
-            <p class="lh-ticket-meta"><span class="i18n" lang="bn">চাইনিজ</span><span class="i18n" lang="en">Chinese</span> · <span class="i18n" lang="bn">২৪</span><span class="i18n" lang="en">24</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
-            <h3><span class="i18n" lang="bn">চাইনিজ লাইভ ব্যাচ — HSK 1</span><span class="i18n" lang="en">Chinese Live Batch — HSK 1</span></h3>
-            <p class="lh-ticket-teacher">Mahmuda Rahman</p>
-        </div>
-        <div class="lh-ticket-stub">
-                            <span class="lh-price">৳<span class="i18n" lang="bn">৩,৫০০</span><span class="i18n" lang="en">3,500</span></span>
-                <s>৳<span class="i18n" lang="bn">৪,৫০০</span><span class="i18n" lang="en">4,500</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
-        </div>
-    </a>
-        <a class="lh-ticket" href="/course/demo-korean-topik1-live" style="--lang:var(--lang-ko)">
-        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">한</span><span class="lh-ticket-hello" aria-hidden="true">안녕하세요</span><span class="lh-chip lh-chip-live"><i></i><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span></div>
-        <div class="lh-ticket-body">
-            <p class="lh-ticket-meta"><span class="i18n" lang="bn">কোরিয়ান</span><span class="i18n" lang="en">Korean</span> · <span class="i18n" lang="bn">২৮</span><span class="i18n" lang="en">28</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
-            <h3><span class="i18n" lang="bn">কোরিয়ান লাইভ ব্যাচ — TOPIK I</span><span class="i18n" lang="en">Korean Live Batch — TOPIK I</span></h3>
-            <p class="lh-ticket-teacher">Nusrat Jahan</p>
-        </div>
-        <div class="lh-ticket-stub">
-                            <span class="lh-price">৳<span class="i18n" lang="bn">৪,৮০০</span><span class="i18n" lang="en">4,800</span></span>
-                                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
-        </div>
-    </a>
-        </div>
-</section>
-
-<!-- ═══ 4. FREE CLASSES ═══════════════════════════════════════════════════ -->
-<section class="lh-section">
-    <div class="container">
-        <div class="lh-section-head lh-section-head-row" data-reveal>
-            <div>
-                <p class="lh-eyebrow"><span class="i18n" lang="bn">একদম ফ্রি</span><span class="i18n" lang="en">Completely free</span></p>
-                <h2><span class="i18n" lang="bn">ভর্তির আগে চেখে দেখুন</span><span class="i18n" lang="en">Try before you enrol</span></h2>
-            </div>
-            <a href="/courses?free=1" class="lh-link"><span class="i18n" lang="bn">সব</span><span class="i18n" lang="en">All</span> <span class="material-icons-round">arrow_forward</span></a>
-        </div>
-    </div>
-    <div class="lh-rail" data-reveal-group>
-            <a class="lh-ticket" href="/course/demo-chinese-first-100" style="--lang:var(--lang-zh)">
-        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">中</span><span class="lh-ticket-hello" aria-hidden="true">你好</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
-        <div class="lh-ticket-body">
-            <p class="lh-ticket-meta"><span class="i18n" lang="bn">চাইনিজ</span><span class="i18n" lang="en">Chinese</span> · <span class="i18n" lang="bn">৮</span><span class="i18n" lang="en">8</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
-            <h3><span class="i18n" lang="bn">চাইনিজ প্রথম ১০০ শব্দ</span><span class="i18n" lang="en">Chinese — First 100 Words</span></h3>
-            <p class="lh-ticket-teacher">Mahmuda Rahman</p>
-        </div>
-        <div class="lh-ticket-stub">
-                            <span class="lh-price lh-price-free"><span class="i18n" lang="bn">ফ্রি</span><span class="i18n" lang="en">Free</span></span>
-                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
-        </div>
-    </a>
-        <a class="lh-ticket" href="/course/demo-ielts-speaking-free" style="--lang:var(--lang-en)">
-        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">A</span><span class="lh-ticket-hello" aria-hidden="true">Hello</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
-        <div class="lh-ticket-body">
-            <p class="lh-ticket-meta"><span class="i18n" lang="bn">ইংলিশ</span><span class="i18n" lang="en">English</span> · <span class="i18n" lang="bn">৫</span><span class="i18n" lang="en">5</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
-            <h3><span class="i18n" lang="bn">IELTS স্পিকিং ফ্রি ওয়ার্কশপ</span><span class="i18n" lang="en">IELTS Speaking — Free Workshop</span></h3>
-            <p class="lh-ticket-teacher">Arif Chowdhury</p>
-        </div>
-        <div class="lh-ticket-stub">
-                            <span class="lh-price lh-price-free"><span class="i18n" lang="bn">ফ্রি</span><span class="i18n" lang="en">Free</span></span>
-                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
-        </div>
-    </a>
-        <a class="lh-ticket" href="/course/demo-korean-hangul" style="--lang:var(--lang-ko)">
-        <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">한</span><span class="lh-ticket-hello" aria-hidden="true">안녕하세요</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
-        <div class="lh-ticket-body">
-            <p class="lh-ticket-meta"><span class="i18n" lang="bn">কোরিয়ান</span><span class="i18n" lang="en">Korean</span> · <span class="i18n" lang="bn">৭</span><span class="i18n" lang="en">7</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
-            <h3><span class="i18n" lang="bn">কোরিয়ান হাঙ্গুল ৭ দিনে</span><span class="i18n" lang="en">Hangul in 7 Days</span></h3>
-            <p class="lh-ticket-teacher">Nusrat Jahan</p>
-        </div>
-        <div class="lh-ticket-stub">
-                            <span class="lh-price lh-price-free"><span class="i18n" lang="bn">ফ্রি</span><span class="i18n" lang="en">Free</span></span>
-                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
-        </div>
-    </a>
-        </div>
 </section>
 
 <!-- ═══ 5. LIVE vs RECORDED (sliding switch) ══════════════════════════════ -->
@@ -644,7 +678,7 @@
 <!-- Main JS -->
 <script src="/assets/js/main.js?v=1.2.1" defer></script>
 <script src="/assets/js/app.js?v=1.2.1" defer></script>
-<script src="/assets/js/lh.js?v=1794253705" defer></script>
+<script src="/assets/js/lh.js?v=1794306821" defer></script>
 </body>
 
 </html>

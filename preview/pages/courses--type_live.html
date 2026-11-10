@@ -47,7 +47,7 @@
     <!-- App layer: responsive shell + new components (must load after main.css) -->
     <link rel="stylesheet" href="/assets/css/app.css?v=1.2.1">
     <!-- Language Hub design layer: tokens, dark mode, nav, home (loads last) -->
-    <link rel="stylesheet" href="/assets/css/lh.css?v=1794253953">
+    <link rel="stylesheet" href="/assets/css/lh.css?v=1794306845">
 
     <!-- Google Fonts + Material Icons: loaded non-render-blocking (preload + swap on load).
          These were blocking first paint on every page for a webfont that isn't needed
@@ -62,7 +62,7 @@
     
     <script>
         const APP_URL    = '';
-        const CSRF_TOKEN = '7e4a4114b9b4167055a04d282d5018578540252cb72513e6c8c0fa394d8828d5';
+        const CSRF_TOKEN = '53e3e34ecddd8a70e2b82be88be12412cf5abb7827a697bf2784f2e4c64873b5';
         const IS_LOGGED_IN = false;
         const VAPID_PUBLIC_KEY = '';
     </script>
@@ -250,7 +250,8 @@
 
 <section class="container lh-list-body">
         <div class="lh-grid" data-reveal-group>
-            <a class="lh-ticket" href="/course/demo-japanese-n5-live" style="--lang:var(--lang-ja)">
+            <a class="lh-ticket" href="/course/demo-japanese-n5-live" style="--lang:var(--lang-ja)"
+       data-lang="japanese" data-type="live" data-free="0">
         <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">あ</span><span class="lh-ticket-hello" aria-hidden="true">こんにちは</span><span class="lh-chip lh-chip-live"><i></i><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span></div>
         <div class="lh-ticket-body">
             <p class="lh-ticket-meta"><span class="i18n" lang="bn">জাপানিজ</span><span class="i18n" lang="en">Japanese</span> · <span class="i18n" lang="bn">৩০</span><span class="i18n" lang="en">30</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
@@ -262,7 +263,8 @@
                 <s>৳<span class="i18n" lang="bn">৫,০০০</span><span class="i18n" lang="en">5,000</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
         </div>
     </a>
-        <a class="lh-ticket" href="/course/demo-chinese-hsk1-live" style="--lang:var(--lang-zh)">
+        <a class="lh-ticket" href="/course/demo-chinese-hsk1-live" style="--lang:var(--lang-zh)"
+       data-lang="chinese" data-type="live" data-free="0">
         <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">中</span><span class="lh-ticket-hello" aria-hidden="true">你好</span><span class="lh-chip lh-chip-live"><i></i><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span></div>
         <div class="lh-ticket-body">
             <p class="lh-ticket-meta"><span class="i18n" lang="bn">চাইনিজ</span><span class="i18n" lang="en">Chinese</span> · <span class="i18n" lang="bn">২৪</span><span class="i18n" lang="en">24</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
@@ -274,7 +276,8 @@
                 <s>৳<span class="i18n" lang="bn">৪,৫০০</span><span class="i18n" lang="en">4,500</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
         </div>
     </a>
-        <a class="lh-ticket" href="/course/demo-korean-topik1-live" style="--lang:var(--lang-ko)">
+        <a class="lh-ticket" href="/course/demo-korean-topik1-live" style="--lang:var(--lang-ko)"
+       data-lang="korean" data-type="live" data-free="0">
         <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">한</span><span class="lh-ticket-hello" aria-hidden="true">안녕하세요</span><span class="lh-chip lh-chip-live"><i></i><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span></div>
         <div class="lh-ticket-body">
             <p class="lh-ticket-meta"><span class="i18n" lang="bn">কোরিয়ান</span><span class="i18n" lang="en">Korean</span> · <span class="i18n" lang="bn">২৮</span><span class="i18n" lang="en">28</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
@@ -392,7 +395,7 @@
 <!-- Main JS -->
 <script src="/assets/js/main.js?v=1.2.1" defer></script>
 <script src="/assets/js/app.js?v=1.2.1" defer></script>
-<script src="/assets/js/lh.js?v=1794253705" defer></script>
+<script src="/assets/js/lh.js?v=1794306821" defer></script>
 </body>
 
 </html>

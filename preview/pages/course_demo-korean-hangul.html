@@ -47,7 +47,7 @@
     <!-- App layer: responsive shell + new components (must load after main.css) -->
     <link rel="stylesheet" href="/assets/css/app.css?v=1.2.1">
     <!-- Language Hub design layer: tokens, dark mode, nav, home (loads last) -->
-    <link rel="stylesheet" href="/assets/css/lh.css?v=1794253953">
+    <link rel="stylesheet" href="/assets/css/lh.css?v=1794306845">
 
     <!-- Google Fonts + Material Icons: loaded non-render-blocking (preload + swap on load).
          These were blocking first paint on every page for a webfont that isn't needed
@@ -62,7 +62,7 @@
     
     <script>
         const APP_URL    = '';
-        const CSRF_TOKEN = '5a35d56040f3880e700bdd5c920a3b9a8122eb664da696cc3f5ece81518eebc2';
+        const CSRF_TOKEN = '181498d2140a1efb0bb31315e1ccd526db78800621667c470972942002862605';
         const IS_LOGGED_IN = false;
         const VAPID_PUBLIC_KEY = '';
     </script>
@@ -246,7 +246,7 @@
         <div class="lh-c-buy" data-reveal="right">
             <div class="lh-c-buy-price"><span class="lh-price lh-price-free"><span class="i18n" lang="bn">ফ্রি</span><span class="i18n" lang="en">Free</span></span></div>
                             <form method="POST" action="/enroll.php">
-        <input type="hidden" name="csrf_token" value="5a35d56040f3880e700bdd5c920a3b9a8122eb664da696cc3f5ece81518eebc2"><input type="hidden" name="course_id" value="10">
+        <input type="hidden" name="csrf_token" value="181498d2140a1efb0bb31315e1ccd526db78800621667c470972942002862605"><input type="hidden" name="course_id" value="10">
         <button type="submit" class="btn btn-primary lh-btn-block"><span class="i18n" lang="bn">ফ্রি ভর্তি হোন</span><span class="i18n" lang="en">Enrol free</span></button>
     </form>
             <ul class="lh-c-perks">
@@ -262,7 +262,7 @@
 <div class="lh-buybar">
     <div class="lh-buybar-price"><span class="lh-price lh-price-free"><span class="i18n" lang="bn">ফ্রি</span><span class="i18n" lang="en">Free</span></span></div>
     <div class="lh-buybar-cta">    <form method="POST" action="/enroll.php">
-        <input type="hidden" name="csrf_token" value="5a35d56040f3880e700bdd5c920a3b9a8122eb664da696cc3f5ece81518eebc2"><input type="hidden" name="course_id" value="10">
+        <input type="hidden" name="csrf_token" value="181498d2140a1efb0bb31315e1ccd526db78800621667c470972942002862605"><input type="hidden" name="course_id" value="10">
         <button type="submit" class="btn btn-primary lh-btn-block"><span class="i18n" lang="bn">ফ্রি ভর্তি হোন</span><span class="i18n" lang="en">Enrol free</span></button>
     </form>
 </div>
@@ -371,7 +371,7 @@
 <!-- Main JS -->
 <script src="/assets/js/main.js?v=1.2.1" defer></script>
 <script src="/assets/js/app.js?v=1.2.1" defer></script>
-<script src="/assets/js/lh.js?v=1794253705" defer></script>
+<script src="/assets/js/lh.js?v=1794306821" defer></script>
 </body>
 
 </html>

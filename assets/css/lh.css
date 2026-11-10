@@ -720,3 +720,46 @@ html[data-theme="dark"] .lh-chip-free { color: #4CD39C; background: rgba(14,138,
   .lh-hero2 .lh-lcard { transition: transform .5s var(--lh-ease), opacity .5s var(--lh-ease), translate .5s var(--lh-ease); }
 }
 @media (max-width: 600px) { .lh-grid .lh-ticket-art { aspect-ratio: 16 / 6; } .lh-grid .lh-ticket-glyph { font-size: 5rem; } }
+
+/* ═══ HOME: ALL COURSES with instant filter ═════════════════════════════════ */
+.lh-all .lh-section-head { margin-bottom: 14px; }
+.lh-all-chips {
+  position: sticky; top: var(--lh-nav-h); z-index: 40;
+  display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+  padding: 10px max(16px, calc((100vw - 1200px) / 2 + 32px)); margin-bottom: 14px;
+  background: color-mix(in srgb, var(--lh-bg) 88%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  transition: top .35s var(--lh-ease);
+}
+body:has(.navbar.lh-hide) .lh-all-chips { top: 0; }
+.lh-all-chips::-webkit-scrollbar { display: none; }
+.lh-all-chips .lh-fchip { cursor: pointer; font-family: inherit; }
+.lh-fchip-n {
+  min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center;
+  font-size: .72rem; font-weight: 800; background: var(--lh-bg-tint); color: var(--lh-ink-3);
+}
+.lh-fchip.is-on .lh-fchip-n { background: rgba(255,255,255,.22); color: #fff; }
+.lh-all-grid > [hidden] { display: none !important; }
+.lh-all-grid .lh-ticket.lh-pop { animation: lhPop .45s var(--lh-ease) both; animation-delay: calc(var(--i, 0) * 40ms); }
+@keyframes lhPop { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+.lh-all-empty { text-align: center; color: var(--lh-ink-3); padding: 28px 0; margin: 0; }
+.lh-all-more { display: flex; justify-content: center; margin-top: 18px; }
+.lh-all-more .btn[hidden] { display: none !important; }
+
+/* Phones: compact one-per-row cards so many courses fit on one screen */
+@media (max-width: 600px) {
+  .lh-all-grid { grid-template-columns: 1fr; gap: 10px; }
+  .lh-all-grid .lh-ticket { display: grid; grid-template-columns: 96px 1fr; grid-template-rows: 1fr auto; border-radius: 18px; }
+  .lh-all-grid .lh-ticket-art { grid-row: 1 / 3; aspect-ratio: auto; min-height: 118px; }
+  .lh-all-grid .lh-ticket-art .lh-chip { top: 8px; left: 8px; padding: 2px 7px; font-size: .64rem; }
+  .lh-all-grid .lh-ticket-glyph { right: auto; left: 50%; bottom: 10px; translate: -50% 0; font-size: 3.6rem; opacity: .35; }
+  .lh-all-grid .lh-ticket-hello { display: none; }
+  .lh-all-grid .lh-ticket-body { padding: 12px 12px 2px; }
+  .lh-all-grid .lh-ticket-meta { margin-bottom: 3px; font-size: .72rem; }
+  .lh-all-grid .lh-ticket-body h3 { font-size: .98rem; margin-bottom: 2px; }
+  .lh-all-grid .lh-ticket-teacher { font-size: .78rem; }
+  .lh-all-grid .lh-ticket-stub { border-top: 0; padding: 4px 12px 12px; }
+  .lh-all-grid .lh-ticket-stub::before, .lh-all-grid .lh-ticket-stub::after { display: none; }
+  .lh-all-grid .lh-price { font-size: 1.05rem; }
+  .lh-all-grid .lh-ticket-go { width: 32px; height: 32px; }
+}

@@ -47,7 +47,7 @@
     <!-- App layer: responsive shell + new components (must load after main.css) -->
     <link rel="stylesheet" href="/assets/css/app.css?v=1.2.1">
     <!-- Language Hub design layer: tokens, dark mode, nav, home (loads last) -->
-    <link rel="stylesheet" href="/assets/css/lh.css?v=1794253953">
+    <link rel="stylesheet" href="/assets/css/lh.css?v=1794306845">
 
     <!-- Google Fonts + Material Icons: loaded non-render-blocking (preload + swap on load).
          These were blocking first paint on every page for a webfont that isn't needed
@@ -62,7 +62,7 @@
     
     <script>
         const APP_URL    = '';
-        const CSRF_TOKEN = 'cf15e6166c92a1911566f4da7779abbc03287dbaf148320aca83496517399901';
+        const CSRF_TOKEN = 'b220e2a8ab2e05ee1a1550c2bcd2ac0ed4dd6c3adab2e2886e1678fe15a1dfc4';
         const IS_LOGGED_IN = false;
         const VAPID_PUBLIC_KEY = '';
     </script>
@@ -250,7 +250,8 @@
 
 <section class="container lh-list-body">
         <div class="lh-grid" data-reveal-group>
-            <a class="lh-ticket" href="/course/demo-spoken-english" style="--lang:var(--lang-en)">
+            <a class="lh-ticket" href="/course/demo-spoken-english" style="--lang:var(--lang-en)"
+       data-lang="english" data-type="recorded" data-free="0">
         <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">A</span><span class="lh-ticket-hello" aria-hidden="true">Hello</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
         <div class="lh-ticket-body">
             <p class="lh-ticket-meta"><span class="i18n" lang="bn">ইংলিশ</span><span class="i18n" lang="en">English</span> · <span class="i18n" lang="bn">৪০</span><span class="i18n" lang="en">40</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
@@ -262,7 +263,8 @@
                 <s>৳<span class="i18n" lang="bn">১,৫০০</span><span class="i18n" lang="en">1,500</span></s>                        <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
         </div>
     </a>
-        <a class="lh-ticket" href="/course/demo-ielts-speaking-free" style="--lang:var(--lang-en)">
+        <a class="lh-ticket" href="/course/demo-ielts-speaking-free" style="--lang:var(--lang-en)"
+       data-lang="english" data-type="recorded" data-free="1">
         <div class="lh-ticket-art"><span class="lh-ticket-glyph" aria-hidden="true">A</span><span class="lh-ticket-hello" aria-hidden="true">Hello</span><span class="lh-chip"><span class="i18n" lang="bn">রেকর্ডেড</span><span class="i18n" lang="en">Recorded</span></span></div>
         <div class="lh-ticket-body">
             <p class="lh-ticket-meta"><span class="i18n" lang="bn">ইংলিশ</span><span class="i18n" lang="en">English</span> · <span class="i18n" lang="bn">৫</span><span class="i18n" lang="en">5</span> <span class="i18n" lang="bn">ক্লাস</span><span class="i18n" lang="en">lessons</span></p>
@@ -380,7 +382,7 @@
 <!-- Main JS -->
 <script src="/assets/js/main.js?v=1.2.1" defer></script>
 <script src="/assets/js/app.js?v=1.2.1" defer></script>
-<script src="/assets/js/lh.js?v=1794253705" defer></script>
+<script src="/assets/js/lh.js?v=1794306821" defer></script>
 </body>
 
 </html>
