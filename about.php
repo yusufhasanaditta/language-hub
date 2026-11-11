@@ -4,97 +4,60 @@ require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/lh_components.php';
 
 session_start_secure();
 send_security_headers();
 
-$totalStudents = (int) get_setting('total_students', db_val("SELECT COUNT(*) FROM users WHERE role_id=1"));
-$totalCourses  = (int) get_setting('total_courses', db_val("SELECT COUNT(*) FROM courses WHERE status='published'"));
-$totalTeachers = (int) get_setting('total_teachers', db_val("SELECT COUNT(*) FROM teacher_profiles"));
-$successRate   = (int) get_setting('success_rate', 98);
-
-$page_title = 'About Us';
-$page_desc  = 'Learn about ' . APP_NAME . '\'s mission to make quality education accessible for every student in Bangladesh.';
+$langs = db_query("SELECT cat.*, COUNT(c.id) n FROM categories cat LEFT JOIN courses c ON c.category_id=cat.id AND c.status='published' GROUP BY cat.id ORDER BY cat.sort_order");
+$page_title = 'About';
+$page_desc  = 'Language Hub — বাংলায় চাইনিজ, জাপানিজ, কোরিয়ান ও ইংলিশ শেখার অনলাইন স্কুল।';
 include __DIR__ . '/includes/header.php';
 ?>
 
-<section class="section-sm" style="background:linear-gradient(135deg,#1A1033,#2A0E4A);padding:var(--sp-16) 0">
-    <div class="container" style="text-align:center;color:#fff">
-        <div class="section-label" style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.9)">About Us</div>
-        <h1 style="font-size:clamp(1.8rem,4vw,3rem);color:#fff;margin:var(--sp-3) 0">Learn with joy, move forward</h1>
-        <p style="color:rgba(255,255,255,.75);max-width:640px;margin:0 auto;font-size:var(--text-lg)">
-            <?= e(APP_NAME) ?> is Bangladesh's platform for HSC, admission tests, and skill development —
-            built by educators who believe every student deserves a teacher who makes it click.
-        </p>
+<section class="lh-list-head lh-page-hero">
+    <div class="lh-glow" aria-hidden="true"></div>
+    <div class="container lh-narrow" data-reveal>
+        <p class="lh-eyebrow"><?= t('আমাদের সম্পর্কে', 'About us') ?></p>
+        <h1 class="lh-list-title"><?= t('নতুন ভাষা, নতুন সুযোগ', 'New language, new chances') ?></h1>
+        <p class="lh-lead"><?= t('Language Hub একটি অনলাইন স্কুল, যেখানে বাংলায় চাইনিজ, জাপানিজ, কোরিয়ান ও ইংলিশ শেখানো হয় — একদম শুরু থেকে পরীক্ষা পর্যন্ত।',
+            'Language Hub is an online school that teaches Chinese, Japanese, Korean and English in Bangla — from the very first word to exam day.') ?></p>
     </div>
 </section>
 
-<section class="section">
-    <div class="container" style="max-width:900px">
-        <div class="section-label">Our Story</div>
-        <h2 class="section-title">Why we started <?= e(APP_NAME) ?></h2>
-        <p style="color:var(--c-ink-muted);font-size:var(--text-lg);line-height:1.8;margin-top:var(--sp-4)">
-            Too many bright students in Bangladesh are held back not by ability, but by access — to good
-            teachers, to structured practice, and to honest feedback on where they stand. We built
-            <?= e(APP_NAME) ?> to close that gap: live classes with real teachers, model tests that mirror
-            the real exam, and a rank board that tells you exactly where you need to improve, all in one
-            place and at a price every family can afford.
-        </p>
+<section class="container lh-narrow lh-page">
+    <div class="lh-c-card" data-reveal>
+        <h2><?= t('কেন শুরু করলাম', 'Why we started') ?></h2>
+        <div class="lh-prose"><p><?= t('বিদেশে পড়াশোনা, চাকরি বা নিজের আগ্রহে অনেকেই নতুন ভাষা শিখতে চান — কিন্তু ভালো ক্লাস প্রায়ই ইংরেজিতে, দামি, আর ঢাকার বাইরে পাওয়া কঠিন। আমরা চাই যেকোনো জায়গা থেকে, ফোন দিয়েই, বাংলায় বুঝে বুঝে ভাষা শেখা যাক।',
+            'Many people want a new language for study abroad, work or simply love of it — but good classes are often in English, expensive and hard to find outside Dhaka. We want anyone, anywhere, to learn on their phone, with everything explained in Bangla.') ?></p></div>
     </div>
-</section>
 
-<section class="section" style="background:var(--c-surface)">
-    <div class="container">
-        <div class="grid-3" style="gap:var(--sp-6);text-align:center">
-            <div>
-                <div style="font-family:var(--font-latin);font-size:2.5rem;font-weight:800;color:var(--c-primary)"><?= format_number($totalStudents ?: 12500) ?>+</div>
-                <div style="color:var(--c-ink-muted);font-weight:600">Students</div>
-            </div>
-            <div>
-                <div style="font-family:var(--font-latin);font-size:2.5rem;font-weight:800;color:var(--c-primary)"><?= $totalCourses ?: 5 ?>+</div>
-                <div style="color:var(--c-ink-muted);font-weight:600">Courses</div>
-            </div>
-            <div>
-                <div style="font-family:var(--font-latin);font-size:2.5rem;font-weight:800;color:var(--c-primary)"><?= $totalTeachers ?: 15 ?>+</div>
-                <div style="color:var(--c-ink-muted);font-weight:600">Teachers</div>
-            </div>
-        </div>
+    <div class="lh-quick lh-values" data-reveal-group>
+        <?php foreach ([
+            ['translate', t('বাংলায় শেখানো', 'Taught in Bangla'), t('প্রতিটি নিয়ম, প্রতিটি শব্দ বাংলায় বোঝানো হয়।', 'Every rule and word is explained in Bangla.')],
+            ['groups', t('ছোট ব্যাচ', 'Small batches'), t('লাইভ ব্যাচে সর্বোচ্চ ১৫ জন — সবাই কথা বলার সুযোগ পায়।', 'At most 15 per live batch, so everyone gets to speak.')],
+            ['smartphone', t('ফোনেই সব', 'All on your phone'), t('ক্লাস, রেকর্ডিং, পেমেন্ট — সব মোবাইলে।', 'Classes, recordings and payment — all on mobile.')],
+        ] as [$icon, $title, $desc]): ?>
+        <div class="lh-value"><span class="material-icons-round" aria-hidden="true"><?= $icon ?></span><b><?= $title ?></b><p><?= $desc ?></p></div>
+        <?php endforeach; ?>
     </div>
-</section>
 
-<section class="section">
-    <div class="container">
-        <div style="text-align:center;margin-bottom:var(--sp-12)">
-            <div class="section-label">What we stand for</div>
-            <h2 class="section-title">Our values</h2>
-        </div>
-        <div class="grid-3" style="gap:var(--sp-6)">
-            <?php
-            $values = [
-                ['icon' => 'diversity_3', 'title' => 'Accessible', 'desc' => 'Quality education at a price every family in Bangladesh can afford, with free courses always available.'],
-                ['icon' => 'verified',    'title' => 'Honest',     'desc' => 'Real progress tracking and real rankings — no inflated scores, no false promises.'],
-                ['icon' => 'bolt',        'title' => 'Practical',  'desc' => 'Every lesson is built around what actually shows up on the exam, not filler content.'],
-            ];
-            foreach ($values as $v): ?>
-            <div style="background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-6)">
-                <div style="width:56px;height:56px;background:var(--c-primary-light);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;margin-bottom:var(--sp-4)">
-                    <span class="material-icons-round" style="font-size:28px;color:var(--c-primary)"><?= e($v['icon']) ?></span>
-                </div>
-                <h4 style="margin-bottom:var(--sp-2)"><?= e($v['title']) ?></h4>
-                <p style="color:var(--c-ink-muted);line-height:1.7;margin:0"><?= e($v['desc']) ?></p>
-            </div>
+    <div class="lh-c-card" data-reveal>
+        <h2><?= t('যে ভাষাগুলো শেখাই', 'Languages we teach') ?></h2>
+        <div class="lh-mycourses">
+            <?php foreach ($langs as $cat): $L = lh_lang($cat['slug']); ?>
+            <a class="lh-mycourse" href="<?= APP_URL ?>/category/<?= e($cat['slug']) ?>" style="--lang:var(<?= $L['var'] ?>)">
+                <span class="lh-co-glyph" aria-hidden="true"><?= e($L['glyph']) ?></span>
+                <span class="lh-mycourse-body"><b><?= t($cat['name_bn'], $cat['name_en']) ?></b><span class="lh-ticket-meta"><?= e($L['hello']) ?> · <?= $L['exam'] ? e($L['exam']) . ' · ' : '' ?><?= t_num((int)$cat['n']) ?> <?= t('কোর্স', 'courses') ?></span></span>
+                <span class="lh-ticket-go material-icons-round" aria-hidden="true">arrow_forward</span>
+            </a>
             <?php endforeach; ?>
         </div>
     </div>
-</section>
 
-<section class="section" style="background:linear-gradient(135deg,var(--c-primary),var(--c-primary-dark));color:#fff">
-    <div class="container" style="text-align:center">
-        <h2 class="section-title" style="color:#fff">Ready to start learning?</h2>
-        <p style="color:rgba(255,255,255,.8);margin-bottom:var(--sp-6)">Join <?= format_number($totalStudents ?: 12500) ?>+ students already learning with <?= e(APP_NAME) ?>.</p>
-        <a href="<?= APP_URL ?>/courses.php" class="btn btn-white btn-lg">
-            <span class="material-icons-round">play_circle</span> Browse Courses
-        </a>
+    <div class="lh-page-cta" data-reveal>
+        <a href="<?= APP_URL ?>/#courses" class="btn btn-primary"><?= t('কোর্স দেখুন', 'Browse courses') ?></a>
+        <a href="<?= APP_URL ?>/contact.php" class="btn btn-outline"><?= t('যোগাযোগ', 'Contact us') ?></a>
     </div>
 </section>
 

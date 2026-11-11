@@ -8,7 +8,7 @@ require_once __DIR__ . '/includes/auth.php';
 session_start_secure();
 send_security_headers();
 
-$contactEmail = get_setting('contact_email', 'bacademy.class@gmail.com');
+$contactEmail = get_setting('contact_email', '');
 $contactPhone = get_setting('contact_phone', '+8801577588132');
 $lastUpdated  = '5 August 2026';
 
@@ -52,8 +52,8 @@ include __DIR__ . '/includes/header.php';
                 <h2 id="overview">1. Overview</h2>
                 <p>
                     <?= e(APP_NAME) ?> ("we", "us", "our") operates an online learning platform for
-                    students in Bangladesh, offering recorded courses, live classes, model tests, and an
-                    admission tracker. This policy applies to everyone who visits our website or creates
+                    learners in Bangladesh, teaching Chinese, Japanese, Korean and English in Bangla through
+                    live batches and recorded courses. This policy applies to everyone who visits our website or creates
                     an account.
                 </p>
 
@@ -140,7 +140,7 @@ include __DIR__ . '/includes/header.php';
 
                 <h2 id="children">11. Children's Privacy</h2>
                 <p>
-                    <?= e(APP_NAME) ?> is intended for HSC and admission-test students. If you are under
+                    <?= e(APP_NAME) ?> is open to learners of all ages. If you are under
                     18, please use the platform with a parent or guardian's awareness, particularly for
                     payments.
                 </p>

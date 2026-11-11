@@ -8,7 +8,7 @@ require_once __DIR__ . '/includes/auth.php';
 session_start_secure();
 send_security_headers();
 
-$contactEmail = get_setting('contact_email', 'bacademy.class@gmail.com');
+$contactEmail = get_setting('contact_email', '');
 $contactPhone = get_setting('contact_phone', '+8801577588132');
 $lastUpdated  = '5 August 2026';
 

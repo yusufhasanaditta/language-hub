@@ -938,7 +938,24 @@ function course_thumbnail_url(?string $thumbnail, string $title = 'Course', stri
             return APP_URL . '/' . $path;
         }
     }
-    return "https://placehold.co/{$dim}/{$color}/ffffff?text=" . urlencode($title ?: 'Course');
+    // No uploaded image: draw one locally (SVG data URI) with the course's
+    // language letter. The old placeholder service could not render Bangla.
+    $t = mb_strtolower($title ?: '');
+    $langs = [
+        ['中', '#D7363C', '/\p{Han}|চাইনিজ|chinese|hsk/u'],
+        ['あ', '#C2185B', '/\p{Hiragana}|\p{Katakana}|জাপানিজ|japanese|jlpt|hiragana|katakana/u'],
+        ['한', '#1E6FC0', '/\p{Hangul}|কোরিয়ান|korean|topik|hangul/u'],
+        ['A',  '#0E8A5F', '/ইংলিশ|ইংরেজি|english|ielts|spoken/u'],
+    ];
+    [$glyph, $hex] = ['LH', '#' . ltrim($color, '#')];
+    foreach ($langs as [$g, $c, $re]) { if (preg_match($re, $t)) { [$glyph, $hex] = [$g, $c]; break; } }
+    [$w, $h] = array_map('intval', explode('x', $dim) + [1 => 340]);
+    $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $w . ' ' . $h . '">'
+         . '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' . $hex . '" stop-opacity=".18"/><stop offset="1" stop-color="#F4EFFA"/></linearGradient>'
+         . '<radialGradient id="r" cx="1" cy="0" r="1"><stop offset="0" stop-color="' . $hex . '" stop-opacity=".35"/><stop offset=".6" stop-color="' . $hex . '" stop-opacity="0"/></radialGradient></defs>'
+         . '<rect width="100%" height="100%" fill="#fff"/><rect width="100%" height="100%" fill="url(#g)"/><rect width="100%" height="100%" fill="url(#r)"/>'
+         . '<text x="' . round($w * .94) . '" y="' . round($h * 1.04) . '" text-anchor="end" font-family="sans-serif" font-weight="800" font-size="' . round($h * .78) . '" fill="' . $hex . '" fill-opacity=".28">' . $glyph . '</text></svg>';
+    return 'data:image/svg+xml;charset=utf-8,' . rawurlencode($svg);
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────

@@ -253,44 +253,23 @@ $_notifCount = $_user ? (int)db_val("SELECT COUNT(*) FROM notifications WHERE us
                         <strong><?= e($_user['name']) ?></strong>
                         <small><?= e($_user['email'] ?? $_user['phone']) ?></small>
                     </div>
-                    <!-- Site navigation -->
-                    <a href="<?= APP_URL ?>/" class="dropdown-item">
-                        <span class="material-icons-round">home</span> Home Page
+                    <a href="<?= APP_URL ?>/dashboard.php" class="dropdown-item">
+                        <span class="material-icons-round">person</span> <?= t('আমার প্রোফাইল', 'My profile') ?>
                     </a>
-                    <a href="<?= APP_URL ?>/courses" class="dropdown-item">
-                        <span class="material-icons-round">school</span> Browse Courses
+                    <a href="<?= APP_URL ?>/my-courses.php" class="dropdown-item">
+                        <span class="material-icons-round">play_circle</span> <?= t('আমার কোর্স', 'My courses') ?>
                     </a>
-                    <a href="<?= APP_URL ?>/stories" class="dropdown-item">
-                        <span class="material-icons-round">auto_stories</span> Success Stories
+                    <a href="<?= APP_URL ?>/orders.php" class="dropdown-item">
+                        <span class="material-icons-round">receipt_long</span> <?= t('পেমেন্ট ও ইনভয়েস', 'Payments & invoices') ?>
                     </a>
-                    <div class="dropdown-divider"></div>
-                    <!-- Student panel -->
-                    <a href="<?= APP_URL ?>/dashboard" class="dropdown-item">
-                        <span class="material-icons-round">dashboard</span> Dashboard
+                    <a href="<?= APP_URL ?>/certificates.php" class="dropdown-item">
+                        <span class="material-icons-round">workspace_premium</span> <?= t('সার্টিফিকেট', 'Certificates') ?>
                     </a>
-                    <a href="<?= APP_URL ?>/my-courses" class="dropdown-item">
-                        <span class="material-icons-round">play_circle</span> My Courses
+                    <a href="<?= APP_URL ?>/notifications.php" class="dropdown-item">
+                        <span class="material-icons-round">notifications</span> <?= t('নোটিফিকেশন', 'Notifications') ?>
                     </a>
-                    <a href="<?= APP_URL ?>/student/schedule" class="dropdown-item">
-                        <span class="material-icons-round">event</span> My Schedule
-                    </a>
-                    <a href="<?= APP_URL ?>/profile" class="dropdown-item">
-                        <span class="material-icons-round">person</span> Profile
-                    </a>
-                    <a href="<?= APP_URL ?>/exams" class="dropdown-item">
-                        <span class="material-icons-round">quiz</span> Exam Center
-                    </a>
-                    <a href="<?= APP_URL ?>/orders" class="dropdown-item">
-                        <span class="material-icons-round">receipt</span> Order History
-                    </a>
-                    <a href="<?= APP_URL ?>/certificates" class="dropdown-item">
-                        <span class="material-icons-round">workspace_premium</span> Certificates
-                    </a>
-                    <a href="<?= APP_URL ?>/messages" class="dropdown-item">
-                        <span class="material-icons-round">chat</span> Messages
-                    </a>
-                    <a href="<?= APP_URL ?>/settings" class="dropdown-item">
-                        <span class="material-icons-round">settings</span> Settings
+                    <a href="<?= APP_URL ?>/profile.php#edit-profile" class="dropdown-item">
+                        <span class="material-icons-round">manage_accounts</span> <?= t('প্রোফাইল এডিট', 'Edit profile') ?>
                     </a>
                     <?php if (is_admin()): ?>
                     <a href="<?= APP_URL ?>/admin/" class="dropdown-item">
@@ -369,26 +348,23 @@ $_notifCount = $_user ? (int)db_val("SELECT COUNT(*) FROM notifications WHERE us
             <?php endforeach; ?>
             <div class="mobile-nav-divider"></div>
             <?php if ($_user): ?>
-            <a href="<?= APP_URL ?>/dashboard" class="mobile-nav-link">
-                <span class="material-icons-round">dashboard</span> Dashboard
+            <a href="<?= APP_URL ?>/dashboard.php" class="mobile-nav-link">
+                <span class="material-icons-round">person</span> <?= t('আমার প্রোফাইল', 'My profile') ?>
             </a>
-            <a href="<?= APP_URL ?>/my-courses" class="mobile-nav-link">
-                <span class="material-icons-round">play_circle</span> My Courses
+            <a href="<?= APP_URL ?>/my-courses.php" class="mobile-nav-link">
+                <span class="material-icons-round">play_circle</span> <?= t('আমার কোর্স', 'My courses') ?>
             </a>
-            <a href="<?= APP_URL ?>/student/schedule" class="mobile-nav-link">
-                <span class="material-icons-round">event</span> My Schedule
+            <a href="<?= APP_URL ?>/orders.php" class="mobile-nav-link">
+                <span class="material-icons-round">receipt_long</span> <?= t('পেমেন্ট ও ইনভয়েস', 'Payments & invoices') ?>
             </a>
-            <a href="<?= APP_URL ?>/exams" class="mobile-nav-link">
-                <span class="material-icons-round">quiz</span> Exam Center
+            <a href="<?= APP_URL ?>/certificates.php" class="mobile-nav-link">
+                <span class="material-icons-round">workspace_premium</span> <?= t('সার্টিফিকেট', 'Certificates') ?>
             </a>
-            <a href="<?= APP_URL ?>/orders" class="mobile-nav-link">
-                <span class="material-icons-round">receipt_long</span> Orders &amp; Invoices
+            <a href="<?= APP_URL ?>/notifications.php" class="mobile-nav-link">
+                <span class="material-icons-round">notifications</span> <?= t('নোটিফিকেশন', 'Notifications') ?>
             </a>
-            <a href="<?= APP_URL ?>/certificates" class="mobile-nav-link">
-                <span class="material-icons-round">workspace_premium</span> Certificates
-            </a>
-            <a href="<?= APP_URL ?>/profile" class="mobile-nav-link">
-                <span class="material-icons-round">person</span> Profile
+            <a href="<?= APP_URL ?>/profile.php#edit-profile" class="mobile-nav-link">
+                <span class="material-icons-round">manage_accounts</span> <?= t('প্রোফাইল এডিট', 'Edit profile') ?>
             </a>
             <?php if (is_teacher()): ?>
             <a href="<?= APP_URL ?>/teacher/dashboard" class="mobile-nav-link">

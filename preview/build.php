@@ -7,7 +7,7 @@ if (PHP_SAPI !== 'cli') exit;
 require __DIR__ . '/key.php';
 
 $base = 'http://localhost/language-hub';
-$pages = ['/', '/courses', '/courses?type=live', '/courses?type=recorded', '/courses?free=1', '/login', '/teachers'];
+$pages = ['/', '/courses', '/courses?type=live', '/courses?type=recorded', '/courses?free=1', '/login', '/teachers', '/about', '/faq', '/terms', '/privacy', '/refund', '/contact'];
 $pdo = new PDO('mysql:host=localhost;dbname=language_hub;charset=utf8mb4', 'root', '');
 foreach ($pdo->query("SELECT slug FROM courses WHERE status='published'") as $r) $pages[] = '/course/' . $r['slug'];
 foreach ($pdo->query("SELECT slug FROM categories") as $r) $pages[] = '/category/' . $r['slug'];

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="bn" data-lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Apply saved theme + language before first paint (no flash).
+        (function () {
+            var d = document.documentElement, s = {}; d.classList.add('lh-js');
+            try { s.t = localStorage.getItem('lh_theme'); s.l = localStorage.getItem('lh_lang'); } catch (e) {}
+            var dark = s.t ? s.t === 'dark' : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+            d.setAttribute('data-theme', dark ? 'dark' : 'light');
+            if (s.l === 'en' || s.l === 'bn') { d.setAttribute('data-lang', s.l); d.lang = s.l; }
+        })();
+    </script>
+    <meta name="description" content="How Language Hub collects, uses, and protects your personal information.">
+    <meta name="theme-color" content="#5B21B6">
+    <title>Privacy Policy — Language Hub</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="/image/language-hub-logo-192.png" type="image/png">
+
+    <!-- Social share preview (Open Graph / Twitter Card) — every page gets a
+         preview image when its link is shared; pages with their own feature
+         image (a course thumbnail, a teacher's photo, etc.) set $page_image
+         before including this header, otherwise it falls back to our logo. -->
+        <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Language Hub">
+    <meta property="og:title" content="Privacy Policy">
+    <meta property="og:description" content="How Language Hub collects, uses, and protects your personal information.">
+    <meta property="og:image" content="/image/language-hub-logo-original.jpg">
+    <meta property="og:image:secure_url" content="/image/language-hub-logo-original.jpg">
+    <meta property="og:url" content="/language-hub/privacy">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Privacy Policy">
+    <meta name="twitter:description" content="How Language Hub collects, uses, and protects your personal information.">
+    <meta name="twitter:image" content="/image/language-hub-logo-original.jpg">
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- LCP image: hero slide 1 loads eager, so warn the browser about it before CSS/fonts are even parsed -->
+    
+    <!-- Main CSS: render-blocking, kept minimal + first (needed for above-the-fold layout) -->
+    <link rel="stylesheet" href="/assets/css/main.css?v=1.2.1">
+    <!-- App layer: responsive shell + new components (must load after main.css) -->
+    <link rel="stylesheet" href="/assets/css/app.css?v=1.2.1">
+    <!-- Language Hub design layer: tokens, dark mode, nav, home (loads last) -->
+    <link rel="stylesheet" href="/assets/css/lh.css?v=1794375720">
+
+    <!-- Google Fonts + Material Icons: loaded non-render-blocking (preload + swap on load).
+         These were blocking first paint on every page for a webfont that isn't needed
+         to render the initial layout — noscript fallback keeps them working with JS off. -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@400;500;600;700;800&family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@400;500;600;700;800&family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap" rel="stylesheet">
+    </noscript>
+
+    
+    <script>
+        const APP_URL    = '';
+        const CSRF_TOKEN = '4361a644f42f4d4def8ccd4e1245ab8d6820644ffcf7dc6f2171c70fe3f2a34a';
+        const IS_LOGGED_IN = false;
+        const VAPID_PUBLIC_KEY = '';
+    </script>
+        
+    
+            </head>
+<body class="">
+
+<!-- Flash Messages -->
+
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="container navbar-inner">
+
+        <!-- Logo -->
+        <a href="/" class="navbar-brand lh-brand">
+            <img src="/image/language-hub-logo.png" alt="" width="40" height="40">
+            <span class="brand-text">
+                <span class="brand-name">Language Hub</span>
+                <span class="brand-tagline">নতুন ভাষা, নতুন সুযোগ</span>
+            </span>
+        </a>
+
+        <!-- Primary Nav (desktop) -->
+                <div class="navbar-categories lh-nav">
+            <a href="/courses" class="nav-cat"><span class="i18n" lang="bn">কোর্স</span><span class="i18n" lang="en">Courses</span></a>
+            <div class="nav-cat-dropdown">
+                <button class="nav-cat" type="button">
+                    <span class="i18n" lang="bn">ভাষা</span><span class="i18n" lang="en">Languages</span> <span class="material-icons-round" style="font-size:16px">expand_more</span>
+                </button>
+                <div class="dropdown-menu nav-categories-drop lh-lang-drop" style="display:none">
+                                        <a href="/category/chinese" class="dropdown-item" style="--lang:#D7363C">
+                        <span class="lh-glyph">中</span>
+                        <span class="i18n" lang="bn">চাইনিজ</span><span class="i18n" lang="en">Chinese</span>                    </a>
+                                        <a href="/category/japanese" class="dropdown-item" style="--lang:#C2185B">
+                        <span class="lh-glyph">あ</span>
+                        <span class="i18n" lang="bn">জাপানিজ</span><span class="i18n" lang="en">Japanese</span>                    </a>
+                                        <a href="/category/korean" class="dropdown-item" style="--lang:#1E6FC0">
+                        <span class="lh-glyph">한</span>
+                        <span class="i18n" lang="bn">কোরিয়ান</span><span class="i18n" lang="en">Korean</span>                    </a>
+                                        <a href="/category/english" class="dropdown-item" style="--lang:#0E8A5F">
+                        <span class="lh-glyph">A</span>
+                        <span class="i18n" lang="bn">ইংলিশ</span><span class="i18n" lang="en">English</span>                    </a>
+                                    </div>
+            </div>
+            <a href="/courses?type=live" class="nav-cat"><span class="i18n" lang="bn">লাইভ ব্যাচ</span><span class="i18n" lang="en">Live batches</span></a>
+            <a href="/courses?free=1" class="nav-cat"><span class="i18n" lang="bn">ফ্রি</span><span class="i18n" lang="en">Free</span></a>
+            <a href="/teachers" class="nav-cat"><span class="i18n" lang="bn">শিক্ষক</span><span class="i18n" lang="en">Teachers</span></a>
+        </div>
+
+        <!-- Right side -->
+        <div class="navbar-right">
+            <button class="icon-btn lh-toggle" type="button" data-lh-lang aria-label="বাংলা / English">
+                <span class="lh-toggle-txt"><span class="i18n" lang="bn">EN</span><span class="i18n" lang="en">বাং</span></span>
+            </button>
+            <button class="icon-btn lh-toggle" type="button" data-lh-theme aria-label="Dark mode">
+                <span class="material-icons-round lh-ico-dark">dark_mode</span>
+                <span class="material-icons-round lh-ico-light">light_mode</span>
+            </button>
+            <!-- Search toggle -->
+            <button class="icon-btn d-none d-md-flex" id="searchToggle" aria-label="Search">
+                <span class="material-icons-round">search</span>
+            </button>
+
+                        <a href="/login.php" class="btn btn-primary btn-sm lh-nav-cta"><span class="i18n" lang="bn">শুরু করুন</span><span class="i18n" lang="en">Get started</span></a>
+                        <!-- Mobile menu toggle (every visitor gets it — students used to have
+                 no menu at all on phones, only the 3-item bottom bar) -->
+            <button class="icon-btn d-md-none" id="mobileMenuToggle" aria-label="Menu" aria-controls="mobileNav" aria-expanded="false" style="display:none !important">
+                <span class="material-icons-round">menu</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Search bar (expandable) -->
+    <div class="search-bar-wrap" id="searchBarWrap">
+        <div class="container">
+            <form action="/courses" method="GET" class="search-bar-form">
+                <span class="material-icons-round search-icon">search</span>
+                <input type="search" name="q" placeholder="Search courses, teachers, or subjects..." class="search-input" id="searchInput" autocomplete="off">
+                <button type="button" class="icon-btn" id="searchClose">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile nav drawer -->
+    <div class="mobile-nav" id="mobileNav" aria-hidden="true">
+        <div class="drawer-head">
+            <span class="drawer-title">Menu</span>
+            <button class="icon-btn drawer-close" aria-label="Close menu">
+                <span class="material-icons-round">close</span>
+            </button>
+        </div>
+        <div class="mobile-nav-inner">
+            <a href="/" class="mobile-nav-link">
+                <span class="material-icons-round">home</span> Home
+            </a>
+            <a href="/notices" class="mobile-nav-link">
+                <span class="material-icons-round">campaign</span> Notice Board
+            </a>
+            <a href="/courses" class="mobile-nav-link">
+                <span class="material-icons-round">school</span> All Courses
+            </a>
+            <a href="/courses?free=1" class="mobile-nav-link">
+                <span class="material-icons-round">card_giftcard</span> Free Courses
+            </a>
+            <a href="/courses?type=live" class="mobile-nav-link">
+                <span class="material-icons-round">videocam</span> Live Batches
+            </a>
+            <div class="mobile-nav-divider"></div>
+                        <a href="/category/chinese" class="mobile-nav-link" style="--lang:#D7363C">
+                <span class="lh-glyph">中</span>
+                <span class="i18n" lang="bn">চাইনিজ</span><span class="i18n" lang="en">Chinese</span>            </a>
+                        <a href="/category/japanese" class="mobile-nav-link" style="--lang:#C2185B">
+                <span class="lh-glyph">あ</span>
+                <span class="i18n" lang="bn">জাপানিজ</span><span class="i18n" lang="en">Japanese</span>            </a>
+                        <a href="/category/korean" class="mobile-nav-link" style="--lang:#1E6FC0">
+                <span class="lh-glyph">한</span>
+                <span class="i18n" lang="bn">কোরিয়ান</span><span class="i18n" lang="en">Korean</span>            </a>
+                        <a href="/category/english" class="mobile-nav-link" style="--lang:#0E8A5F">
+                <span class="lh-glyph">A</span>
+                <span class="i18n" lang="bn">ইংলিশ</span><span class="i18n" lang="en">English</span>            </a>
+                        <div class="mobile-nav-divider"></div>
+                        <a href="/login" class="mobile-nav-link">
+                <span class="material-icons-round">login</span> Login
+            </a>
+            <a href="/register" class="mobile-nav-link" style="font-weight:700">
+                <span class="material-icons-round">person_add</span> Sign Up
+            </a>
+                    </div>
+    </div>
+</nav>
+
+<!-- Overlay for dropdowns/drawers -->
+<div class="overlay" id="overlay"></div>
+
+<!-- Main content starts -->
+<main class="main-content" id="mainContent">
+
+<section class="section-sm" style="background:linear-gradient(135deg,#1A1033,#2A0E4A);padding:var(--sp-14) 0">
+    <div class="container" style="text-align:center;color:#fff">
+        <div class="section-label" style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.9)">Legal</div>
+        <h1 style="font-size:clamp(1.6rem,4vw,2.6rem);color:#fff;margin:var(--sp-3) 0">Privacy Policy</h1>
+                <p style="color:rgba(255,255,255,.6);font-size:var(--text-sm)">Last updated: 5 August 2026</p>
+            </div>
+</section>
+
+<style>
+.legal-layout { display: grid; grid-template-columns: 260px 1fr; gap: var(--sp-10); align-items: start; }
+.legal-toc { position: sticky; top: calc(var(--sp-4) + 72px); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-lg); padding: var(--sp-5); }
+.legal-toc-title { font-size: var(--text-xs); font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--c-ink-muted); margin-bottom: var(--sp-3); }
+.legal-toc a { display: block; padding: 6px 0; font-size: var(--text-sm); color: var(--c-ink-light); text-decoration: none; border-left: 2px solid transparent; padding-left: 10px; margin-left: -12px; }
+.legal-toc a:hover { color: var(--c-primary); border-left-color: var(--c-primary); }
+.legal-content { max-width: 760px; }
+.legal-content .legal-lead { font-size: var(--text-lg); color: var(--c-ink-light); line-height: 1.8; margin-bottom: var(--sp-8); }
+.legal-content h2 { font-size: var(--text-xl); margin: var(--sp-10) 0 var(--sp-4); scroll-margin-top: 90px; }
+.legal-content h2:first-of-type { margin-top: 0; }
+.legal-content p, .legal-content li { color: var(--c-ink-light); line-height: 1.8; font-size: var(--text-base); }
+.legal-content ul, .legal-content ol { padding-left: 1.4em; margin: var(--sp-3) 0 var(--sp-5); display: flex; flex-direction: column; gap: 8px; }
+.legal-content a { color: var(--c-primary); font-weight: 600; }
+.legal-content strong { color: var(--c-ink); }
+@media (max-width: 900px) {
+    .legal-layout { grid-template-columns: 1fr !important; }
+    .legal-toc { position: static; margin-bottom: var(--sp-6); }
+}
+</style>
+
+<section class="section">
+    <div class="container">
+        <div class="legal-layout">
+            <aside class="legal-toc">
+    <div class="legal-toc-title">On This Page</div>
+    <nav>
+                <a href="#overview">Overview</a>
+                <a href="#info-we-collect">Information We Collect</a>
+                <a href="#how-we-use">How We Use Your Information</a>
+                <a href="#payments">Payment Information</a>
+                <a href="#cookies">Cookies &amp; Local Storage</a>
+                <a href="#notifications">Notifications</a>
+                <a href="#third-parties">Third-Party Services</a>
+                <a href="#data-sharing">Data Sharing</a>
+                <a href="#data-retention">Data Retention</a>
+                <a href="#your-rights">Your Rights &amp; Choices</a>
+                <a href="#children">Children&apos;s Privacy</a>
+                <a href="#security">Security</a>
+                <a href="#changes">Changes to This Policy</a>
+                <a href="#contact">Contact Us</a>
+            </nav>
+</aside>
+
+            <article class="legal-content">
+
+                <p class="legal-lead">
+                    This policy explains what personal information Language Hub collects, why we
+                    collect it, and how we protect it. By using Language Hub, you agree to the
+                    practices described here.
+                </p>
+
+                <h2 id="overview">1. Overview</h2>
+                <p>
+                    Language Hub ("we", "us", "our") operates an online learning platform for
+                    learners in Bangladesh, teaching Chinese, Japanese, Korean and English in Bangla through
+                    live batches and recorded courses. This policy applies to everyone who visits our website or creates
+                    an account.
+                </p>
+
+                <h2 id="info-we-collect">2. Information We Collect</h2>
+                <p>We collect the following categories of information:</p>
+                <ul>
+                    <li><strong>Account information</strong> — your name, phone number, email address, and password (stored securely hashed, never in plain text).</li>
+                    <li><strong>Profile information</strong> — an optional avatar, bio, and other details you choose to add.</li>
+                    <li><strong>Course activity</strong> — enrollments, lesson progress, exam attempts and scores, live class attendance, and messages/comments you post.</li>
+                    <li><strong>Order information</strong> — invoices, order status, and coupon usage (see the Payment Information section below for how actual payment details are handled).</li>
+                    <li><strong>Technical information</strong> — IP address, browser/device type, and pages visited, used for analytics and security (e.g. rate-limiting abusive requests).</li>
+                    <li><strong>Contact form / support messages</strong> — whatever you submit through our Contact form or Help Center support tickets.</li>
+                </ul>
+
+                <h2 id="how-we-use">3. How We Use Your Information</h2>
+                <ul>
+                    <li>To create and manage your account and enrollments.</li>
+                    <li>To deliver course content, live class access, exams, and certificates.</li>
+                    <li>To process payments and issue invoices.</li>
+                    <li>To send account-related notifications (payment confirmations, grading results, live class reminders, notices from your teachers).</li>
+                    <li>To respond to support requests and contact form submissions.</li>
+                    <li>To monitor site traffic and improve the platform (aggregated, non-identifying analytics).</li>
+                    <li>To detect and prevent fraud, abuse, and security threats.</li>
+                </ul>
+
+                <h2 id="payments">4. Payment Information</h2>
+                <p>
+                    All payments are processed by <strong>SSLCommerz</strong>, a licensed third-party
+                    payment gateway. When you pay by bKash, Nagad, Rocket, or card, your payment
+                    credentials are entered directly on SSLCommerz's secure page — Language Hub never
+                    receives or stores your card number, PIN, or mobile wallet password. We only receive
+                    confirmation that a payment succeeded, along with a transaction reference, which we use
+                    to activate your enrollment and generate your invoice.
+                </p>
+
+                <h2 id="cookies">5. Cookies & Local Storage</h2>
+                <p>
+                    We use a session cookie to keep you logged in and to protect the site against
+                    cross-site request forgery (CSRF). We also use your browser's local storage for small
+                    UI preferences, such as remembering that you dismissed the notification permission
+                    prompt. We do not use third-party advertising or tracking cookies.
+                </p>
+
+                <h2 id="notifications">6. Notifications</h2>
+                <p>
+                    If you allow browser/push notifications, we use that permission solely to notify you
+                    about your own account activity — payments, grading results, live class schedules, and
+                    notices relevant to you. You can revoke this permission at any time from your browser's
+                    site settings.
+                </p>
+
+                <h2 id="third-parties">7. Third-Party Services</h2>
+                <p>We rely on a small number of trusted third-party services to operate the platform:</p>
+                <ul>
+                    <li><strong>SSLCommerz</strong> — payment processing.</li>
+                    <li><strong>Google Fonts</strong> — web fonts, loaded from Google's servers.</li>
+                    <li><strong>Video/streaming providers</strong> — for course video playback, where used.</li>
+                    <li><strong>Push notification services</strong> (e.g. browser vendors' push infrastructure) — to deliver notification popups you've opted into.</li>
+                </ul>
+                <p>Each of these providers has its own privacy practices governing the technical data needed to perform their function.</p>
+
+                <h2 id="data-sharing">8. Data Sharing</h2>
+                <p>
+                    We do not sell your personal information. We share information only: with the teachers
+                    of courses you're enrolled in (for grading and communication), with SSLCommerz to
+                    process a payment, or when required by law.
+                </p>
+
+                <h2 id="data-retention">9. Data Retention</h2>
+                <p>
+                    We retain account and course activity data for as long as your account is active, and
+                    for a reasonable period afterward to comply with financial record-keeping requirements
+                    (e.g. invoices). You may request deletion at any time — see Your Rights below.
+                </p>
+
+                <h2 id="your-rights">10. Your Rights & Choices</h2>
+                <ul>
+                    <li>You can view and update most of your profile information directly from your account.</li>
+                    <li>You can request a copy of the personal data we hold about you.</li>
+                    <li>You can request that we delete your account and associated personal data, subject to any records we're legally required to keep (e.g. paid invoices).</li>
+                    <li>You can revoke notification permissions at any time from your browser settings.</li>
+                </ul>
+                <p>To exercise any of these, contact us using the details below.</p>
+
+                <h2 id="children">11. Children's Privacy</h2>
+                <p>
+                    Language Hub is open to learners of all ages. If you are under
+                    18, please use the platform with a parent or guardian's awareness, particularly for
+                    payments.
+                </p>
+
+                <h2 id="security">12. Security</h2>
+                <p>
+                    We use industry-standard practices to protect your data, including hashed passwords,
+                    encrypted connections (HTTPS), CSRF protection, and rate-limiting against abuse. No
+                    method of transmission or storage is 100% secure, but we work to protect your
+                    information to the best of our ability.
+                </p>
+
+                <h2 id="changes">13. Changes to This Policy</h2>
+                <p>
+                    We may update this policy from time to time. Material changes will be reflected by
+                    updating the "Last updated" date at the top of this page.
+                </p>
+
+                <h2 id="contact">14. Contact Us</h2>
+                <p>
+                    Questions about this policy or your data? Reach us at
+                    <a href="mailto:"></a>
+                    or call <a href="tel:"></a>.
+                </p>
+
+            </article>
+        </div>
+    </div>
+</section>
+
+</main><!-- /main-content -->
+
+<!-- Footer -->
+<footer class="footer lh-footer">
+    <div class="container">
+        <div class="lh-footer-cta">
+            <div>
+                <p class="lh-eyebrow"><span class="i18n" lang="bn">আজই শুরু করুন</span><span class="i18n" lang="en">Start today</span></p>
+                <h2><span class="i18n" lang="bn">প্রথম ক্লাস ফ্রি — নতুন ভাষা, নতুন সুযোগ।</span><span class="i18n" lang="en">First class is free — new language, new chances.</span></h2>
+            </div>
+            <a href="/courses?free=1" class="btn btn-accent btn-lg"><span class="i18n" lang="bn">ফ্রি ক্লাস দেখুন</span><span class="i18n" lang="en">Watch a free class</span> <span class="material-icons-round">arrow_forward</span></a>
+        </div>
+
+        <div class="footer-grid">
+            <div class="footer-col footer-brand-col">
+                <a href="/" class="footer-logo lh-brand">
+                    <img src="/image/language-hub-logo.png" alt="" width="36" height="36">
+                    <span class="brand-name">Language Hub</span>
+                </a>
+                <p class="footer-desc"><span class="i18n" lang="bn">বাংলায় বিদেশি ভাষা শেখার অনলাইন স্কুল — চাইনিজ, জাপানিজ, কোরিয়ান ও ইংলিশ।</span><span class="i18n" lang="en">An online school for learning foreign languages in Bangla — Chinese, Japanese, Korean and English.</span></p>
+                <div class="footer-socials">
+                                    </div>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading"><span class="i18n" lang="bn">ভাষা</span><span class="i18n" lang="en">Languages</span></h4>
+                <ul class="footer-links">
+                                        <li><a href="/category/chinese"><span class="i18n" lang="bn">চাইনিজ</span><span class="i18n" lang="en">Chinese</span></a></li>
+                                        <li><a href="/category/japanese"><span class="i18n" lang="bn">জাপানিজ</span><span class="i18n" lang="en">Japanese</span></a></li>
+                                        <li><a href="/category/korean"><span class="i18n" lang="bn">কোরিয়ান</span><span class="i18n" lang="en">Korean</span></a></li>
+                                        <li><a href="/category/english"><span class="i18n" lang="bn">ইংলিশ</span><span class="i18n" lang="en">English</span></a></li>
+                                        <li><a href="/courses?free=1"><span class="i18n" lang="bn">ফ্রি কোর্স</span><span class="i18n" lang="en">Free courses</span></a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading"><span class="i18n" lang="bn">প্রতিষ্ঠান</span><span class="i18n" lang="en">Company</span></h4>
+                <ul class="footer-links">
+                    <li><a href="/about.php"><span class="i18n" lang="bn">আমাদের সম্পর্কে</span><span class="i18n" lang="en">About us</span></a></li>
+                    <li><a href="/teachers.php"><span class="i18n" lang="bn">শিক্ষকবৃন্দ</span><span class="i18n" lang="en">Teachers</span></a></li>
+                    <li><a href="/careers.php"><span class="i18n" lang="bn">ক্যারিয়ার</span><span class="i18n" lang="en">Careers</span></a></li>
+                    <li><a href="/submit_testimonial.php"><span class="i18n" lang="bn">আপনার গল্প লিখুন</span><span class="i18n" lang="en">Share your story</span></a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading"><span class="i18n" lang="bn">সহায়তা</span><span class="i18n" lang="en">Help</span></h4>
+                <ul class="footer-links">
+                    <li><a href="/faq.php"><span class="i18n" lang="bn">প্রশ্নোত্তর</span><span class="i18n" lang="en">FAQ</span></a></li>
+                    <li><a href="/refund.php"><span class="i18n" lang="bn">রিফান্ড নীতি</span><span class="i18n" lang="en">Refund policy</span></a></li>
+                    <li><a href="/privacy.php"><span class="i18n" lang="bn">গোপনীয়তা নীতি</span><span class="i18n" lang="en">Privacy policy</span></a></li>
+                    <li><a href="/terms.php"><span class="i18n" lang="bn">শর্তাবলি</span><span class="i18n" lang="en">Terms</span></a></li>
+                </ul>
+                                                            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>© 2026 Language Hub</p>
+            <p class="footer-made"><span class="i18n" lang="bn">বাংলাদেশে তৈরি</span><span class="i18n" lang="en">Made in Bangladesh</span></p>
+        </div>
+    </div>
+</footer>
+
+<!-- Bottom nav (mobile) -->
+<nav class="bottom-nav" aria-label="Primary">
+            <a href="/" class="bottom-nav-item ">
+            <span class="material-icons-round">home</span>
+            <span><span class="i18n" lang="bn">হোম</span><span class="i18n" lang="en">Home</span></span>
+                    </a>
+            <a href="/courses.php" class="bottom-nav-item ">
+            <span class="material-icons-round">explore</span>
+            <span><span class="i18n" lang="bn">কোর্স</span><span class="i18n" lang="en">Courses</span></span>
+                    </a>
+            <a href="/courses.php?type=live" class="bottom-nav-item ">
+            <span class="material-icons-round">videocam</span>
+            <span><span class="i18n" lang="bn">লাইভ</span><span class="i18n" lang="en">Live</span></span>
+                    </a>
+            <a href="/courses.php?free=1" class="bottom-nav-item ">
+            <span class="material-icons-round">redeem</span>
+            <span><span class="i18n" lang="bn">ফ্রি</span><span class="i18n" lang="en">Free</span></span>
+                    </a>
+            <a href="/login.php" class="bottom-nav-item ">
+            <span class="material-icons-round">login</span>
+            <span><span class="i18n" lang="bn">লগইন</span><span class="i18n" lang="en">Log in</span></span>
+                    </a>
+    </nav>
+
+<!-- Video lightbox — any element with data-video plays inside the site -->
+<div class="video-modal" id="videoModal" hidden>
+    <div class="video-modal-inner">
+        <button type="button" class="video-modal-close" aria-label="Close video">
+            <span class="material-icons-round">close</span>
+        </button>
+        <div class="video-modal-frame">
+            <iframe id="videoModalFrame" title="Video" allowfullscreen
+                allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- Main JS -->
+<script src="/assets/js/main.js?v=1.2.1" defer></script>
+<script src="/assets/js/app.js?v=1.2.1" defer></script>
+<script src="/assets/js/lh.js?v=1794375628" defer></script>
+</body>
+
+</html>

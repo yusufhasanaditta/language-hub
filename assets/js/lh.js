@@ -208,6 +208,55 @@
     render(false);
   });
 
+  // ── Classroom: mark lesson done → save → go to next ───────────────────────
+  $$('[data-done]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (btn.classList.contains('is-done')) { if (btn.dataset.next) location.href = btn.dataset.next; return; }
+      btn.classList.add('is-busy');
+      fetch(APP_URL + '/api/progress.php', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
+        body: JSON.stringify({ lesson_id: +btn.dataset.done, completed: true })
+      }).then(function (r) { return r.json(); }).then(function (j) {
+        btn.classList.remove('is-busy');
+        if (!j || j.success === false) throw new Error();
+        btn.classList.remove('btn-primary'); btn.classList.add('btn-outline', 'is-done');
+        btn.querySelector('.material-icons-round').textContent = 'check_circle';
+        btn.querySelector('[data-done-label]').innerHTML = '<span class="i18n" lang="bn">সম্পন্ন</span><span class="i18n" lang="en">Done</span>';
+        var li = document.querySelector('.lh-curr-list li.is-current');
+        if (li) { li.classList.add('is-done'); li.querySelector('.material-icons-round').textContent = 'check_circle'; }
+        if (btn.dataset.next) setTimeout(function () { location.href = btn.dataset.next; }, 700);
+        else setTimeout(function () { location.reload(); }, 700);
+      }).catch(function () {
+        btn.classList.remove('is-busy');
+        alert(lang() === 'en' ? 'Could not save. Please try again.' : 'সেভ করা যায়নি। আবার চেষ্টা করুন।');
+      });
+    });
+  });
+
+  // ── Watermark: drifts to a new spot every few seconds ─────────────────────
+  $$('[data-watermark]').forEach(function (w) {
+    function move() {
+      w.style.left = (8 + Math.random() * 60) + '%';
+      w.style.top = (10 + Math.random() * 70) + '%';
+    }
+    move(); setInterval(move, 7000);
+  });
+
+  // ── Live class Join button: opens 10 minutes before start ────────────────
+  $$('[data-join]').forEach(function (a) {
+    var start = +a.dataset.start * 1000, label = a.querySelector('[data-join-label]'), orig = label.innerHTML;
+    var locked = '<span class="i18n" lang="bn">ক্লাসের ১০ মিনিট আগে খুলবে</span><span class="i18n" lang="en">Opens 10 min before class</span>';
+    function tick() {
+      var open = Date.now() >= start - 10 * 60 * 1000;
+      a.classList.toggle('is-locked', !open);
+      a.setAttribute('aria-disabled', open ? 'false' : 'true');
+      label.innerHTML = open ? orig : locked;
+    }
+    a.addEventListener('click', function (e) { if (a.classList.contains('is-locked')) e.preventDefault(); });
+    tick(); setInterval(tick, 15000);
+  });
+
   // ── 3D tilt (boarding pass): follows pointer on desktop, finger on phones ─
   $$('[data-tilt]').forEach(function (el) {
     if (reduce) return;

@@ -173,7 +173,7 @@ include __DIR__ . '/includes/header.php';
                 <strong>Thank you for learning with <?= e(APP_NAME) ?>.</strong><br>
                 This is a computer-generated invoice and is valid without a signature.
                 Course access is granted to the purchasing account only and is non-transferable.
-                For billing questions contact <?= e(get_setting('site_email', 'info@bacademy.com')) ?>.
+                For billing questions contact <?= e(get_setting('contact_email', '')) ?>.
             </div>
         </div>
 

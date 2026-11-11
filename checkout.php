@@ -16,7 +16,7 @@ $user   = current_user();
 if (!$cid) { flash('error', 'Course not found.'); redirect(APP_URL . '/courses.php'); }
 
 $course = db_row("
-    SELECT c.*, cat.name_bn as cat_name, u.name as teacher_name
+    SELECT c.*, cat.name_bn as cat_name, cat.name_en as cat_name_en, cat.slug as cat_slug, u.name as teacher_name
     FROM courses c
     JOIN categories cat ON cat.id=c.category_id
     JOIN teacher_profiles tp ON tp.id=c.teacher_id
@@ -32,16 +32,9 @@ if (is_enrolled($cid)) {
 
 $price = $course['is_free'] ? 0 : (float)($course['sale_price'] ?: $course['price']);
 if ($price <= 0) {
-    // Free course — just enroll
-    db_exec("INSERT IGNORE INTO enrollments (user_id,course_id,status,enrolled_at) VALUES (?,?,'active',NOW())", [$userId,$cid]);
-    db_exec("UPDATE courses SET enrolled_count=enrolled_count+1 WHERE id=?", [$cid]);
-    create_notification(
-        $userId, 'enrollment', 'Enrolled in ' . $course['title_bn'],
-        'You now have full access to this course. Happy learning!',
-        APP_URL . '/learn.php?course=' . $cid
-    );
-    flash('success', 'Free enrollment complete!');
-    redirect(APP_URL . '/my-courses.php');
+    // Free course: enrolling is a POST from the course page (enroll.php),
+    // never a side effect of opening a URL.
+    redirect(course_url($course));
 }
 
 // Apply coupon
@@ -114,8 +107,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify() && ($_POST['post_acti
             APP_URL . '/learn.php?course=' . $cid
         );
 
-        flash('success', 'Free enrollment complete using coupon!');
-        redirect(APP_URL . '/my-courses.php');
+        flash('success', 'কুপনে ভর্তি সম্পন্ন। স্বাগতম!');
+        redirect(APP_URL . '/learn.php?course=' . $cid . '&welcome=1');
     }
 
     // Paid course - Place pending order first
@@ -150,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify() && ($_POST['post_acti
 
         // CUSTOMER INFORMATION
         $post_data['cus_name'] = $user['name'] ?: 'Student';
-        $post_data['cus_email'] = $user['email'] ?: 'student@bacademy.com';
+        $post_data['cus_email'] = $user['email'] ?: 'student@languagehub.local';
         $post_data['cus_add1'] = "Dhaka";
         $post_data['cus_city'] = "Dhaka";
         $post_data['cus_country'] = "Bangladesh";
@@ -202,8 +195,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify() && ($_POST['post_acti
         }
     }
 
-    // Fallback if not configured but trying to checkout
-    // Demo payment — mark as paid immediately
+    // Gateway not configured. On the live site this must never grant access.
+    if (APP_ENV !== 'development') {
+        db_exec("UPDATE orders SET status='failed' WHERE id=?", [$orderId]);
+        flash('error', 'অনলাইন পেমেন্ট এখন চালু নেই। একটু পরে চেষ্টা করুন বা আমাদের জানান।');
+        redirect(APP_URL . '/checkout.php?course=' . $cid);
+    }
+    // Local development only: mark as paid so the whole flow can be tested
     db_exec("UPDATE orders SET status='paid', paid_at=NOW() WHERE id=?", [$orderId]);
     
     db_insert(
@@ -229,124 +227,80 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify() && ($_POST['post_acti
         APP_URL . '/invoice.php?order=' . $orderId
     );
 
-    flash('success', 'Payment successful! (Demo mode) Start your course.');
-    redirect(APP_URL . '/my-courses.php');
+    flash('success', 'পেমেন্ট সম্পন্ন (লোকাল টেস্ট)। স্বাগতম!');
+    redirect(APP_URL . '/learn.php?course=' . $cid . '&welcome=1');
 }
 
 
 $page_title = 'Checkout — ' . $course['title_bn'];
-$extra_css  = '<style>
-@media (max-width: 768px) {
-    .checkout-grid { grid-template-columns: 1fr !important; }
-}
-</style>';
+$body_class = 'lh-checkout';
+require_once __DIR__ . '/includes/lh_components.php';
+$L = lh_lang($course['cat_slug'] ?? null);
 include __DIR__ . '/includes/header.php';
 ?>
 
-<div class="container" style="max-width:900px;padding:var(--sp-8) var(--sp-4)">
-    <h1 style="font-size:var(--text-2xl);margin-bottom:var(--sp-6)">Checkout</h1>
+<section class="container lh-co">
+    <a href="<?= e(course_url($course)) ?>" class="lh-c-back"><span class="material-icons-round">arrow_back</span><?= t('কোর্সে ফিরুন', 'Back to course') ?></a>
+    <h1 class="lh-co-title"><?= t('পেমেন্ট', 'Checkout') ?></h1>
 
-    <div class="checkout-grid" style="display:grid;grid-template-columns:1fr 360px;gap:var(--sp-6)">
-        <!-- Left: Order summary + coupon -->
-        <div>
-            <div class="card" style="padding:var(--sp-6);margin-bottom:var(--sp-5)">
-                <h3 style="margin-bottom:var(--sp-4)">Order Summary</h3>
-                <div style="display:flex;gap:var(--sp-4);align-items:flex-start">
-                    <?php if ($course['thumbnail']): ?>
-                    <img src="<?= e($course['thumbnail']) ?>" alt=""
-                         style="width:100px;height:60px;object-fit:cover;border-radius:var(--r-md);flex-shrink:0">
-                    <?php endif; ?>
-                    <div>
-                        <div style="font-weight:700;font-size:var(--text-base)"><?= e($course['title_bn']) ?></div>
-                        <div style="color:var(--c-ink-muted);font-size:var(--text-sm);margin-top:4px">
-                            <?= e($course['teacher_name']) ?> · <?= e($course['cat_name']) ?>
-                        </div>
-                    </div>
+    <ol class="lh-co-steps" aria-label="Steps">
+        <li class="is-done"><span class="lh-co-n">1</span><?= t('কোর্স', 'Course') ?></li>
+        <li class="is-on"><span class="lh-co-n">2</span><?= t('পেমেন্ট', 'Payment') ?></li>
+        <li><span class="lh-co-n">3</span><?= t('ক্লাস শুরু', 'Start') ?></li>
+    </ol>
+
+    <div class="lh-co-grid">
+        <div class="lh-co-main">
+            <!-- The course as a ticket -->
+            <article class="lh-co-item" style="--lang:var(<?= $L['var'] ?>)" data-reveal>
+                <span class="lh-co-glyph" aria-hidden="true"><?= e($L['glyph']) ?></span>
+                <div>
+                    <p class="lh-ticket-meta"><?= t($course['cat_name'], $course['cat_name_en'] ?? $course['cat_name']) ?> · <?= $course['type'] === 'live' ? t('লাইভ ব্যাচ', 'Live batch') : t('রেকর্ডেড', 'Recorded') ?></p>
+                    <h2><?= t($course['title_bn'], $course['title_en'] ?: $course['title_bn']) ?></h2>
+                    <p class="lh-ticket-teacher"><?= e($course['teacher_name']) ?></p>
                 </div>
-                <div style="border-top:1px solid var(--c-border);margin-top:var(--sp-5);padding-top:var(--sp-5)">
-                    <div style="display:flex;justify-content:space-between;margin-bottom:var(--sp-3)">
-                        <span>Course Price</span>
-                        <span style="font-family:var(--font-latin)"><?= number_format($price, 0) ?></span>
-                    </div>
-                    <?php if ($couponDiscount > 0): ?>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:var(--sp-3);color:var(--c-success)">
-                        <span>Coupon Discount (<?= e($couponCode) ?>)</span>
-                        <span style="font-family:var(--font-latin)">- <?= number_format($couponDiscount, 0) ?></span>
-                    </div>
-                    <?php endif; ?>
-                    <div style="display:flex;justify-content:space-between;font-weight:800;font-size:var(--text-lg);border-top:1px solid var(--c-border);padding-top:var(--sp-3)">
-                        <span>Total</span>
-                        <span style="font-family:var(--font-latin);color:var(--c-primary)"><?= number_format($finalPrice, 0) ?></span>
-                    </div>
-                </div>
-            </div>
+            </article>
 
             <!-- Coupon -->
-            <div class="card" style="padding:var(--sp-5)">
-                <h3 style="margin-bottom:var(--sp-4)">Coupon Code</h3>
-                <form method="POST">
-                    <?= csrf_field() ?>
-                    <input type="hidden" name="post_action" value="apply_coupon">
-                    <div style="display:flex;gap:var(--sp-3)">
-                        <input type="text" name="coupon" class="form-control"
-                               value="<?= e($couponCode) ?>"
-                               placeholder="BACADEMY10" style="text-transform:uppercase;font-family:var(--font-latin)">
-                        <button type="submit" class="btn btn-ghost" style="white-space:nowrap">Apply</button>
-                    </div>
-                </form>
-            </div>
+            <form method="POST" class="lh-co-coupon" data-reveal>
+                <?= csrf_field() ?>
+                <input type="hidden" name="post_action" value="apply_coupon">
+                <label for="coupon" class="lh-co-label"><span class="material-icons-round">sell</span><?= t('কুপন কোড আছে?', 'Have a coupon?') ?></label>
+                <div class="lh-co-coupon-row">
+                    <input type="text" id="coupon" name="coupon" class="lh-input" value="<?= e($couponCode) ?>" autocomplete="off" autocapitalize="characters" placeholder="LH10">
+                    <button type="submit" class="btn btn-outline"><?= t('প্রয়োগ', 'Apply') ?></button>
+                </div>
+            </form>
         </div>
 
-        <!-- Right: Pay button + info -->
-        <div>
-            <div class="card" style="padding:var(--sp-6)">
-                <h3 style="margin-bottom:var(--sp-5)">Make Payment</h3>
-                <div style="font-size:var(--text-3xl);font-weight:800;font-family:var(--font-latin);color:var(--c-primary);margin-bottom:var(--sp-5)">
-                    <?= number_format($finalPrice, 0) ?>
-                </div>
+        <aside class="lh-co-side">
+            <div class="lh-co-sum" data-reveal="right">
+                <div class="lh-co-line"><span><?= t('কোর্স ফি', 'Course fee') ?></span><span>৳<?= t_num(format_price($price)) ?></span></div>
+                <?php if ($couponDiscount > 0): ?>
+                <div class="lh-co-line lh-co-disc"><span><?= t('কুপন', 'Coupon') ?> (<?= e($couponCode) ?>)</span><span>−৳<?= t_num(format_price($couponDiscount)) ?></span></div>
+                <?php endif; ?>
+                <div class="lh-co-line lh-co-total"><span><?= t('মোট', 'Total') ?></span><span class="lh-price">৳<?= t_num(format_price($finalPrice)) ?></span></div>
 
                 <form method="POST">
                     <?= csrf_field() ?>
                     <input type="hidden" name="post_action" value="place_order">
-                    <?php if ($couponCode): ?>
-                    <input type="hidden" name="coupon" value="<?= e($couponCode) ?>">
-                    <?php endif; ?>
-                    <button type="submit" class="btn btn-accent" style="width:100%;font-size:var(--text-base);padding:16px">
-                        <span class="material-icons-round">payment</span>
-                        Make Payment
+                    <?php if ($couponCode): ?><input type="hidden" name="coupon" value="<?= e($couponCode) ?>"><?php endif; ?>
+                    <button type="submit" class="btn btn-accent lh-btn-block lh-co-pay" data-busy>
+                        <span class="material-icons-round">lock</span><?= t('৳' . bn_num(format_price($finalPrice)) . ' পেমেন্ট করুন', 'Pay ৳' . format_price($finalPrice)) ?>
                     </button>
                 </form>
 
-                <div style="margin-top:var(--sp-5);padding:var(--sp-4);background:var(--c-surface);border-radius:var(--r-md)">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--sp-3);font-weight:700">
-                        <span class="material-icons-round" style="color:var(--c-success);font-size:18px">verified</span>
-                        30-day money-back guarantee
-                    </div>
-                    <ul style="list-style:none;padding:0;margin:0;font-size:var(--text-sm);color:var(--c-ink-muted)">
-                        <li style="display:flex;gap:8px;margin-bottom:6px"><span class="material-icons-round" style="font-size:15px;color:var(--c-success)">check</span> Lifetime access</li>
-                        <li style="display:flex;gap:8px;margin-bottom:6px"><span class="material-icons-round" style="font-size:15px;color:var(--c-success)">check</span> Certificate</li>
-                        <li style="display:flex;gap:8px"><span class="material-icons-round" style="font-size:15px;color:var(--c-success)">check</span> Mobile access</li>
-                    </ul>
+                <div class="lh-co-methods" aria-label="Payment methods">
+                    <span>bKash</span><span>Nagad</span><span>Rocket</span><span>Card</span>
                 </div>
-
-                <div style="margin-top:var(--sp-4);text-align:center">
-                    <img src="<?= APP_URL ?>/assets/img/ssl-badge.png" alt="SSL Secured"
-                         style="height:32px;opacity:.7" onerror="this.style.display='none'">
-                    <div style="font-size:var(--text-xs);color:var(--c-ink-muted);margin-top:8px">
-                        Secure payment by SSLCommerz
-                    </div>
-                </div>
+                <p class="lh-co-secure"><span class="material-icons-round">verified_user</span><?= t('SSLCommerz-এর মাধ্যমে নিরাপদ পেমেন্ট', 'Secure payment by SSLCommerz') ?></p>
+                <ul class="lh-c-perks">
+                    <li><span class="material-icons-round">bolt</span><?= t('পেমেন্টের সাথে সাথেই ক্লাসরুম খুলে যাবে', 'Classroom opens right after payment') ?></li>
+                    <li><span class="material-icons-round">receipt_long</span><?= t('ইনভয়েস আপনার প্রোফাইলে থাকবে', 'Invoice saved in your profile') ?></li>
+                </ul>
             </div>
-
-            <div style="text-align:center;margin-top:var(--sp-4)">
-                <a href="<?= APP_URL ?>/course.php?slug=<?= e($course['slug']) ?>"
-                   style="color:var(--c-ink-muted);font-size:var(--text-sm)">
-                    ← Back to Course
-                </a>
-            </div>
-        </div>
+        </aside>
     </div>
-</div>
+</section>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
-

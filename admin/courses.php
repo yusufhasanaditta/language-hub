@@ -100,6 +100,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_verify()) {
                  $intro_video, $short_desc, $thumbnail, $routine_pdf, $routine_link, $fb_group_link, $fake_enrolled_count]);
             flash('success', 'Course created.');
         }
+        // Live batch: start date + seat limit (boarding pass, "seats left", countdowns)
+        $batchStart  = preg_match('/^\d{4}-\d{2}-\d{2}$/', $_POST['batch_start'] ?? '') ? $_POST['batch_start'] : null;
+        $maxStudents = max(0, min(1000, (int)($_POST['max_students'] ?? 0)));
+        db_exec("UPDATE courses SET batch_start=?, max_students=? WHERE id=?", [$batchStart, $maxStudents, $id]);
+        cache_delete('lh_home_v4');   // homepage course list
+
         // Sync course_teachers pivot — all selected teachers are equal
         db_exec("DELETE FROM course_teachers WHERE course_id=?", [$id]);
         foreach ($teacher_ids as $i => $tid) {
@@ -382,6 +388,14 @@ $page_title = 'Course Management';
                                 <option value="<?= $v ?>" <?= ($editCourse['type']??'recorded')===$v?'selected':'' ?>><?= $l ?></option>
                                 <?php endforeach; ?>
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Batch start date <small>(live batches)</small></label>
+                            <input type="date" name="batch_start" class="form-control" value="<?= e($editCourse['batch_start'] ?? '') ?>">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Seats in batch <small>(0 = no limit)</small></label>
+                            <input type="number" name="max_students" class="form-control" min="0" max="1000" value="<?= (int)($editCourse['max_students'] ?? 15) ?>">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Level</label>

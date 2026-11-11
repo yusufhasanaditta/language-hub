@@ -67,7 +67,7 @@ include __DIR__ . '/includes/header.php';
                 <input type="text" class="form-control" value="<?= e($user['name']) ?>" disabled>
             </div>
             <div class="form-group">
-                <label class="form-label">Batch / Goal (e.g. HSC 2025, Science)</label>
+                <label class="form-label">Course / Batch (e.g. Japanese N5, Batch 3)</label>
                 <input type="text" name="batch" class="form-control" required placeholder="What are you preparing for?">
             </div>
             <div class="form-group">

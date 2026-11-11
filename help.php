@@ -40,7 +40,7 @@ if (is_logged_in()) {
 }
 
 $contactPhone = get_setting('contact_phone', '+8801577588132');
-$contactEmail = get_setting('contact_email', 'bacademy.class@gmail.com');
+$contactEmail = get_setting('contact_email', '');
 $page_title = 'Help Center';
 $extra_css = '<style>
 .help-contact-card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-xl);padding:var(--sp-6);display:flex;align-items:flex-start;gap:var(--sp-4)}

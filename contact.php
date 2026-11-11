@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect(APP_URL . '/contact.php');
 }
 
-$contactEmail = get_setting('contact_email', 'bacademy.class@gmail.com');
+$contactEmail = get_setting('contact_email', '');
 $contactPhone = get_setting('contact_phone', '+8801577588132');
 
 $page_title = 'Contact Us';

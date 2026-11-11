@@ -61,14 +61,14 @@ if ($existing) {
     // Don't un-complete a completed lesson
     $newCompleted = $existing['completed'] ? 1 : $completed;
     db_exec(
-        "UPDATE lesson_progress SET last_position=?, completed=?, updated_at=NOW() WHERE id=?",
-        [$position, $newCompleted, (int)$existing['id']]
+        "UPDATE lesson_progress SET last_position=?, completed=?, completed_at=IF(?=1 AND completed_at IS NULL, NOW(), completed_at) WHERE id=?",
+        [$position, $newCompleted, $newCompleted, (int)$existing['id']]
     );
 } else {
     db_exec(
-        "INSERT INTO lesson_progress (enrollment_id, lesson_id, last_position, completed, created_at, updated_at)
-         VALUES (?,?,?,?,NOW(),NOW())",
-        [$enrollId, $lesson_id, $position, $completed]
+        "INSERT INTO lesson_progress (enrollment_id, lesson_id, last_position, completed, completed_at)
+         VALUES (?,?,?,?,IF(?=1,NOW(),NULL))",
+        [$enrollId, $lesson_id, $position, $completed, $completed]
     );
 }
 
@@ -88,7 +88,7 @@ if ($totalLessons > 0) {
     $pct = min(100, round($doneLessons / $totalLessons * 100));
     $completedAt = ($pct >= 100) ? 'NOW()' : 'NULL';
     db_exec(
-        "UPDATE enrollments SET progress_pct=?, completed_at=IF(?>=100,NOW(),completed_at), updated_at=NOW() WHERE id=?",
+        "UPDATE enrollments SET progress_pct=?, completed_at=IF(?>=100,NOW(),completed_at) WHERE id=?",
         [$pct, $pct, $enrollId]
     );
 }

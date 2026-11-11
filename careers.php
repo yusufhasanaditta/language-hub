@@ -8,7 +8,7 @@ require_once __DIR__ . '/includes/auth.php';
 session_start_secure();
 send_security_headers();
 
-$contactEmail = get_setting('contact_email', 'bacademy.class@gmail.com');
+$contactEmail = get_setting('contact_email', '');
 
 // Static list — edit here to open/close positions (no admin UI needed yet).
 $openings = [
