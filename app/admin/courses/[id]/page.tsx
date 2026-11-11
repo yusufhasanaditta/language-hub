@@ -1,0 +1,89 @@
+import { notFound } from 'next/navigation';
+import { one, q } from '@/lib/db';
+import { requireAdmin } from '@/lib/auth';
+import { curriculum } from '@/lib/courses';
+import { PageHead, Badge, ActionButton } from '@/components/panel';
+import { CurriculumEditor, LiveEditor } from '@/components/CurriculumEditor';
+
+export const metadata = { title: 'Edit course' };
+
+export default async function AdminCourseEdit({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdmin();
+  const idParam = (await params).id;
+  const isNew = idParam === 'new';
+  const c = isNew ? null : await one`SELECT *, to_char(batch_start, 'YYYY-MM-DD') AS batch_date FROM courses WHERE id = ${Number(idParam) || 0}`;
+  if (!isNew && !c) notFound();
+  const [cats, teachers, modules, sessions] = await Promise.all([
+    q`SELECT id, name_en FROM categories ORDER BY sort_order, id`,
+    q`SELECT tp.id, u.name FROM teacher_profiles tp JOIN users u ON u.id = tp.user_id WHERE u.role_id IN (2, 6) ORDER BY u.name`,
+    c ? curriculum(c.id, true) : [],
+    c ? q`SELECT * FROM live_sessions WHERE course_id = ${c.id} ORDER BY scheduled_at DESC` : [],
+  ]);
+  const v = (k: string) => (c?.[k] ?? '') as string;
+
+  return (
+    <>
+      <PageHead title={isNew ? 'New course' : c!.title_bn} sub={isNew ? 'Save the basics first; then add modules, lessons and live classes.' : <><Badge s={c!.status} /> · <a className="pn-link" href={`/course/${c!.slug}`} target="_blank">View on site ↗</a></>}>
+        <a href="/admin/courses" className="btn btn-outline btn-sm">← All courses</a>
+      </PageHead>
+
+      <div className="pn-card">
+        <h2>Course details</h2>
+        <form method="post" action="/do/admin/course-save" className="pn-grid">
+          <input type="hidden" name="id" value={c?.id ?? ''} />
+          <div><label>Title (Bangla)</label><input name="title_bn" className="form-control" required maxLength={200} defaultValue={v('title_bn')} /></div>
+          <div><label>Title (English)</label><input name="title_en" className="form-control" maxLength={200} defaultValue={v('title_en')} /></div>
+          <div><label>URL slug</label><input name="slug" className="form-control" maxLength={200} pattern="[a-z0-9-]*" defaultValue={v('slug')} placeholder="made from the English title if empty" /></div>
+          <div><label>Language</label>
+            <select name="category_id" className="form-control" required defaultValue={c?.category_id ?? ''}>
+              <option value="">Choose…</option>{cats.map(x => <option key={x.id} value={x.id}>{x.name_en}</option>)}
+            </select></div>
+          <div><label>Teacher</label>
+            <select name="teacher_id" className="form-control" defaultValue={c?.teacher_id ?? ''}>
+              <option value="">— none —</option>{teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+            <p className="pn-hint">Only users with the teacher role appear here (Users → set role to teacher).</p></div>
+          <div><label>Status</label>
+            <select name="status" className="form-control" defaultValue={c?.status ?? 'draft'}>
+              {['draft', 'published', 'archived'].map(x => <option key={x} value={x}>{x}</option>)}
+            </select></div>
+          <div><label>Type</label>
+            <select name="type" className="form-control" defaultValue={c?.type ?? 'recorded'}>
+              {['recorded', 'live', 'hybrid'].map(x => <option key={x} value={x}>{x}</option>)}
+            </select></div>
+          <div><label>Level</label>
+            <select name="level" className="form-control" defaultValue={c?.level ?? 'beginner'}>
+              {['beginner', 'intermediate', 'advanced'].map(x => <option key={x} value={x}>{x}</option>)}
+            </select></div>
+          <div><label>Price (BDT)</label><input name="price" type="number" min={0} step="1" className="form-control" defaultValue={c ? Number(c.price) : 0} /></div>
+          <div><label>Sale price (BDT, optional)</label><input name="sale_price" type="number" min={0} step="1" className="form-control" defaultValue={c?.sale_price != null ? Number(c.sale_price) : ''} /></div>
+          <div><label>Batch start date (live)</label><input name="batch_start" type="date" className="form-control" defaultValue={v('batch_date')} /></div>
+          <div><label>Max students (0 = unlimited)</label><input name="max_students" type="number" min={0} className="form-control" defaultValue={c?.max_students ?? 15} /></div>
+          <div><label>Planned number of classes (shown before lessons are added)</label><input name="total_lessons" type="number" min={0} className="form-control" defaultValue={c?.total_lessons ?? 0} /></div>
+          <div><label>Thumbnail image URL</label><input name="thumbnail" type="url" className="form-control" maxLength={500} defaultValue={v('thumbnail')} placeholder="https://…" /></div>
+          <div><label>Intro / trailer video URL</label><input name="intro_video_url" type="url" className="form-control" maxLength={500} defaultValue={v('intro_video_url')} /></div>
+          <div><label>Batch group link (Facebook / WhatsApp)</label><input name="fb_group_link" type="url" className="form-control" maxLength={500} defaultValue={v('fb_group_link')} /></div>
+          <div className="pn-full"><label>Short description (one line)</label><input name="short_desc" className="form-control" maxLength={300} defaultValue={v('short_desc')} /></div>
+          <div className="pn-full"><label>About this course</label><textarea name="description_bn" className="form-control" maxLength={20000} defaultValue={v('description_bn')}></textarea></div>
+          <div><label>What you will learn (one per line)</label><textarea name="what_you_learn" className="form-control" maxLength={5000} defaultValue={v('what_you_learn')}></textarea></div>
+          <div><label>Requirements (one per line)</label><textarea name="requirements" className="form-control" maxLength={5000} defaultValue={v('requirements')}></textarea></div>
+          <label className="pn-check"><input type="checkbox" name="is_free" value="1" defaultChecked={c?.is_free ?? false} /> Free course</label>
+          <label className="pn-check"><input type="checkbox" name="is_featured" value="1" defaultChecked={c?.is_featured ?? false} /> Featured (shown first)</label>
+          <div className="pn-full"><button type="submit" className="btn btn-primary">{isNew ? 'Create course' : 'Save course'}</button></div>
+        </form>
+      </div>
+
+      {c && (
+        <>
+          <CurriculumEditor courseId={c.id} modules={modules} base="/do/course" />
+          <LiveEditor courseId={c.id} sessions={sessions} base="/do/course" />
+          <div className="pn-card" style={{ borderColor: 'var(--c-error)' }}>
+            <h2>Delete course</h2>
+            <p className="pn-muted">Removes the course, its lessons, live classes and enrollments. Paid orders stay in Orders. To hide a course without losing data, set its status to archived instead.</p>
+            <ActionButton action="/do/admin/course-delete" fields={{ id: c.id }} label="Delete course permanently" cls="btn btn-danger btn-sm" confirm="Delete this course permanently? This cannot be undone." />
+          </div>
+        </>
+      )}
+    </>
+  );
+}

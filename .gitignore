@@ -1,20 +1,26 @@
-# Secrets — server only
-config/secrets.php
+# Dependencies & build output
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
 
-# Database dumps & backups (contain live credentials and user data)
+# Secrets — never commit
+.env*
+!.env.example
+legacy-php/config/secrets.php
+
+# Database dumps & backups (contain user data)
 *.sql
-!config/migrate_*.sql
+!db/schema.sql
+!legacy-php/config/migrate_*.sql
 *.zip
-schema.json
 
 # Runtime / user content
-cache/*
-!cache/.gitkeep
-uploads/
+legacy-php/cache/*
+!legacy-php/cache/.gitkeep
+legacy-php/uploads/
 *.log
-output.html
 
 # Vercel CLI link
-.vercel
-
 .vercel

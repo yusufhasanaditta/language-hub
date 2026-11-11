@@ -1,9 +1,4 @@
-.git
-config/secrets.php
-cache/*
-!cache/.gitkeep
-uploads
-*.log
-*.zip
+legacy-php
+.env*
 *.sql
-!config/migrate_*.sql
+!db/schema.sql
