@@ -1,6 +1,6 @@
 // Classic form handling: <form method="post" action="/do/..."> → route handler → 303 redirect.
 // Full page loads keep the site's plain JS (menus, filters, countdowns) working.
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 import { one } from './db';
 import { clientIp } from './auth';
@@ -49,7 +49,28 @@ export function back(req: NextRequest, fallback = '/') {
   } catch { return fallback; }
 }
 
-export const seeOther = (req: NextRequest, path: string) => NextResponse.redirect(new URL(path, req.url), 303);
+/**
+ * 303 redirect with a relative Location (absolute only for off-site targets like a payment gateway).
+ * Never built from req.url: behind cPanel/Passenger or a proxy that is the internal address
+ * (e.g. http://0.0.0.0:3000), which would send visitors to a dead host.
+ */
+export const seeOther = (_req: NextRequest, path: string) =>
+  new NextResponse(null, { status: 303, headers: { Location: path } });
+
+/**
+ * The public site address, e.g. https://languagehub.com.bd — from SITE_URL when set (recommended
+ * on any host), otherwise from the request's Host header (validated; forwarding headers can be spoofed).
+ */
+export async function siteUrl() {
+  const fixed = process.env.SITE_URL?.trim().replace(/\/+$/, '');
+  if (fixed && /^https?:\/\/[a-z0-9.-]+(:\d+)?$/i.test(fixed)) return fixed;
+  const h = await headers();
+  const host = (h.get('host') ?? '').trim();
+  const safeHost = /^[a-z0-9.-]+(:\d{1,5})?$/i.test(host) ? host : 'localhost:3000';
+  const local = /^(localhost|127\.0\.0\.1|0\.0\.0\.0)(:|$)/.test(safeHost);
+  const fwd = (h.get('x-forwarded-proto') ?? '').split(',')[0].trim();
+  return `${local ? 'http' : fwd === 'http' || fwd === 'https' ? fwd : 'https'}://${safeHost}`;
+}
 
 type Handler = (form: FormData, req: NextRequest) => Promise<string | Response | void>;
 

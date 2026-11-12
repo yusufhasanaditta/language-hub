@@ -14,7 +14,9 @@
     "db:schema": "node --env-file=.env.local scripts/db-schema.mjs",
     "db:import": "node --env-file=.env.local scripts/import-from-mysql.mjs",
     "db:seed": "node --env-file=.env.local scripts/seed-demo.mjs",
-    "test:smoke": "node scripts/smoke-test.mjs"
+    "test:smoke": "node scripts/smoke-test.mjs",
+    "build:cpanel": "node scripts/build-cpanel.mjs",
+    "db:clean-demo": "node --env-file=.env.local scripts/clean-demo.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",

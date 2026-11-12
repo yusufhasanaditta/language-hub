@@ -3,7 +3,7 @@ import { requireUser, ROLE } from '@/lib/auth';
 import { courseBy, courseUrl, isFull } from '@/lib/courses';
 import { findCoupon, couponDiscount, markOrderPaid, notify } from '@/lib/orders';
 import { sslczConfigured, startPayment } from '@/lib/sslcommerz';
-import { formAction, fail, flash, rateLimit, int, str, seeOther } from '@/lib/http';
+import { formAction, fail, flash, rateLimit, int, str, seeOther, siteUrl } from '@/lib/http';
 import { priceOf, isFreeCourse } from '@/lib/format';
 
 export const POST = formAction(async (f, req) => {
@@ -44,7 +44,7 @@ export const POST = formAction(async (f, req) => {
   if (method === 'online') {
     if (!sslczConfigured()) fail('অনলাইন পেমেন্ট এখন চালু নেই — বিকাশ/নগদে পেমেন্ট করুন।', 'Online payment is not available right now — please pay with bKash/Nagad.');
     const orderId = await createOrder('sslcommerz', null, null);
-    const site = `${req.headers.get('x-forwarded-proto') ?? new URL(req.url).protocol.replace(':', '')}://${req.headers.get('x-forwarded-host') ?? req.headers.get('host')}`;
+    const site = await siteUrl();
     const gateway = await startPayment({ orderId, amount: total, product: c.title_en || c.title_bn, siteUrl: site, name: user.name, email: user.email, phone: user.phone });
     if (!gateway) {
       await q`UPDATE orders SET status = 'failed' WHERE id = ${orderId}`;

@@ -57,6 +57,7 @@ writeFileSync(join(out, '.env.example'), `# Add these in cPanel → Setup Node.j
 DATABASE_URL=postgresql://USER:PASSWORD@HOST/neondb?sslmode=require
 SESSION_SECRET=a-long-random-string-at-least-32-characters
 NODE_ENV=production
+SITE_URL=https://your-domain.com
 # Optional — email login codes:
 # SMTP_HOST=  SMTP_PORT=587  SMTP_USER=  SMTP_PASS=  SMTP_FROM_NAME=Language Hub
 # Optional — SSLCommerz online payments:
@@ -69,13 +70,16 @@ const env = Object.fromEntries((existsSync(join(root, '.env.local')) ? readFileS
 const keep = ['DATABASE_URL', 'SESSION_SECRET', 'SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_FROM_NAME', 'SSLCZ_STORE_ID', 'SSLCZ_STORE_PASS', 'SSLCZ_LIVE'];
 writeFileSync(join(root, 'deploy', 'ENV-VALUES-PRIVATE.txt'),
   `PRIVATE — paste these into cPanel → Setup Node.js App → Environment variables. Do not upload or share this file.\n\n` +
-  keep.filter(k => env[k]).map(k => `${k}=${env[k]}`).join('\n') + '\nNODE_ENV=production\n');
+  keep.filter(k => env[k]).map(k => `${k}=${env[k]}`).join('\n') + '\nNODE_ENV=production\n' +
+  'SITE_URL=https://YOUR-DOMAIN.com      <- change to your real address\n');
 
 console.log('4/4  Zipping…');
 rmSync(zip, { force: true });
 if (process.platform === 'win32') {
   // Windows 10+ ships bsdtar, which writes .zip with -a (faster and safer with long paths than Compress-Archive).
-  execSync(`tar -a -c -f "${zip}" -C "${out}" .`, { stdio: 'inherit' });
+  // Use Windows' own tar.exe explicitly (Git Bash's GNU tar can't write zip and misreads "C:").
+  const tar = join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'tar.exe');
+  execSync(`"${tar}" -a -c -f "${zip}" -C "${out}" .`, { stdio: 'inherit' });
 } else {
   execSync(`cd "${out}" && zip -qr "${zip}" .`, { stdio: 'inherit' });
 }

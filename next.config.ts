@@ -10,6 +10,8 @@ const securityHeaders = [
 
 const config: NextConfig = {
   poweredByHeader: false,
+  // `npm run build:cpanel` builds a self-contained server for cPanel / EBNhost (Vercel ignores this).
+  ...(process.env.BUILD_STANDALONE ? { output: 'standalone' as const } : {}),
   // Static page copy is read from disk at request time.
   outputFileTracingIncludes: { '/*': ['./content/**/*'] },
   async headers() {

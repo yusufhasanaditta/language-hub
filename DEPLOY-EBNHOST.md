@@ -78,6 +78,7 @@ When it finishes you have:
    - `DATABASE_URL`
    - `SESSION_SECRET`
    - `NODE_ENV` = `production`
+   - `SITE_URL` = your address, e.g. `https://languagehub.com.bd` (used in password-reset links and payment returns)
 3. Click **Save**.
 
 > Do **not** click *Run NPM Install* — everything the app needs is already inside `vendor_modules`.

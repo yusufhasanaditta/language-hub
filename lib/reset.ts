@@ -1,7 +1,8 @@
 // One-time password reset links, created by an admin for a learner who forgot their password.
 // Only a SHA-256 of the token is stored; the link itself is shown to the admin once.
 import { createHash, randomBytes } from 'node:crypto';
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
+import { siteUrl } from './http';
 import { one, q } from './db';
 
 export const RESET_HOURS = 24;
@@ -31,20 +32,9 @@ export async function useReset(token: string) {
   return r?.user_id ?? null;
 }
 
-/**
- * https://site/reset?token=… — from SITE_URL when set (recommended on any host), otherwise
- * from the request's own Host header (validated) rather than client-controllable forwarding headers.
- */
+/** https://site/reset?token=… */
 export async function resetUrl(token: string) {
-  const fixed = process.env.SITE_URL?.trim().replace(/\/+$/, '');
-  if (fixed && /^https?:\/\/[a-z0-9.-]+(:\d+)?$/i.test(fixed)) return `${fixed}/reset?token=${token}`;
-  const h = await headers();
-  const host = (h.get('host') ?? '').trim();
-  const safeHost = /^[a-z0-9.-]+(:\d{1,5})?$/i.test(host) ? host : 'localhost:3000';
-  const local = /^(localhost|127\.0\.0\.1)(:|$)/.test(safeHost);
-  const fwd = (h.get('x-forwarded-proto') ?? '').split(',')[0].trim();
-  const proto = local ? 'http' : fwd === 'http' || fwd === 'https' ? fwd : 'https';
-  return `${proto}://${safeHost}/reset?token=${token}`;
+  return `${await siteUrl()}/reset?token=${token}`;
 }
 
 const MADE_COOKIE = 'lh_reset_made';
