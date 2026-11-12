@@ -9,6 +9,26 @@ import { timeAgo, avatarUrl } from '@/lib/format';
 import { Icon, Flash } from './ui';
 import LegacyScripts from './LegacyScripts';
 
+/** Which menu item the current URL belongs to (used by the top menu and the phone tab bar). */
+function navKey(url: string) {
+  const path = url.split('?')[0];
+  if (url.startsWith('/courses?type=live')) return 'live';
+  if (url.startsWith('/courses?free=1')) return 'free';
+  if (path === '/') return 'home';
+  if (path.startsWith('/courses') || path.startsWith('/course/')) return 'courses';
+  if (path.startsWith('/category/')) return 'lang';
+  if (path.startsWith('/teachers') || path.startsWith('/t/')) return 'teachers';
+  if (['/dashboard', '/profile', '/my-courses', '/orders', '/notifications', '/login'].some(p => path.startsWith(p))) return 'me';
+  return '';
+}
+
+/** Footer social buttons: settings key, label and a simple brand mark (24×24 path). */
+const SOCIALS = [
+  { key: 'facebook_url', label: 'Facebook', icon: 'M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v1.7H7.6v3.2h2.7V22h3.3v-10.3h2.7l.4-3.2H14z' },
+  { key: 'youtube_url', label: 'YouTube', icon: 'M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8zM9.75 15.02V8.98L15.5 12l-5.75 3.02z' },
+  { key: 'whatsapp_url', label: 'WhatsApp', icon: 'M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.3-.5 0-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.7 1.2 1.6 2 1.1 1 2 1.3 2.3 1.4.3.1.4.1.6-.1l.8-1c.2-.3.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.2.1.7-.1 1.3z' },
+];
+
 function Glyph({ cat }: { cat: Row }) {
   return <span className="lh-glyph">{lang(cat.slug).glyph}</span>;
 }
@@ -40,6 +60,8 @@ export async function SiteHeader() {
   const notifs = user ? await q`SELECT * FROM notifications WHERE user_id = ${user.id} ORDER BY created_at DESC LIMIT 8` : [];
   const unread = user ? Number(await val`SELECT count(*) FROM notifications WHERE user_id = ${user.id} AND read_at IS NULL`) : 0;
   const first = user ? user.name.split(' ')[0] : '';
+  const here = navKey((await headers()).get('x-url') ?? '/');
+  const item = (key: string) => ({ className: `nav-cat ${here === key ? 'is-active' : ''}`, 'aria-current': here === key ? 'page' as const : undefined });
 
   return (
     <>
@@ -55,9 +77,10 @@ export async function SiteHeader() {
           </a>
 
           <div className="navbar-categories lh-nav">
-            <a href="/courses" className="nav-cat"><T bn="কোর্স" en="Courses" /></a>
+            <a href="/" {...item('home')}><Icon name="home" /><T bn="হোম" en="Home" /></a>
+            <a href="/courses" {...item('courses')}><T bn="কোর্স" en="Courses" /></a>
             <div className="nav-cat-dropdown">
-              <button className="nav-cat" type="button"><T bn="ভাষা" en="Languages" /> <span className="material-icons-round" style={{ fontSize: 16 }}>expand_more</span></button>
+              <button className={`nav-cat ${here === 'lang' ? 'is-active' : ''}`} type="button"><T bn="ভাষা" en="Languages" /> <span className="material-icons-round" style={{ fontSize: 16 }}>expand_more</span></button>
               <div className="dropdown-menu nav-categories-drop lh-lang-drop" style={{ display: 'none' }}>
                 {cats.map(cat => (
                   <a key={cat.id} href={`/category/${cat.slug}`} className="dropdown-item" style={{ '--lang': cat.color } as React.CSSProperties}>
@@ -66,9 +89,9 @@ export async function SiteHeader() {
                 ))}
               </div>
             </div>
-            <a href="/courses?type=live" className="nav-cat"><T bn="লাইভ ব্যাচ" en="Live batches" /></a>
-            <a href="/courses?free=1" className="nav-cat"><T bn="ফ্রি" en="Free" /></a>
-            <a href="/teachers" className="nav-cat"><T bn="শিক্ষক" en="Teachers" /></a>
+            <a href="/courses?type=live" {...item('live')}><T bn="লাইভ ব্যাচ" en="Live batches" /></a>
+            <a href="/courses?free=1" {...item('free')}><T bn="ফ্রি" en="Free" /></a>
+            <a href="/teachers" {...item('teachers')}><T bn="শিক্ষক" en="Teachers" /></a>
           </div>
 
           <div className="navbar-right">
@@ -123,6 +146,7 @@ export async function SiteHeader() {
             ) : (
               <a href="/login" className="btn btn-primary btn-sm lh-nav-cta"><T bn="শুরু করুন" en="Get started" /></a>
             )}
+            <button className="icon-btn lh-menu-btn" id="siteMenuBtn" type="button" aria-label="Menu" aria-controls="mobileNav"><Icon name="menu" /></button>
           </div>
         </div>
 
@@ -144,6 +168,9 @@ export async function SiteHeader() {
           <div className="mobile-nav-inner">
             <a href="/" className="mobile-nav-link"><Icon name="home" /> <T bn="হোম" en="Home" /></a>
             <a href="/courses" className="mobile-nav-link"><Icon name="school" /> <T bn="সব কোর্স" en="All courses" /></a>
+            <a href="/courses?type=live" className="mobile-nav-link"><Icon name="videocam" /> <T bn="লাইভ ব্যাচ" en="Live batches" /></a>
+            <a href="/courses?free=1" className="mobile-nav-link"><Icon name="redeem" /> <T bn="ফ্রি কোর্স" en="Free courses" /></a>
+            <a href="/teachers" className="mobile-nav-link"><Icon name="badge" /> <T bn="শিক্ষক" en="Teachers" /></a>
             <div className="mobile-nav-divider"></div>
             {cats.map(cat => (
               <a key={cat.id} href={`/category/${cat.slug}`} className="mobile-nav-link" style={{ '--lang': cat.color } as React.CSSProperties}>
@@ -165,10 +192,7 @@ export async function SiteFooter() {
   const user = await currentUser();
   const s = await getSettings();
   const cats = await q`SELECT slug, name_bn, name_en FROM categories ORDER BY sort_order, id`;
-  const url = (await headers()).get('x-url') ?? '/';
-  const path = url.split('?')[0];
-  const active = url.startsWith('/courses?type=live') ? 'live' : url.startsWith('/courses?free=1') ? 'free'
-    : path === '/' ? 'home' : path.startsWith('/courses') ? 'courses' : path.startsWith('/dashboard') || path === '/login' ? 'me' : '';
+  const active = navKey((await headers()).get('x-url') ?? '/');
   const tabs: [string, string, string, string, string][] = [
     ['home', '/', 'home', 'হোম', 'Home'],
     ['courses', '/courses', 'explore', 'কোর্স', 'Courses'],
@@ -176,7 +200,8 @@ export async function SiteFooter() {
     ['free', '/courses?free=1', 'redeem', 'ফ্রি', 'Free'],
     user ? ['me', '/dashboard', 'person', 'আমি', 'Me'] : ['me', '/login', 'login', 'লগইন', 'Log in'],
   ];
-  const socials = [['facebook_url', 'Facebook'], ['youtube_url', 'YouTube'], ['whatsapp_url', 'WhatsApp']].filter(([k]) => s[k]);
+  const socials = SOCIALS.filter(x => s[x.key]);
+  const tel = s.contact_phone?.replace(/[^0-9+]/g, '');
 
   return (
     <>
@@ -196,9 +221,18 @@ export async function SiteFooter() {
                 <span className="brand-name">Language Hub</span>
               </a>
               <p className="footer-desc"><T bn="বাংলায় বিদেশি ভাষা শেখার অনলাইন স্কুল — চাইনিজ, জাপানিজ, কোরিয়ান ও ইংলিশ।" en="An online school for learning foreign languages in Bangla — Chinese, Japanese, Korean and English." /></p>
-              <div className="footer-socials">
-                {socials.map(([k, label]) => (
-                  <a key={k} href={s[k]} className="social-link" target="_blank" rel="noopener" aria-label={label}>{label[0]}</a>
+              {tel && (
+                <a href={`tel:${tel}`} className="lh-foot-call">
+                  <span className="lh-foot-call-ico"><Icon name="call" /></span>
+                  <span><small><T bn="কল করুন" en="Call us" /></small><b>{s.contact_phone}</b></span>
+                </a>
+              )}
+              <div className="footer-socials lh-socials">
+                {socials.map(x => (
+                  <a key={x.key} href={s[x.key]} className={`lh-social lh-social-${x.key.split('_')[0]}`} target="_blank" rel="noopener noreferrer" aria-label={x.label}>
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d={x.icon} /></svg>
+                    <span>{x.label}</span>
+                  </a>
                 ))}
               </div>
             </div>
@@ -225,7 +259,7 @@ export async function SiteFooter() {
                 <li><a href="/privacy"><T bn="গোপনীয়তা নীতি" en="Privacy policy" /></a></li>
                 <li><a href="/terms"><T bn="শর্তাবলি" en="Terms" /></a></li>
               </ul>
-              {s.contact_phone && <p className="footer-contact"><Icon name="call" /> <a href={`tel:${s.contact_phone.replace(/[^0-9+]/g, '')}`}>{s.contact_phone}</a></p>}
+              {tel && <p className="footer-contact"><Icon name="call" /> <a href={`tel:${tel}`}>{s.contact_phone}</a></p>}
               {s.contact_email && <p className="footer-contact"><Icon name="mail" /> <a href={`mailto:${s.contact_email}`}>{s.contact_email}</a></p>}
             </div>
           </div>
@@ -260,7 +294,7 @@ export async function SiteFooter() {
 /** The original site scripts (menus, filters, carousel, countdowns, theme/lang toggles). */
 export function PageScripts({ loggedIn, only }: { loggedIn: boolean; only?: 'lh' }) {
   const srcs = only === 'lh'
-    ? ['/assets/js/lh.js?v=2.0.0']
-    : ['/assets/js/main.js?v=2.0.0', '/assets/js/app.js?v=2.0.0', '/assets/js/lh.js?v=2.0.0'];
+    ? ['/assets/js/lh.js?v=2.1.0']
+    : ['/assets/js/main.js?v=2.1.0', '/assets/js/app.js?v=2.1.0', '/assets/js/lh.js?v=2.1.0'];
   return <LegacyScripts srcs={srcs} globals={{ APP_URL: '', CSRF_TOKEN: '', IS_LOGGED_IN: loggedIn, VAPID_PUBLIC_KEY: '' }} />;
 }

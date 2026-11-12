@@ -2,16 +2,20 @@ import type { Metadata } from 'next';
 import { requireUser } from '@/lib/auth';
 import { T } from '@/lib/i18n';
 import { ListHead } from '@/components/ui';
+import { Passport, loadPassport } from '@/components/Passport';
 
 export const metadata: Metadata = { title: 'প্রোফাইল এডিট' };
 
 export default async function ProfilePage() {
   const user = await requireUser();
+  const pp = await loadPassport(user.id);
   return (
     <>
       <ListHead back={['/dashboard', 'প্রোফাইল', 'Profile']} title={<T bn="প্রোফাইল এডিট" en="Edit profile" />} />
-      <section className="container lh-narrow lh-list-body">
-        <div className="lh-c-card" id="edit-profile" data-reveal>
+      <section className="container lh-list-body">
+        <Passport user={user} data={pp} edit={false} />
+        <div className="lh-pp-forms">
+        <div className="lh-c-card lh-ppage" id="edit-profile" data-page="03" data-reveal>
           <h2><T bn="আমার তথ্য" en="My details" /></h2>
           <form method="post" action="/do/profile" className="lh-form">
             <label htmlFor="name"><T bn="পুরো নাম" en="Full name" /></label>
@@ -30,7 +34,7 @@ export default async function ProfilePage() {
           </form>
         </div>
 
-        <div className="lh-c-card" id="password" data-reveal>
+        <div className="lh-c-card lh-ppage" id="password" data-page="04" data-reveal>
           <h2>{user.has_password ? <T bn="পাসওয়ার্ড বদলান" en="Change password" /> : <T bn="পাসওয়ার্ড সেট করুন" en="Set a password" />}</h2>
           <form method="post" action="/do/password" className="lh-form">
             {user.has_password && <>
@@ -43,6 +47,7 @@ export default async function ProfilePage() {
             <input id="confirm" name="confirm" type="password" className="lh-input" autoComplete="new-password" minLength={8} required />
             <button type="submit" className="btn btn-primary lh-btn-block"><T bn="সেভ করুন" en="Save" /></button>
           </form>
+        </div>
         </div>
       </section>
     </>

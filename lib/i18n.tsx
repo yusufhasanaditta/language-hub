@@ -27,6 +27,13 @@ export function DateBn({ date }: { date: Date | string | null | undefined }) {
   return <T bn={`${bnNum(d.getUTCDate())} ${BN_MONTHS[d.getUTCMonth()]}`} en={`${d.getUTCDate()} ${EN_MONTHS[d.getUTCMonth()]}`} />;
 }
 
+/** "মার্চ ২০২৬" / "Mar 2026" (Dhaka time). */
+export function MonthYear({ date }: { date: Date | string | null | undefined }) {
+  if (!date) return null;
+  const d = dhaka(date);
+  return <T bn={`${BN_MONTHS[d.getUTCMonth()]} ${bnNum(d.getUTCFullYear())}`} en={`${EN_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`} />;
+}
+
 /** Shift a date to Asia/Dhaka (UTC+6, no DST); read the result with getUTC*(). */
 export function dhaka(date: Date | string) {
   const d = typeof date === 'string' ? new Date(date) : date;

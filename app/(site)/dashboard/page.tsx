@@ -1,19 +1,17 @@
 import type { Metadata } from 'next';
-import { q, val, one } from '@/lib/db';
+import { val, one } from '@/lib/db';
 import { requireUser, activeSessions, MAX_DEVICES } from '@/lib/auth';
 import { T, N } from '@/lib/i18n';
-import { avatarUrl, fmtDateTime } from '@/lib/format';
+import { fmtDateTime } from '@/lib/format';
 import { Icon, Empty } from '@/components/ui';
 import { MyCourseRow, LiveCard } from '@/components/student';
+import { Passport, loadPassport } from '@/components/Passport';
 
 export const metadata: Metadata = { title: 'আমার প্রোফাইল' };
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const [courses, devices, unread, nextLive] = await Promise.all([
-    q`SELECT c.id, c.title_bn, c.title_en, c.type, e.progress_pct, cat.slug AS cat_slug, cat.name_bn AS cat_name, cat.name_en AS cat_name_en
-      FROM enrollments e JOIN courses c ON c.id = e.course_id JOIN categories cat ON cat.id = c.category_id
-      WHERE e.user_id = ${user.id} AND e.status = 'active' ORDER BY e.enrolled_at DESC`,
+  const [devices, unread, nextLive, pp] = await Promise.all([
     activeSessions(user.id),
     val<number>`SELECT count(*)::int FROM notifications WHERE user_id = ${user.id} AND read_at IS NULL`,
     one`SELECT ls.*, c.title_bn AS course_title, c.title_en AS course_title_en
@@ -21,7 +19,9 @@ export default async function DashboardPage() {
         JOIN enrollments e ON e.course_id = c.id AND e.user_id = ${user.id} AND e.status = 'active'
         WHERE ls.status IN ('scheduled', 'live') AND ls.scheduled_at + make_interval(mins => ls.duration_minutes) >= now()
         ORDER BY ls.scheduled_at LIMIT 1`,
+    loadPassport(user.id),
   ]);
+  const courses = [...pp.stamps].reverse(); // newest first (the passport lists them oldest first)
   const first = user.name.trim().split(' ')[0] || user.name;
   const quick: [string, string, React.ReactNode][] = [
     ['/my-courses', 'play_circle', <T key="a" bn="আমার কোর্স" en="My courses" />],
@@ -35,14 +35,12 @@ export default async function DashboardPage() {
     <>
       <section className="lh-dash-head">
         <div className="lh-glow" aria-hidden="true"></div>
-        <div className="container lh-dash-me" data-reveal>
-          <img src={avatarUrl(user.avatar, user.name)} alt="" width={64} height={64} />
-          <div>
+        <div className="container">
+          <div className="lh-pp-hello" data-reveal>
             <p className="lh-eyebrow"><T bn="স্বাগতম" en="Welcome back" /></p>
             <h1>{first}</h1>
-            <p className="lh-muted">{user.email ?? user.phone}</p>
           </div>
-          <a href="/profile" className="lh-toggle" aria-label="Edit profile"><Icon name="edit" /></a>
+          <Passport user={user} data={pp} />
         </div>
       </section>
 

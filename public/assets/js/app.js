@@ -12,7 +12,7 @@
   /* ── Mobile drawer ─────────────────────────────────────────────────────── */
   function initDrawer() {
     var nav = $('#mobileNav');
-    var toggle = $('#mobileMenuToggle');
+    var toggle = $('#siteMenuBtn');
     var overlay = $('#overlay');
     if (!nav) return;
 
@@ -42,7 +42,7 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
     $$('.drawer-close', nav).forEach(function (b) { b.addEventListener('click', close); });
     // Closing on resize to desktop prevents a stuck no-scroll body
-    window.addEventListener('resize', function () { if (window.innerWidth >= 768) close(); });
+    window.addEventListener('resize', function () { if (window.innerWidth >= 960) close(); });
   }
 
   /* ── Admin/teacher panel sidebar drawer ────────────────────────────────── */
