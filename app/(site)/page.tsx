@@ -48,11 +48,12 @@ export default async function HomePage() {
           <p className="lh-stamp"><span><T bn="ভর্তি চলছে" en="Now boarding" /></span></p>
           <h1 className="lh-pick-title">
             <span className="lh-h-line"><T bn="বাংলায় শিখুন" en="Learn in Bangla" /></span>
-            <span className="sr-only">{langs.map(c => c.name_bn).join(', ')}</span>
+            <span className="sr-only"><T bn="বিদেশি ভাষা" en="Foreign Language" /></span>
             <span className="lh-flap" data-flap aria-hidden="true"
-                  data-bn={langs.map(c => c.name_bn).join('|')} data-en={langs.map(c => c.name_en).join('|')}
+                  data-bn={(langs.length ? langs : [null]).map(() => 'বিদেশি ভাষা').join('|')}
+                  data-en={(langs.length ? langs : [null]).map(() => 'Foreign Language').join('|')}
                   data-colors={flapColors.join('|')}>
-              <span className="lh-flap-size">{[...langs.map(c => c.name_bn), ...langs.map(c => c.name_en)].map((w, i) => <span key={i}>{w}</span>)}</span>
+              <span className="lh-flap-size">{['বিদেশি ভাষা', 'Foreign Language'].map((w, i) => <span key={i}>{w}</span>)}</span>
               <span className="lh-flap-face lh-flap-top"></span>
               <span className="lh-flap-face lh-flap-bot"></span>
               <span className="lh-flap-face lh-flap-top lh-flap-fly-top"></span>
