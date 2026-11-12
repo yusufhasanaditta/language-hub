@@ -61,7 +61,9 @@ const keep = ['DATABASE_URL', 'SESSION_SECRET', 'SMTP_HOST', 'SMTP_PORT', 'SMTP_
 writeFileSync(join(root, 'deploy', 'ENV-VALUES-PRIVATE.txt'),
   `PRIVATE — paste these into cPanel → Setup Node.js App → Environment variables. Do not upload or share this file.\n\n` +
   keep.filter(k => env[k]).map(k => `${k}=${env[k]}`).join('\n') + '\nNODE_ENV=production\n' +
-  'SITE_URL=https://YOUR-DOMAIN.com      <- change to your real address\n');
+  // Keep the real address once it is known (deploy/.env.production is the file uploaded to the host).
+  ((existsSync(join(root, 'deploy', '.env.production')) ? readFileSync(join(root, 'deploy', '.env.production'), 'utf8') : '')
+    .match(/^SITE_URL=https?:\/\/\S+/m)?.[0] ?? 'SITE_URL=https://YOUR-DOMAIN.com      <- change to your real address') + '\n');
 
 console.log('4/4  Zipping…');
 rmSync(zip, { force: true });
