@@ -40,22 +40,7 @@ writeFileSync(join(out, 'package.json'), JSON.stringify({
   dependencies: pkg.dependencies,
 }, null, 2) + '\n');
 
-writeFileSync(join(out, 'app.js'), `// cPanel "Application startup file". Starts the Next.js server on the port the host gives us.
-const path = require('path');
-const Module = require('module');
-// Libraries are bundled in vendor_modules/ (cPanel reserves node_modules/ for its own link).
-process.env.NODE_PATH = [path.join(__dirname, 'vendor_modules'), process.env.NODE_PATH].filter(Boolean).join(path.delimiter);
-Module._initPaths();
-process.env.NODE_ENV = process.env.NODE_ENV || 'production';
-process.env.HOSTNAME = process.env.HOSTNAME || '0.0.0.0';
-process.chdir(__dirname);
-// Settings can also come from a .env.production file in this folder (Next.js loads it on start).
-const fs = require('fs');
-const fromFile = fs.existsSync('.env.production') ? fs.readFileSync('.env.production', 'utf8') : '';
-const missing = ['DATABASE_URL', 'SESSION_SECRET'].filter(k => !process.env[k] && !new RegExp('^' + k + '=.+', 'm').test(fromFile));
-if (missing.length) console.error('[Language Hub] Missing settings: ' + missing.join(', ') + ' — add them in Setup Node.js App → Environment variables (then Save + Restart) or in .env.production.');
-require('./server.js');
-`);
+cpSync(join(root, 'scripts', 'cpanel-app.js'), join(out, 'app.js'));
 
 writeFileSync(join(out, '.env.example'), `# Add these in cPanel → Setup Node.js App → your app → Environment variables.
 # (Copy the values from deploy/ENV-VALUES-PRIVATE.txt on your computer — never share them.)
