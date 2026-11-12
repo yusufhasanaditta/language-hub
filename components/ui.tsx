@@ -1,7 +1,7 @@
 // Small shared pieces used across the public site and the student area.
 import type { Row } from '@/lib/db';
 import { T, N, bnNum } from '@/lib/i18n';
-import { formatPrice, priceOf, isFreeCourse } from '@/lib/format';
+import { formatPrice, priceOf, isFreeCourse, discountPct } from '@/lib/format';
 import { lang, langStyle } from '@/lib/langs';
 import { courseUrl } from '@/lib/courses';
 import { readFlash } from '@/lib/http';
@@ -46,7 +46,7 @@ export function Price({ now, was, free }: { now: number; was: number | null; fre
   return (
     <>
       <span className="lh-price">৳<N v={formatPrice(now)} /></span>
-      {was ? <s>৳<N v={formatPrice(was)} /></s> : null}
+      {was ? <><s>৳<N v={formatPrice(was)} /></s><span className="lh-off">−<N v={discountPct(now, was)} />%</span></> : null}
     </>
   );
 }

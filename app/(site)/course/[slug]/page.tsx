@@ -51,15 +51,15 @@ export default async function CoursePage({ params }: Props) {
   const level = LEVEL[c.level] ?? LEVEL.beginner;
   const startsLater = !!c.batch_date && new Date(`${c.batch_date}T00:00:00+06:00`).getTime() > Date.now();
 
-  const cta = enrolled ? (
+  const hasClasses = modules.some(m => m.lessons.length > 0);
+  // Free courses need no enrolment: every class plays on this page.
+  const cta = free ? (
+    hasClasses ? <a href="#classes" className="btn btn-primary lh-btn-block"><Icon name="play_circle" /><T bn="ফ্রি ক্লাসগুলো দেখুন" en="Watch the free classes" /></a>
+      : <p className="lh-c-soon"><Icon name="schedule" /><T bn="ক্লাসগুলো শীঘ্রই যোগ হবে" en="Classes are coming soon" /></p>
+  ) : enrolled ? (
     <a href={`/learn?course=${c.id}`} className="btn btn-primary lh-btn-block"><Icon name="play_circle" /><T bn="ক্লাসরুমে যান" en="Go to classroom" /></a>
   ) : full ? (
     <button type="button" className="btn btn-outline lh-btn-block" disabled><T bn="সব সিট পূর্ণ" en="Course is full" /></button>
-  ) : free ? (
-    <form method="post" action="/do/enroll">
-      <input type="hidden" name="course_id" value={c.id} />
-      <button type="submit" className="btn btn-primary lh-btn-block"><T bn="ফ্রি ভর্তি হোন" en="Enrol free" /></button>
-    </form>
   ) : (
     <a href={`/checkout?course=${c.id}`} className="btn btn-accent lh-btn-block">
       {live ? <T bn="সিট বুক করুন" en="Book a seat" /> : <T bn="এখনই ভর্তি হোন" en="Enrol now" />}
@@ -123,8 +123,8 @@ export default async function CoursePage({ params }: Props) {
             </section>
           )}
 
-          {modules.some(m => m.lessons.length > 0) && (
-            <Journey courseId={c.id} modules={modules.filter(m => m.lessons.length > 0)} catSlug={c.cat_slug} enrolled={!!enrolled} done={done} />
+          {hasClasses && (
+            <Journey courseId={c.id} modules={modules.filter(m => m.lessons.length > 0)} catSlug={c.cat_slug} enrolled={!!enrolled} done={done} freeCourse={free} />
           )}
 
           {team.length > 0 && (
@@ -178,7 +178,7 @@ export default async function CoursePage({ params }: Props) {
           <div className="lh-c-buy" data-reveal="right">
             <div className="lh-c-buy-price">{price}</div>
             {was && <p className="lh-c-save"><T bn="সাশ্রয়" en="You save" /> ৳<N v={formatPrice(was - now)} /></p>}
-            {seats !== null && !enrolled && (
+            {seats !== null && !enrolled && !free && (
               <div className={`lh-seats ${seats <= 5 ? 'is-hot' : ''}`}>
                 <div className="lh-seats-row">
                   <span><Icon name="event_seat" />{full ? <T bn="সব সিট পূর্ণ" en="No seats left" />
@@ -191,7 +191,7 @@ export default async function CoursePage({ params }: Props) {
             {cta}
             <ul className="lh-c-perks">
               <li><Icon name="translate" /><T bn="সব ক্লাস বাংলায়" en="All classes in Bangla" /></li>
-              {c.max_students > 0 && <li><Icon name="groups" /><T bn={`সর্বোচ্চ ${bnNum(c.max_students)} জন শিক্ষার্থী`} en={`Max ${c.max_students} students`} /></li>}
+              {c.max_students > 0 && !free && <li><Icon name="groups" /><T bn={`সর্বোচ্চ ${bnNum(c.max_students)} জন শিক্ষার্থী`} en={`Max ${c.max_students} students`} /></li>}
               {live ? <li><Icon name="videocam" /><T bn="প্রতিটি ক্লাসের রেকর্ডিং" en="Every class recorded" /></li>
                 : <li><Icon name="all_inclusive" /><T bn="যখন খুশি দেখুন" en="Watch any time" /></li>}
               <li><Icon name="devices" /><T bn="২টি ডিভাইসে চলবে" en="Works on 2 devices" /></li>

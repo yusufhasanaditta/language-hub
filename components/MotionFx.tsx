@@ -99,11 +99,11 @@ export default function MotionFx({ progress = false }: { progress?: boolean }) {
     }
 
     // Tickets lean towards the pointer on a spring.
-    if (fine) $$('.lh-ticket, .lh-crew, .lh-stop > a').forEach(el => off.push(tilt(el)));
+    if (fine) $$('.lh-ticket, .lh-crew, .lh-class > a').forEach(el => off.push(tilt(el)));
     if (fine) $$('[data-magnetic], .lh-c-buy .btn, .pn-hero .btn, .lh-buybar .btn').forEach(el => off.push(magnetic(el)));
 
     // Pressed buttons and cards squash a little and spring back.
-    off.push(press('.btn, .lh-ticket, .lh-crew, .lh-stop > a, .admin-nav-item, .lh-glance-item', el => {
+    off.push(press('.btn, .lh-ticket, .lh-crew, .lh-class > a, .admin-nav-item, .lh-glance-item', el => {
       const e = el as HTMLElement;
       animate(1, 0.96, { duration: 0.12, onUpdate: v => { e.style.scale = String(v); } });
       return () => animate(0.96, 1, { ...SPRING, stiffness: 420, onUpdate: v => { e.style.scale = String(v); },

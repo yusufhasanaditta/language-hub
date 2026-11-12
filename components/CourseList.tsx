@@ -5,14 +5,15 @@ import { publishedCourses } from '@/lib/courses';
 import { T, N } from '@/lib/i18n';
 import { lang, langStyle } from '@/lib/langs';
 import { CourseCard, Icon } from './ui';
+import { PAY_PRICE_SQL } from '@/lib/format';
 
 export type ListParams = { q?: string; type?: string; free?: string; sort?: string; category?: string };
 
 const SORTS: Record<string, [string, string, string]> = {
   popular: ['জনপ্রিয়', 'Popular', 'student_count DESC, c.is_featured DESC'],
   newest: ['নতুন', 'Newest', 'c.created_at DESC'],
-  price_low: ['কম দাম', 'Price ↑', 'COALESCE(c.sale_price, c.price) ASC'],
-  price_high: ['বেশি দাম', 'Price ↓', 'COALESCE(c.sale_price, c.price) DESC'],
+  price_low: ['কম দাম', 'Price ↑', `${PAY_PRICE_SQL} ASC`],
+  price_high: ['বেশি দাম', 'Price ↓', `${PAY_PRICE_SQL} DESC`],
 };
 
 export async function CourseList({ params, basePath }: { params: ListParams; basePath: string }) {
@@ -28,7 +29,7 @@ export async function CourseList({ params, basePath }: { params: ListParams; bas
   if (activeCat) { args.push(activeCat.id); where.push(`c.category_id = $${args.length}`); }
   if (type === 'live') where.push(`c.type = 'live'`);
   if (type === 'recorded') where.push(`c.type <> 'live'`);
-  if (free) where.push(`(c.is_free OR COALESCE(c.sale_price, c.price) <= 0)`);
+  if (free) where.push(`(c.is_free OR ${PAY_PRICE_SQL} <= 0)`);
   if (search) {
     args.push(`%${search}%`);
     where.push(`(c.title_bn ILIKE $${args.length} OR c.title_en ILIKE $${args.length} OR u.name ILIKE $${args.length} OR cat.name_en ILIKE $${args.length})`);

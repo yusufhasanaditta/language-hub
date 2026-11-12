@@ -40,17 +40,17 @@ const handlers: Record<string, [H, string]> = {
     if (!title) fail('Lesson title is required.');
     const kind = ['video', 'pdf', 'text', 'live'].includes(str(f, 'kind')) ? str(f, 'kind') : 'video';
     const v = {
-      video_url: safeUrl(str(f, 'video_url', 500)), pdf_url: safeUrl(str(f, 'pdf_url', 500)),
+      video_url: safeUrl(str(f, 'video_url', 500)), thumbnail: safeUrl(str(f, 'thumbnail', 500)), pdf_url: safeUrl(str(f, 'pdf_url', 500)),
       content: str(f, 'content', 20000) || null, duration: Math.max(0, int(f, 'duration')),
       is_free: bool(f, 'is_free'), is_published: bool(f, 'is_published'), sort_order: int(f, 'sort_order'),
     };
     if (id) {
-      await q`UPDATE lessons l SET title = ${title}, kind = ${kind}, video_url = ${v.video_url}, pdf_url = ${v.pdf_url}, content = ${v.content},
+      await q`UPDATE lessons l SET title = ${title}, kind = ${kind}, video_url = ${v.video_url}, thumbnail = ${v.thumbnail}, pdf_url = ${v.pdf_url}, content = ${v.content},
               duration = ${v.duration}, is_free = ${v.is_free}, is_published = ${v.is_published}, module_id = ${moduleId}
               FROM modules m WHERE l.id = ${id} AND m.id = l.module_id AND m.course_id = ${courseId}`;
     } else {
-      await q`INSERT INTO lessons (module_id, title, kind, video_url, pdf_url, content, duration, is_free, is_published, sort_order)
-              VALUES (${moduleId}, ${title}, ${kind}, ${v.video_url}, ${v.pdf_url}, ${v.content}, ${v.duration}, ${v.is_free}, ${v.is_published}, ${v.sort_order})`;
+      await q`INSERT INTO lessons (module_id, title, kind, video_url, thumbnail, pdf_url, content, duration, is_free, is_published, sort_order)
+              VALUES (${moduleId}, ${title}, ${kind}, ${v.video_url}, ${v.thumbnail}, ${v.pdf_url}, ${v.content}, ${v.duration}, ${v.is_free}, ${v.is_published}, ${v.sort_order})`;
     }
     await flash('success', 'Lesson saved.');
   }, '#curriculum'],

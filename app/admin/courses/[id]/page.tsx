@@ -69,8 +69,8 @@ export default async function AdminCourseEdit({ params }: { params: Promise<{ id
             <select name="level" className="form-control" defaultValue={c?.level ?? 'beginner'}>
               {['beginner', 'intermediate', 'advanced'].map(x => <option key={x} value={x}>{x}</option>)}
             </select></div>
-          <div><label>Price (BDT)</label><input name="price" type="number" min={0} step="1" className="form-control" defaultValue={c ? Number(c.price) : 0} /></div>
-          <div><label>Sale price (BDT, optional)</label><input name="sale_price" type="number" min={0} step="1" className="form-control" defaultValue={c?.sale_price != null ? Number(c.sale_price) : ''} /></div>
+          <div><label>Regular / previous price (BDT)</label><input name="price" type="number" min={0} step="1" className="form-control" defaultValue={c ? Number(c.price) : 0} /><p className="pn-hint">Shown crossed out, e.g. <s>৳6,500</s>. If there is no offer, this is the price.</p></div>
+          <div><label>Offer / current price (BDT, optional)</label><input name="sale_price" type="number" min={0} step="1" className="form-control" defaultValue={c?.sale_price != null ? Number(c.sale_price) : ''} /><p className="pn-hint">What students pay, e.g. ৳4,999. The discount (−23%) shows on the course card, course page and checkout. Leave empty for no offer.</p></div>
           <div><label>Batch start date (live)</label><input name="batch_start" type="date" className="form-control" defaultValue={v('batch_date')} /></div>
           <div><label>Seat limit — max students</label><input name="max_students" type="number" min={0} max={10000} className="form-control" defaultValue={c?.max_students ?? 20} /><p className="pn-hint">Default 20. When the seats are full, enrolment and checkout close. 0 = no limit.</p></div>
           <div><label>Planned number of classes (shown before lessons are added)</label><input name="total_lessons" type="number" min={0} className="form-control" defaultValue={c?.total_lessons ?? 0} /></div>

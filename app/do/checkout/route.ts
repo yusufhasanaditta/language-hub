@@ -16,7 +16,9 @@ export const POST = formAction(async (f, req) => {
   if (isFreeCourse(c)) return courseUrl(c);
   if (isFull(c)) fail('এই কোর্সের সব সিট পূর্ণ।', 'This course is full.');
 
-  const price = priceOf(c)[0];
+  const [price, regular] = priceOf(c);
+  // The order keeps the regular price and the whole saving (offer + coupon), so the invoice shows the discount.
+  const listPrice = regular ?? price;
   const code = str(f, 'coupon', 50);
   const coupon = code ? await findCoupon(code, price) : null;
   if (code && !coupon) fail('কুপনটি সঠিক নয় বা মেয়াদ শেষ।', 'This coupon is invalid or expired.');
@@ -27,7 +29,7 @@ export const POST = formAction(async (f, req) => {
   const createOrder = async (payMethod: string, payRef: string | null, phone: string | null) => {
     const o = await one<{ id: number }>`
       INSERT INTO orders (user_id, subtotal, discount, total, coupon_code, status, pay_method, pay_ref, billing_name, billing_email, billing_phone)
-      VALUES (${user.id}, ${price}, ${discount}, ${total}, ${coupon?.code ?? null}, 'pending', ${payMethod}, ${payRef}, ${user.name}, ${user.email}, ${phone ?? user.phone})
+      VALUES (${user.id}, ${listPrice}, ${listPrice - total}, ${total}, ${coupon?.code ?? null}, 'pending', ${payMethod}, ${payRef}, ${user.name}, ${user.email}, ${phone ?? user.phone})
       RETURNING id`;
     await q`INSERT INTO order_items (order_id, course_id, title, price) VALUES (${o!.id}, ${c.id}, ${c.title_bn}, ${total})`;
     return o!.id;
@@ -65,7 +67,7 @@ export const POST = formAction(async (f, req) => {
     WHERE o.user_id = ${user.id} AND i.course_id = ${c.id} AND o.status = 'pending' ORDER BY o.id DESC LIMIT 1`;
   if (existing) {
     await q`UPDATE orders SET pay_method = 'manual', pay_ref = ${payRef}, billing_phone = ${payFrom},
-              subtotal = ${price}, discount = ${discount}, total = ${total}, coupon_code = ${coupon?.code ?? null} WHERE id = ${existing}`;
+              subtotal = ${listPrice}, discount = ${listPrice - total}, total = ${total}, coupon_code = ${coupon?.code ?? null} WHERE id = ${existing}`;
   } else {
     await createOrder('manual', payRef, payFrom);
   }

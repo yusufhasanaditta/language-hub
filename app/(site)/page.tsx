@@ -232,8 +232,8 @@ function NextBatch({ c }: { c: Row }) {
             <Countdown to={`${c.batch_date}T00:00:00+06:00`} />
             <div className="lh-pass-perf" aria-hidden="true"></div>
             <footer className="lh-pass-foot">
-              <div><Price now={now} was={was} free={false} /></div>
-              <a href={courseUrl(c)} className="btn btn-accent"><T bn="সিট বুক করুন" en="Book a seat" /></a>
+              <div><Price now={now} was={was} free={isFreeCourse(c)} /></div>
+              <a href={courseUrl(c)} className="btn btn-accent">{isFreeCourse(c) ? <T bn="ফ্রি ক্লাস দেখুন" en="Watch free" /> : <T bn="সিট বুক করুন" en="Book a seat" />}</a>
             </footer>
           </article>
         </div>

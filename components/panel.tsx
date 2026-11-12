@@ -1,7 +1,7 @@
 // Admin / teacher panel chrome: sidebar (desktop), top bar (phone), account menu.
 import { headers } from 'next/headers';
 import { isAdmin, isTeacher, ROLE_NAMES, type User } from '@/lib/auth';
-import { avatarUrl, formatPrice, fmtDate } from '@/lib/format';
+import { avatarUrl, formatPrice, fmtDate, priceOf, isFreeCourse } from '@/lib/format';
 import { lang, langStyle } from '@/lib/langs';
 import type { Row } from '@/lib/db';
 import { Flash, Icon } from './ui';
@@ -147,7 +147,7 @@ export function PanelCourseTicket({ c, href, showPrice = false }: { c: Row; href
         <div className="pn-ticket-stats">
           <span><Icon name="play_lesson" />{c.lessons ?? c.lesson_count ?? 0} class{Number(c.lessons ?? c.lesson_count ?? 0) === 1 ? "" : "es"}</span>
           <span><Icon name="groups" />{n} student{n === 1 ? "" : "s"}</span>
-          {showPrice && <span><Icon name="sell" />{c.is_free ? 'Free' : `৳${formatPrice(c.sale_price ?? c.price)}`}</span>}
+          {showPrice && <span><Icon name="sell" />{isFreeCourse(c) ? 'Free' : <>৳{formatPrice(priceOf(c)[0])}{priceOf(c)[1] ? <s style={{ opacity: .6, marginLeft: 4 }}>৳{formatPrice(priceOf(c)[1]!)}</s> : null}</>}</span>}
         </div>
       </div>
       <div className="lh-ticket-stub">

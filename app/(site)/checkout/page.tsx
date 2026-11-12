@@ -7,7 +7,7 @@ import { findCoupon, couponDiscount } from '@/lib/orders';
 import { sslczConfigured } from '@/lib/sslcommerz';
 import { setting } from '@/lib/settings';
 import { T, N, bnNum } from '@/lib/i18n';
-import { formatPrice, priceOf, isFreeCourse } from '@/lib/format';
+import { formatPrice, priceOf, isFreeCourse, discountPct } from '@/lib/format';
 import { Icon } from '@/components/ui';
 import { BoardingPass, TicketPrinter } from '@/components/BoardingPass';
 import { seatsLeft } from '@/lib/courses';
@@ -24,7 +24,8 @@ export default async function CheckoutPage({ searchParams }: Props) {
   if (await one`SELECT 1 FROM enrollments WHERE user_id = ${user.id} AND course_id = ${course.id} AND status = 'active'`) redirect(`/learn?course=${course.id}`);
   if (isFreeCourse(course)) redirect(courseUrl(course));
 
-  const price = priceOf(course)[0];
+  const [price, regular] = priceOf(course);
+  const offer = regular ? regular - price : 0;
   const code = (sp.coupon ?? '').trim().toUpperCase().slice(0, 50);
   const coupon = code ? await findCoupon(code, price) : null;
   const discount = couponDiscount(coupon, price);
@@ -35,7 +36,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
                              WHERE o.user_id = ${user.id} AND i.course_id = ${course.id} AND o.status = 'pending' AND o.pay_method = 'manual'
                              ORDER BY o.id DESC LIMIT 1`;
   const left = seatsLeft(course);
-  const ticket = { course, passenger: user.name, total, seat: left === 0 ? null : Number(course.student_count ?? 0) + 1 };
+  const ticket = { course, passenger: user.name, total, was: regular ? regular : null, seat: left === 0 ? null : Number(course.student_count ?? 0) + 1 };
 
   return (
     <section className="container lh-co">
@@ -72,9 +73,13 @@ export default async function CheckoutPage({ searchParams }: Props) {
 
         <aside className="lh-co-side">
           <div className="lh-co-sum" data-reveal="right">
-            <div className="lh-co-line"><span><T bn="কোর্স ফি" en="Course fee" /></span><span>৳<N v={formatPrice(price)} /></span></div>
+            {regular ? (<>
+              <div className="lh-co-line"><span><T bn="নিয়মিত মূল্য" en="Regular price" /></span><s>৳<N v={formatPrice(regular)} /></s></div>
+              <div className="lh-co-line lh-co-disc"><span><T bn="অফার ছাড়" en="Offer discount" /> <span className="lh-off">−<N v={discountPct(price, regular)} />%</span></span><span>−৳<N v={formatPrice(offer)} /></span></div>
+            </>) : <div className="lh-co-line"><span><T bn="কোর্স ফি" en="Course fee" /></span><span>৳<N v={formatPrice(price)} /></span></div>}
             {discount > 0 && <div className="lh-co-line lh-co-disc"><span><T bn="কুপন" en="Coupon" /> ({coupon!.code})</span><span>−৳<N v={formatPrice(discount)} /></span></div>}
             <div className="lh-co-line lh-co-total"><span><T bn="মোট" en="Total" /></span><span className="lh-price">৳<N v={formatPrice(total)} /></span></div>
+            {offer + discount > 0 && <p className="lh-co-saved"><Icon name="savings" /><T bn={`আপনি ৳${bnNum(formatPrice(offer + discount))} সাশ্রয় করছেন`} en={`You save ৳${formatPrice(offer + discount)}`} /></p>}
 
             {total <= 0 || online ? (
               <form method="post" action="/do/checkout" data-ticket-buy>

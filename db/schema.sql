@@ -340,3 +340,6 @@ CREATE TABLE IF NOT EXISTS password_resets (
   used_at     timestamptz,
   created_at  timestamptz NOT NULL DEFAULT now()
 );
+
+-- Class card picture (optional; YouTube lessons use the video thumbnail).
+ALTER TABLE lessons ADD COLUMN IF NOT EXISTS thumbnail varchar(500);

@@ -3,10 +3,12 @@
 import type { Row } from '@/lib/db';
 import { T, N, DateBn } from '@/lib/i18n';
 import { lang, langStyle } from '@/lib/langs';
-import { formatPrice } from '@/lib/format';
+import { formatPrice, discountPct } from '@/lib/format';
 import { Icon } from './ui';
 
-export function BoardingPass({ course, passenger, total, seat }: { course: Row; passenger: string; total: number; seat: number | null }) {
+type Ticket = { course: Row; passenger: string; total: number; seat: number | null; was?: number | null };
+
+export function BoardingPass({ course, passenger, total, seat, was = null }: Ticket) {
   const L = lang(course.cat_slug);
   const flight = `LH ${String(course.id).padStart(3, '0')}`;
   const live = course.type === 'live';
@@ -38,7 +40,9 @@ export function BoardingPass({ course, passenger, total, seat }: { course: Row; 
       <div className="lh-bp-stub">
         <span className="lh-bp-glyph" aria-hidden="true">{L.glyph}</span>
         <small><T bn="মোট" en="Total" /></small>
+        {was && was > total ? <s className="lh-bp-was">৳<N v={formatPrice(was)} /></s> : null}
         <b>৳<N v={formatPrice(total)} /></b>
+        {was && was > total ? <span className="lh-off">−<N v={discountPct(total, was)} />%</span> : null}
         <span className="lh-barcode" aria-hidden="true"></span>
         <span className="lh-bp-code" aria-hidden="true">{flight.replace(' ', '')}-{seat ?? 0}</span>
       </div>
@@ -47,7 +51,7 @@ export function BoardingPass({ course, passenger, total, seat }: { course: Row; 
 }
 
 /** Full-screen "printing your ticket" scene, shown by lh.js while the payment form submits. */
-export function TicketPrinter(props: { course: Row; passenger: string; total: number; seat: number | null }) {
+export function TicketPrinter(props: Ticket) {
   return (
     <div className="lh-print" hidden data-ticket-printer role="status" aria-live="polite">
       <div className="lh-print-box">

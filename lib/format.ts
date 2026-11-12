@@ -4,12 +4,23 @@ import type { Row } from './db';
 export const formatPrice = (n: number | string) =>
   Math.round(Number(n)).toLocaleString('en-US');
 
-/** [current price, original price or null] */
+/**
+ * [price the student pays, regular (crossed-out) price or null].
+ * Admin enters a regular price and an optional offer price; whichever is lower is what students pay,
+ * so the discount still shows if the two boxes were filled the other way round.
+ */
 export function priceOf(c: Row): [number, number | null] {
-  const price = Number(c.price);
-  const sale = c.sale_price != null ? Number(c.sale_price) : null;
-  return sale !== null && sale < price ? [sale, price] : [price, null];
+  const price = Number(c.price) || 0;
+  const sale = c.sale_price != null && c.sale_price !== '' ? Number(c.sale_price) : null;
+  if (sale === null || !Number.isFinite(sale) || sale === price) return [price, null];
+  return sale < price ? [sale, price] : [price, sale];
 }
+
+/** Same rule in SQL (sorting, the Free filter). */
+export const PAY_PRICE_SQL = 'LEAST(c.price, COALESCE(c.sale_price, c.price))';
+
+/** Whole-number discount percent, e.g. 6500 → 4999 gives 23. */
+export const discountPct = (now: number, was: number | null) => (was && was > now ? Math.round(((was - now) / was) * 100) : 0);
 
 export const isFreeCourse = (c: Row) => Boolean(c.is_free) || priceOf(c)[0] <= 0;
 
@@ -62,6 +73,14 @@ export function avatarUrl(avatar: string | null | undefined, name = 'U') {
 export function youtubeId(url: string) {
   const m = url.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/))([\w-]{11})/);
   return m ? m[1] : /^[\w-]{11}$/.test(url) ? url : '';
+}
+
+/** Picture for a class card: the lesson's own image, else the YouTube video's thumbnail, else ''. */
+export function lessonThumb(l: Row) {
+  const own = String(l.thumbnail ?? '').trim();
+  if (/^https:\/\//.test(own)) return own;
+  const yt = youtubeId(String(l.video_url ?? '').trim());
+  return yt ? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg` : '';
 }
 
 /** Embeddable player URL for YouTube / Vimeo / any https link, else ''. */

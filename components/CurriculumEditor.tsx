@@ -15,6 +15,7 @@ function LessonFields({ l }: { l?: Row }) {
         <select name="kind" className="form-control" defaultValue={l?.kind ?? 'video'}>{KINDS.map(([k, n]) => <option key={k} value={k}>{n}</option>)}</select></div>
       <div><label>Duration (minutes)</label><input name="duration" type="number" min={0} max={1000} className="form-control" defaultValue={l?.duration ?? 0} /></div>
       <div className="pn-full"><label>Video URL</label><input name="video_url" type="url" className="form-control" maxLength={500} defaultValue={l?.video_url ?? ''} placeholder="https://youtu.be/…" /></div>
+      <div className="pn-full"><label>Thumbnail image URL (optional)</label><input name="thumbnail" type="url" className="form-control" maxLength={500} defaultValue={l?.thumbnail ?? ''} placeholder="https://…" /><p className="pn-hint">Shown on the class card. Leave empty — YouTube videos use their own thumbnail.</p></div>
       <div className="pn-full"><label>PDF URL</label><input name="pdf_url" type="url" className="form-control" maxLength={500} defaultValue={l?.pdf_url ?? ''} /></div>
       <div className="pn-full"><label>Text content</label><textarea name="content" className="form-control" maxLength={20000} defaultValue={l?.content ?? ''}></textarea></div>
       <label className="pn-check"><input type="checkbox" name="is_free" value="1" defaultChecked={l?.is_free ?? false} /> Free preview</label>

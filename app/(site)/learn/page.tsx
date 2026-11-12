@@ -5,7 +5,7 @@ import { requireUser, isAdmin, isTeacher } from '@/lib/auth';
 import { courseBy, curriculum, courseUrl } from '@/lib/courses';
 import { T, N, DateBn } from '@/lib/i18n';
 import { lang, langStyle } from '@/lib/langs';
-import { embedUrl } from '@/lib/format';
+import { embedUrl, isFreeCourse } from '@/lib/format';
 import { Countdown, Icon } from '@/components/ui';
 import { LiveCard } from '@/components/student';
 import { userTeachesCourse } from '@/lib/team';
@@ -24,7 +24,8 @@ export default async function LearnPage({ searchParams }: Props) {
   const enrollment = await one<{ id: number }>`SELECT id FROM enrollments WHERE user_id = ${user.id} AND course_id = ${cid} AND status = 'active'`;
   // Staff preview: admins, and the course's own teacher (not every teacher).
   const ownsCourse = isTeacher(user) && await userTeachesCourse(user.id, course.id);
-  if (!enrollment && !isAdmin(user) && !ownsCourse) redirect(courseUrl(course));
+  // Free courses are open to every signed-in learner (no enrolment step).
+  if (!enrollment && !isAdmin(user) && !ownsCourse && !(isFreeCourse(course) && course.status === 'published')) redirect(courseUrl(course));
 
   const [modules, doneRows, liveNext, recordings] = await Promise.all([
     curriculum(cid),
