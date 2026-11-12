@@ -104,7 +104,7 @@ const handlers: Record<string, H> = {
     const batch = /^\d{4}-\d{2}-\d{2}$/.test(str(f, 'batch_start')) ? str(f, 'batch_start') : null;
     const vals = {
       title_bn, title_en: title_en || null, slug, category_id: categoryId, teacher_id: teacherId, price, sale_price: sale,
-      type, level, status, batch_start: batch, max_students: Math.max(0, int(f, 'max_students')), total_lessons: Math.max(0, int(f, 'total_lessons')),
+      type, level, status, batch_start: batch, max_students: str(f, 'max_students') === '' ? 20 : Math.min(10000, Math.max(0, int(f, 'max_students'))), total_lessons: Math.max(0, int(f, 'total_lessons')),
       thumbnail: safeUrl(str(f, 'thumbnail', 500)), intro_video_url: safeUrl(str(f, 'intro_video_url', 500)), fb_group_link: safeUrl(str(f, 'fb_group_link', 500)),
       short_desc: optStr(f, 'short_desc', 300), description_bn: optStr(f, 'description_bn', 20000),
       what_you_learn: optStr(f, 'what_you_learn', 5000), requirements: optStr(f, 'requirements', 5000),

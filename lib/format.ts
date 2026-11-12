@@ -42,6 +42,7 @@ export function timeAgo(v: Date | string) {
   if (s < 60) return 'just now';
   if (s < 3600) return `${Math.floor(s / 60)} min ago`;
   if (s < 86400) return `${Math.floor(s / 3600)} hr ago`;
+  if (s < 172800) return 'yesterday';
   if (s < 604800) return `${Math.floor(s / 86400)} days ago`;
   return fmtDate(v);
 }

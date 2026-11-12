@@ -1,7 +1,7 @@
 import { q, one } from '@/lib/db';
 import { requireAdmin } from '@/lib/auth';
 import { avatarUrl, fmtDate, formatPrice, timeAgo } from '@/lib/format';
-import { PageHead, Stat, Badge, Money } from '@/components/panel';
+import { PanelHero, Stat, Badge, Money } from '@/components/panel';
 import { Icon } from '@/components/ui';
 
 export const metadata = { title: 'Dashboard' };
@@ -28,9 +28,11 @@ export default async function AdminDashboard() {
 
   return (
     <>
-      <PageHead title="Dashboard" sub={`Welcome, ${user.name}! Today is ${fmtDate(new Date())}.`}>
-        <a href="/admin/courses/new" className="btn btn-primary btn-sm"><Icon name="add" /> New course</a>
-      </PageHead>
+      <PanelHero eyebrow={`Admin pass · ${fmtDate(new Date())}`} title={`Welcome back, ${user.name.split(' ')[0]}`}
+        sub={`${s!.courses} courses are boarding · ${s!.enrolls} active enrollments`} route={['বাংলা', '中文 · 日本語 · 한국어 · English']}>
+        <a href="/admin/courses/new" className="btn btn-accent btn-sm"><Icon name="add" /> New course</a>
+        <a href="/admin/orders?status=pending" className="btn btn-outline btn-sm"><Icon name="receipt" /> Payments</a>
+      </PanelHero>
 
       {(s!.to_verify > 0 || s!.unread_msgs > 0) && (
         <div className="pn-card" style={{ borderColor: 'var(--c-warning)' }}>

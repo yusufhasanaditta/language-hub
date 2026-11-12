@@ -41,6 +41,11 @@ export async function curriculum(courseId: number, includeUnpublished = false): 
 
 export const courseUrl = (c: Row) => `/course/${encodeURIComponent(c.slug)}`;
 
+/** Seats still open (null = no limit). Every course is capped at max_students (default 20). */
+export const seatsLeft = (c: Row): number | null =>
+  Number(c.max_students) > 0 ? Math.max(0, Number(c.max_students) - Number(c.student_count ?? 0)) : null;
+export const isFull = (c: Row) => seatsLeft(c) === 0;
+
 export const teacherUrl = (t: Row) => {
   const u = t.teacher_username ?? t.username;
   return u ? `/t/${encodeURIComponent(u)}` : '/teachers';

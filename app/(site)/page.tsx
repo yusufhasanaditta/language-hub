@@ -107,7 +107,7 @@ export default async function HomePage() {
                 <article className="lh-plan lh-plan-live" role="tabpanel">
                   <h3><T bn="শিক্ষকের সাথে সরাসরি" en="Face-to-face with a teacher" /></h3>
                   <ul>
-                    <li><T bn="ব্যাচে সর্বোচ্চ ১৫ জন" en="At most 15 students per batch" /></li>
+                    <li><T bn="ব্যাচে সর্বোচ্চ ২০ জন" en="At most 20 students per batch" /></li>
                     <li><T bn="সরাসরি প্রশ্ন ও স্পিকিং প্র্যাকটিস" en="Ask questions, practise speaking live" /></li>
                     <li><T bn="প্রতিটি ক্লাসের রেকর্ডিং" en="Recording of every class" /></li>
                     <li><T bn="নির্দিষ্ট রুটিন ও পরীক্ষার প্রস্তুতি" en="Fixed schedule and exam preparation" /></li>
@@ -207,7 +207,7 @@ function NextBatch({ c }: { c: Row }) {
       <div className="container lh-pass-wrap">
         <div className="lh-section-head" data-reveal>
           <p className="lh-eyebrow"><T bn="পরবর্তী লাইভ ব্যাচ" en="Next live batch" /></p>
-          <h2><T bn="সিট সীমিত — মাত্র ১৫ জন" en="Only 15 seats per batch" /></h2>
+          <h2><T bn="সিট সীমিত — মাত্র ২০ জন" en="Only 20 seats per batch" /></h2>
           <p className="lh-muted"><T bn="শিক্ষকের সাথে সরাসরি ক্লাস, প্রতিটি ক্লাসের রেকর্ডিংসহ।" en="Learn live with a teacher — every class is recorded too." /></p>
         </div>
         <div className="lh-tilt-stage" data-reveal="right">

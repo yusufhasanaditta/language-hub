@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
   title: { default: 'Language Hub — নতুন ভাষা, নতুন সুযোগ', template: '%s — Language Hub' },
-  description: 'বাংলায় চাইনিজ, জাপানিজ, কোরিয়ান ও ইংলিশ শিখুন — লাইভ ব্যাচ (সর্বোচ্চ ১৫ জন) ও রেকর্ডেড কোর্স।',
+  description: 'বাংলায় চাইনিজ, জাপানিজ, কোরিয়ান ও ইংলিশ শিখুন — লাইভ ব্যাচ (সর্বোচ্চ ২০ জন) ও রেকর্ডেড কোর্স।',
   icons: { icon: '/image/language-hub-logo-192.png' },
   openGraph: { type: 'website', siteName: 'Language Hub', images: ['/image/language-hub-logo.png'] },
 };
@@ -30,7 +30,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="stylesheet" href="/assets/css/main.css?v=2.0.0" />
         <link rel="stylesheet" href="/assets/css/app.css?v=2.0.0" />
         <link rel="stylesheet" href="/assets/css/lh.css?v=2.0.0" />
-        <link rel="stylesheet" href="/assets/css/panel.css?v=2.0.0" />
+        <link rel="stylesheet" href="/assets/css/lh2.css?v=2.1.0" />
+        <link rel="stylesheet" href="/assets/css/panel.css?v=2.1.0" />
       </head>
       <body suppressHydrationWarning>{children}</body>
     </html>

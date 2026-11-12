@@ -10,7 +10,7 @@ export async function requireTeacherProfile() {
 }
 
 export const myCourses = (tpId: number) => q`
-  SELECT c.*, cat.name_en AS cat_name_en,
+  SELECT c.*, cat.name_en AS cat_name_en, cat.slug AS cat_slug,
     (SELECT count(*)::int FROM enrollments e WHERE e.course_id = c.id AND e.status = 'active') AS students,
     (SELECT count(*)::int FROM lessons l JOIN modules m ON m.id = l.module_id WHERE m.course_id = c.id) AS lessons
   FROM courses c JOIN categories cat ON cat.id = c.category_id

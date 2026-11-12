@@ -136,7 +136,7 @@ export default async function LearnPage({ searchParams }: Props) {
               <h2><T bn="লাইভ ক্লাসের রেকর্ডিং" en="Live class recordings" /></h2>
               <ul className="lh-rec-list">
                 {recordings.map(r => (
-                  <li key={r.id}><a href={r.recording_url} data-video={r.recording_url}>
+                  <li key={r.id}><a href={r.recording_url} data-video={embedUrl(r.recording_url) || undefined} target="_blank" rel="noopener">
                     <Icon name="play_circle" /><span><b>{r.title}</b><small><DateBn date={r.scheduled_at} /></small></span>
                   </a></li>
                 ))}

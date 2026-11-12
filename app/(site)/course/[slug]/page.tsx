@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { q, one } from '@/lib/db';
-import { courseBy, curriculum, teacherUrl } from '@/lib/courses';
+import { courseBy, curriculum, seatsLeft } from '@/lib/courses';
 import { currentUser } from '@/lib/auth';
-import { T, N, DateBn } from '@/lib/i18n';
+import { T, N, DateBn, bnNum } from '@/lib/i18n';
 import { lang, langStyle } from '@/lib/langs';
-import { priceOf, isFreeCourse, formatPrice, avatarUrl, lines } from '@/lib/format';
+import { priceOf, isFreeCourse, formatPrice, avatarUrl, lines, embedUrl } from '@/lib/format';
 import { Countdown, Icon, Price } from '@/components/ui';
+import { Journey } from '@/components/Journey';
+import { TeacherTicket } from '@/components/TeacherTicket';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -23,19 +25,26 @@ export default async function CoursePage({ params }: Props) {
   const c = await courseBy('slug', decodeURIComponent((await params).slug));
   if (!c) notFound();
   const user = await currentUser();
-  const [modules, reviews, enrolled] = await Promise.all([
+  const [modules, reviews, enrolled, teacher] = await Promise.all([
     curriculum(c.id),
     q`SELECT r.rating, r.body, u.name, u.avatar FROM reviews r JOIN users u ON u.id = r.user_id
       WHERE r.course_id = ${c.id} AND r.is_approved ORDER BY r.created_at DESC LIMIT 6`,
-    user ? one`SELECT id FROM enrollments WHERE user_id = ${user.id} AND course_id = ${c.id} AND status = 'active'` : null,
+    user ? one<{ id: number }>`SELECT id FROM enrollments WHERE user_id = ${user.id} AND course_id = ${c.id} AND status = 'active'` : null,
+    c.tp_id ? one`SELECT u.name, u.avatar, u.username, tp.id AS tp_id, tp.designation, tp.headline, ${c.cat_slug}::text AS cat_slug,
+        (SELECT count(*)::int FROM courses x WHERE x.teacher_id = tp.id AND x.status = 'published') AS courses,
+        (SELECT count(DISTINCT e.user_id)::int FROM enrollments e JOIN courses x ON x.id = e.course_id WHERE x.teacher_id = tp.id AND e.status = 'active') AS students
+      FROM teacher_profiles tp JOIN users u ON u.id = tp.user_id WHERE tp.id = ${c.tp_id}` : null,
   ]);
+  const done = new Set(enrolled
+    ? (await q<{ lesson_id: number }>`SELECT lesson_id FROM lesson_progress WHERE enrollment_id = ${enrolled.id} AND completed`).map(r => r.lesson_id)
+    : []);
 
   const L = lang(c.cat_slug);
   const [now, was] = priceOf(c);
   const free = isFreeCourse(c);
   const live = c.type === 'live';
-  const seatsLeft = live && c.max_students > 0 ? Math.max(0, c.max_students - c.student_count) : null;
-  const full = seatsLeft === 0;
+  const seats = seatsLeft(c);
+  const full = seats === 0;
   const lessonCount = modules.reduce((n, m) => n + m.lessons.length, 0) || c.lesson_count;
   const learn = lines(c.what_you_learn);
   const reqs = lines(c.requirements);
@@ -45,7 +54,7 @@ export default async function CoursePage({ params }: Props) {
   const cta = enrolled ? (
     <a href={`/learn?course=${c.id}`} className="btn btn-primary lh-btn-block"><Icon name="play_circle" /><T bn="ক্লাসরুমে যান" en="Go to classroom" /></a>
   ) : full ? (
-    <button type="button" className="btn btn-outline lh-btn-block" disabled><T bn="সব সিট পূর্ণ" en="Batch is full" /></button>
+    <button type="button" className="btn btn-outline lh-btn-block" disabled><T bn="সব সিট পূর্ণ" en="Course is full" /></button>
   ) : free ? (
     <form method="post" action="/do/enroll">
       <input type="hidden" name="course_id" value={c.id} />
@@ -57,7 +66,9 @@ export default async function CoursePage({ params }: Props) {
     </a>
   );
   const price = <Price now={now} was={was} free={free} />;
-  const video = c.intro_video_url;
+  // The lightbox needs an embeddable URL (a plain YouTube link refuses to load in a frame).
+  const video = embedUrl(c.intro_video_url);
+  const freeVideo = embedUrl(modules.flatMap(m => m.lessons).find(l => l.is_free && l.video_url)?.video_url);
 
   return (
     <>
@@ -87,6 +98,7 @@ export default async function CoursePage({ params }: Props) {
             {c.thumbnail && /^https?:\/\//.test(c.thumbnail) ? <img src={c.thumbnail} alt="" />
               : <><span className="lh-ticket-glyph" aria-hidden="true">{L.glyph}</span><span className="lh-c-media-hello" aria-hidden="true">{L.hello}</span></>}
             {video && <button type="button" className="lh-play" data-video={video} aria-label="Play trailer"><Icon name="play_arrow" /></button>}
+            {!video && freeVideo && <button type="button" className="lh-play" data-video={freeVideo} aria-label="Play free class"><Icon name="play_arrow" /></button>}
           </div>
 
           {live && c.batch_date && (
@@ -96,7 +108,7 @@ export default async function CoursePage({ params }: Props) {
                 <div><dt><T bn="শুরু" en="Starts" /></dt><dd><DateBn date={c.batch_date} /></dd></div>
                 <div><dt><T bn="ক্লাস" en="Classes" /></dt><dd><N v={lessonCount} /></dd></div>
                 <div><dt><T bn="সিট বাকি" en="Seats left" /></dt>
-                  <dd className={seatsLeft !== null && seatsLeft <= 5 ? 'lh-hot' : ''}>{seatsLeft === null ? '—' : <><N v={seatsLeft} />/<N v={c.max_students} /></>}</dd></div>
+                  <dd className={seats !== null && seats <= 5 ? 'lh-hot' : ''}>{seats === null ? '—' : <><N v={seats} />/<N v={c.max_students} /></>}</dd></div>
               </dl>
               {startsLater && <Countdown to={`${c.batch_date}T00:00:00+06:00`} />}
             </section>
@@ -109,39 +121,14 @@ export default async function CoursePage({ params }: Props) {
             </section>
           )}
 
-          {modules.length > 0 && (
-            <section className="lh-c-card" data-reveal>
-              <h2><T bn="কোর্স কারিকুলাম" en="Curriculum" /> <small><N v={modules.length} /> <T bn="অধ্যায়" en="modules" /> · <N v={lessonCount} /> <T bn="ক্লাস" en="lessons" /></small></h2>
-              <div className="lh-faq lh-curr">
-                {modules.map((m, i) => (
-                  <details key={m.id} open={i === 0}>
-                    <summary><span><span className="lh-curr-n"><N v={i + 1} /></span>{m.title}</span><Icon name="add" /></summary>
-                    <ol className="lh-curr-list lh-faq-a">
-                      {m.lessons.map(ls => (
-                        <li key={ls.id}>
-                          <Icon name={ls.kind === 'pdf' ? 'description' : 'play_circle'} />
-                          <span className="lh-curr-t">{ls.title}</span>
-                          {ls.is_free ? <span className="lh-chip lh-chip-free"><T bn="ফ্রি" en="Free" /></span>
-                            : !enrolled ? <span className="material-icons-round lh-lock" aria-label="Locked">lock</span> : null}
-                          {ls.duration > 0 && <small><N v={ls.duration} />m</small>}
-                        </li>
-                      ))}
-                    </ol>
-                  </details>
-                ))}
-              </div>
-            </section>
+          {modules.some(m => m.lessons.length > 0) && (
+            <Journey courseId={c.id} modules={modules.filter(m => m.lessons.length > 0)} catSlug={c.cat_slug} enrolled={!!enrolled} done={done} />
           )}
 
-          {c.teacher_name && (
+          {teacher && (
             <section className="lh-c-card" data-reveal>
-              <h2><T bn="শিক্ষক" en="Teacher" /></h2>
-              <div className="lh-teachers">
-                <a className="lh-teacher" href={teacherUrl(c)}>
-                  <img src={avatarUrl(c.teacher_avatar, c.teacher_name)} alt="" width={52} height={52} loading="lazy" />
-                  <span><b>{c.teacher_name}</b><small>{c.designation ?? ''}</small></span>
-                </a>
-              </div>
+              <h2><T bn="আপনার শিক্ষক" en="Your teacher" /></h2>
+              <TeacherTicket t={teacher} />
             </section>
           )}
 
@@ -184,15 +171,22 @@ export default async function CoursePage({ params }: Props) {
           <div className="lh-c-buy" data-reveal="right">
             <div className="lh-c-buy-price">{price}</div>
             {was && <p className="lh-c-save"><T bn="সাশ্রয়" en="You save" /> ৳<N v={formatPrice(was - now)} /></p>}
+            {seats !== null && !enrolled && (
+              <div className={`lh-seats ${seats <= 5 ? 'is-hot' : ''}`}>
+                <div className="lh-seats-row">
+                  <span><Icon name="event_seat" />{full ? <T bn="সব সিট পূর্ণ" en="No seats left" />
+                    : <T bn={`${bnNum(seats)}টি সিট বাকি`} en={`${seats} seats left`} />}</span>
+                  <small><N v={c.student_count} />/<N v={c.max_students} /></small>
+                </div>
+                <div className="lh-seats-bar" aria-hidden="true"><span style={{ width: `${Math.min(100, (c.student_count / c.max_students) * 100)}%` }}></span></div>
+              </div>
+            )}
             {cta}
             <ul className="lh-c-perks">
               <li><Icon name="translate" /><T bn="সব ক্লাস বাংলায়" en="All classes in Bangla" /></li>
-              {live ? (
-                <>
-                  <li><Icon name="groups" /><T bn="ব্যাচে সর্বোচ্চ ১৫ জন" en="Max 15 per batch" /></li>
-                  <li><Icon name="videocam" /><T bn="প্রতিটি ক্লাসের রেকর্ডিং" en="Every class recorded" /></li>
-                </>
-              ) : <li><Icon name="all_inclusive" /><T bn="যখন খুশি দেখুন" en="Watch any time" /></li>}
+              {c.max_students > 0 && <li><Icon name="groups" /><T bn={`সর্বোচ্চ ${bnNum(c.max_students)} জন শিক্ষার্থী`} en={`Max ${c.max_students} students`} /></li>}
+              {live ? <li><Icon name="videocam" /><T bn="প্রতিটি ক্লাসের রেকর্ডিং" en="Every class recorded" /></li>
+                : <li><Icon name="all_inclusive" /><T bn="যখন খুশি দেখুন" en="Watch any time" /></li>}
               <li><Icon name="devices" /><T bn="২টি ডিভাইসে চলবে" en="Works on 2 devices" /></li>
             </ul>
           </div>

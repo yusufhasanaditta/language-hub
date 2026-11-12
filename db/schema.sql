@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS courses (
   total_duration  int NOT NULL DEFAULT 0,
   batch_start     date,
   batch_end       date,
-  max_students    int NOT NULL DEFAULT 0,
+  max_students    int NOT NULL DEFAULT 20,
   enrolled_count  int NOT NULL DEFAULT 0,
   rating_avg      numeric(3,2) NOT NULL DEFAULT 0,
   rating_count    int NOT NULL DEFAULT 0,

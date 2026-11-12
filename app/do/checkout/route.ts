@@ -1,6 +1,6 @@
 import { one, q, val } from '@/lib/db';
 import { requireUser, ROLE } from '@/lib/auth';
-import { courseBy, courseUrl } from '@/lib/courses';
+import { courseBy, courseUrl, isFull } from '@/lib/courses';
 import { findCoupon, couponDiscount, markOrderPaid, notify } from '@/lib/orders';
 import { sslczConfigured, startPayment } from '@/lib/sslcommerz';
 import { formAction, fail, flash, rateLimit, int, str, seeOther } from '@/lib/http';
@@ -14,7 +14,7 @@ export const POST = formAction(async (f, req) => {
   const c = course!;
   if (await one`SELECT 1 FROM enrollments WHERE user_id = ${user.id} AND course_id = ${c.id} AND status = 'active'`) return `/learn?course=${c.id}`;
   if (isFreeCourse(c)) return courseUrl(c);
-  if (c.type === 'live' && c.max_students > 0 && c.student_count >= c.max_students) fail('এই ব্যাচের সব সিট পূর্ণ।', 'This batch is full.');
+  if (isFull(c)) fail('এই কোর্সের সব সিট পূর্ণ।', 'This course is full.');
 
   const price = priceOf(c)[0];
   const code = str(f, 'coupon', 50);

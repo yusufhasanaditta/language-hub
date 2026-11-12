@@ -58,7 +58,7 @@ export default async function AdminCourseEdit({ params }: { params: Promise<{ id
           <div><label>Price (BDT)</label><input name="price" type="number" min={0} step="1" className="form-control" defaultValue={c ? Number(c.price) : 0} /></div>
           <div><label>Sale price (BDT, optional)</label><input name="sale_price" type="number" min={0} step="1" className="form-control" defaultValue={c?.sale_price != null ? Number(c.sale_price) : ''} /></div>
           <div><label>Batch start date (live)</label><input name="batch_start" type="date" className="form-control" defaultValue={v('batch_date')} /></div>
-          <div><label>Max students (0 = unlimited)</label><input name="max_students" type="number" min={0} className="form-control" defaultValue={c?.max_students ?? 15} /></div>
+          <div><label>Seat limit — max students</label><input name="max_students" type="number" min={0} max={10000} className="form-control" defaultValue={c?.max_students ?? 20} /><p className="pn-hint">Default 20. When the seats are full, enrolment and checkout close. 0 = no limit.</p></div>
           <div><label>Planned number of classes (shown before lessons are added)</label><input name="total_lessons" type="number" min={0} className="form-control" defaultValue={c?.total_lessons ?? 0} /></div>
           <div><label>Thumbnail image URL</label><input name="thumbnail" type="url" className="form-control" maxLength={500} defaultValue={v('thumbnail')} placeholder="https://…" /></div>
           <div><label>Intro / trailer video URL</label><input name="intro_video_url" type="url" className="form-control" maxLength={500} defaultValue={v('intro_video_url')} /></div>
