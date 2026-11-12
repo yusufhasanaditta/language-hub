@@ -120,7 +120,17 @@ if (orderId) {
     await a.req('/do/admin/course-delete', { form: { id: cid } }); ok(a.flash().includes('deleted'), 'course deleted');
   }
 }
-{ const r = await a.req('/do/admin/settings', { form: { site_description: 'বাংলায় বিদেশি ভাষা শেখার অনলাইন স্কুল — চাইনিজ, জাপানিজ, কোরিয়ান ও ইংলিশ।', contact_phone: '', contact_email: '', facebook_url: '', youtube_url: '', whatsapp_url: '', manual_pay_numbers: '', registration_open: '1' } }); ok(a.flash().includes('saved'), 'settings save'); }
+{
+  // Re-save the settings exactly as they are (the live site's real phone/links must survive the test).
+  const html = (await a.req('/admin/settings')).text;
+  const unesc = s => s.replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  const form = {};
+  for (const m of html.matchAll(/<input[^>]*\bname="([a-z_]+)"[^>]*>/g)) form[m[1]] = unesc(m[0].match(/\bvalue="([^"]*)"/)?.[1] ?? '');
+  for (const m of html.matchAll(/<textarea[^>]*\bname="([a-z_]+)"[^>]*>([^<]*)<\/textarea>/g)) form[m[1]] = unesc(m[2]);
+  ok('contact_phone' in form && 'registration_open' in form, 'settings form fields found');
+  await a.req('/do/admin/settings', { form });
+  ok(a.flash().includes('saved'), 'settings save');
+}
 
 // ── Teacher ──────────────────────────────────────────────────────────────────
 console.log('Teacher');
