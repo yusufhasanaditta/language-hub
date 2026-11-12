@@ -27,11 +27,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link rel="stylesheet" href={FONTS} />
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap" />
-        <link rel="stylesheet" href="/assets/css/main.css?v=2.0.0" />
+        <link rel="stylesheet" href="/assets/css/main.css?v=2.1.0" />
         <link rel="stylesheet" href="/assets/css/app.css?v=2.0.0" />
         <link rel="stylesheet" href="/assets/css/lh.css?v=2.0.0" />
-        <link rel="stylesheet" href="/assets/css/lh2.css?v=2.3.0" />
-        <link rel="stylesheet" href="/assets/css/panel.css?v=2.3.0" />
+        <link rel="stylesheet" href="/assets/css/lh2.css?v=2.4.0" />
+        <link rel="stylesheet" href="/assets/css/panel.css?v=2.4.0" />
       </head>
       <body suppressHydrationWarning>{children}</body>
     </html>

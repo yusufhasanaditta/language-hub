@@ -73,6 +73,7 @@ export default async function LearnPage({ searchParams }: Props) {
               <p>{course.type === 'live'
                 ? <T bn='পরের লাইভ ক্লাসের সময় নিচে দেখুন। ক্লাসের ১০ মিনিট আগে "ক্লাসে যোগ দিন" বাটন চালু হবে।' en="See your next live class below. The Join button opens 10 minutes before class." />
                 : <T bn="প্রথম ক্লাস থেকেই শুরু করুন — নিজের গতিতে।" en="Start with the first lesson — at your own pace." />}</p>
+              <p className="lh-welcome-pass"><span className="lh-stamp-sm is-done"><T bn="বোর্ডেড" en="Boarded" /></span><T bn={`বোর্ডিং পাস ইস্যু হয়েছে · ফ্লাইট LH ${String(course.id).padStart(3, "0")}`} en={`Boarding pass issued · Flight LH ${String(course.id).padStart(3, "0")}`} /></p>
             </div>
           </div>
         </div>

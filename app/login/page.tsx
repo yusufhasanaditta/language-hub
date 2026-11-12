@@ -55,6 +55,7 @@ export default async function LoginPage({ searchParams }: Props) {
               <input type="email" id="email" name="email" className="lh-input" autoComplete="username" placeholder="name@gmail.com" required autoFocus />
               <label htmlFor="password"><T bn="পাসওয়ার্ড" en="Password" /></label>
               <input type="password" id="password" name="password" className="lh-input" autoComplete="current-password" required />
+              <a href="/forgot" className="lh-forgot-link"><T bn="পাসওয়ার্ড ভুলে গেছেন?" en="Forgot password?" /></a>
               <button type="submit" className="btn btn-primary lh-btn-block" data-busy><T bn="লগইন" en="Log in" /> <Icon name="arrow_forward" /></button>
             </form>
             {emailCodes

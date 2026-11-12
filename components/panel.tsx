@@ -16,6 +16,7 @@ const ADMIN_NAV: Item[] = [
   ['/admin/courses', 'play_circle', 'Courses'],
   ['/admin/categories', 'category', 'Languages'],
   ['/admin/users', 'people', 'Users & teachers'],
+  ['/admin/password-help', 'lock_reset', 'Password help'],
   ['/admin/enrollments', 'how_to_reg', 'Enrollments'],
   null,
   ['/admin/orders', 'receipt', 'Orders & payments'],
@@ -95,7 +96,7 @@ export async function PanelShell({ user, kind, children }: { user: User; kind: '
 
         <div className="admin-content">{children}</div>
       </div>
-      <LegacyScripts srcs={['/assets/js/main.js?v=2.1.0', '/assets/js/app.js?v=2.1.0', '/assets/js/lh.js?v=2.1.0']} globals={{ APP_URL: '', CSRF_TOKEN: '', IS_LOGGED_IN: true, VAPID_PUBLIC_KEY: '' }} />
+      <LegacyScripts srcs={['/assets/js/main.js?v=2.2.0', '/assets/js/app.js?v=2.2.0', '/assets/js/lh.js?v=2.2.0']} globals={{ APP_URL: '', CSRF_TOKEN: '', IS_LOGGED_IN: true, VAPID_PUBLIC_KEY: '' }} />
     </>
   );
 }

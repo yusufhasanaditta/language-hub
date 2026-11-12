@@ -41,7 +41,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                       <td>{fmtDate(o.paid_at ?? o.created_at)}</td>
                       <td>৳<N v={formatPrice(o.total)} /></td>
                       <td><span className={`status-badge status-${o.status}`}><T bn={s[0]} en={s[1]} /></span></td>
-                      <td>{o.status === 'paid' && <a className="lh-link" href={`/invoice/${o.id}`}><T bn="ইনভয়েস" en="Invoice" /></a>}</td>
+                      <td>{(o.status === 'paid' || o.status === 'refunded') && <a className="lh-link" href={`/invoice/${o.id}`}><T bn="ইনভয়েস" en="Invoice" /></a>}</td>
                     </tr>
                   );
                 })}

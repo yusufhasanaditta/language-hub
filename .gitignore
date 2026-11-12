@@ -24,3 +24,6 @@ legacy-php/uploads/
 
 # Vercel CLI link
 .vercel
+
+# cPanel / EBNhost build output (contains a private env file)
+deploy/

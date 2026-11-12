@@ -343,3 +343,102 @@ html[data-theme="dark"] .lh-visa.is-done .lh-visa-state { color: #6EE7B7; }
 
 /* scrolled top bar keeps the theme colour (an old main.css rule forced it white, even in dark mode) */
 .navbar.scrolled { background: color-mix(in srgb, var(--lh-bg) 88%, transparent) !important; box-shadow: 0 4px 24px rgba(40, 10, 80, .08) !important; }
+
+/* Languages dropdown in the top menu */
+.lh-drop-caret { transition: transform .25s var(--lh-ease); }
+.nav-cat-dropdown.is-open .lh-drop-caret { transform: rotate(180deg); }
+.nav-cat-dropdown.is-open > .nav-cat { background: var(--lh-bg-tint); color: var(--lh-ink); }
+.lh-lang-drop { right: auto !important; z-index: 1300; }
+
+/* ═══ v2.4 — Checkout boarding pass + ticket printer ═══════════════════════ */
+.lh-bp { --notch: var(--lh-bg); position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 150px; background: var(--lh-card);
+  border: 1px solid var(--lh-line); border-radius: 22px; box-shadow: var(--lh-shadow); overflow: hidden; }
+.lh-bp-main { position: relative; padding: 0 0 18px; min-width: 0; }
+.lh-bp-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 20px; color: #fff; font-weight: 700; font-size: .86rem;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--lang, var(--lh-brand)) 85%, #1A1033), var(--lang, var(--lh-brand))); }
+.lh-bp-head span { display: inline-flex; align-items: center; gap: 6px; }
+.lh-bp-head .material-icons-round { font-size: 18px; }
+.lh-bp-flight { font-family: ui-monospace, Consolas, monospace; letter-spacing: .12em; background: rgba(255,255,255,.18); padding: 2px 10px; border-radius: 99px; }
+.lh-bp-route { display: flex; align-items: center; gap: 12px; padding: 16px 20px 4px; }
+.lh-bp-route > div { display: flex; flex-direction: column; min-width: 0; }
+.lh-bp-route small { font-size: .66rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--lh-ink-3); }
+.lh-bp-route b { font-family: var(--font-display); font-size: 1.6rem; line-height: 1.15; color: var(--lh-ink); }
+.lh-bp-to { text-align: right; }
+.lh-bp-to b { color: var(--lang, var(--lh-brand)); }
+.lh-bp-plane { position: relative; flex: 1; display: grid; place-items: center; color: var(--lang, var(--lh-brand)); }
+.lh-bp-plane::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 2px dashed var(--lh-line-2); }
+.lh-bp-plane .material-icons-round { position: relative; z-index: 1; padding: 0 6px; background: var(--lh-card); transform: rotate(90deg); font-size: 24px; transition: transform 1s var(--lh-ease); }
+.lh-bp-title { margin: 6px 20px 0; font-family: var(--font-display); font-size: 1.12rem; line-height: 1.4; color: var(--lh-ink); }
+.lh-bp-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 14px 20px 0; padding-top: 12px; border-top: 1px dashed var(--lh-line-2); }
+.lh-bp-grid dt { font-size: .64rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--lh-ink-3); }
+.lh-bp-grid dd { margin: 2px 0 0; font-weight: 700; color: var(--lh-ink); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.lh-bp-crew { display: flex; align-items: center; gap: 6px; margin: 12px 20px 0; font-size: .85rem; color: var(--lh-ink-2); }
+.lh-bp-crew .material-icons-round { font-size: 17px; color: var(--lang, var(--lh-brand)); }
+.lh-bp-stub { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 54px 16px 16px; border-left: 2px dashed var(--lh-line-2);
+  background: color-mix(in srgb, var(--lang, var(--lh-brand)) 7%, var(--lh-card)); transition: transform .7s var(--lh-spring), opacity .7s; }
+.lh-bp-stub::before, .lh-bp-stub::after { content: ""; position: absolute; left: -12px; width: 22px; height: 22px; border-radius: 50%; background: var(--notch); border: 1px solid var(--lh-line); }
+.lh-bp-stub::before { top: -12px; } .lh-bp-stub::after { bottom: -12px; }
+.lh-bp-glyph { position: absolute; top: 8px; right: 12px; font-size: 2.2rem; font-weight: 800; line-height: 1; color: var(--lang, var(--lh-brand)); opacity: .3; }
+.lh-bp-stub small { font-size: .66rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--lh-ink-3); }
+.lh-bp-stub b { font-family: var(--font-display); font-size: 1.45rem; color: var(--lh-ink); margin-bottom: 8px; }
+.lh-bp-stub .lh-barcode { width: 100%; }
+.lh-bp-code { font-family: ui-monospace, Consolas, monospace; font-size: .7rem; letter-spacing: .16em; color: var(--lh-ink-3); }
+.lh-bp-stamp { position: absolute; right: 22px; bottom: 50px; padding: 4px 14px; border: 3px solid #0E8A5F; border-radius: 10px; color: #0E8A5F; background: color-mix(in srgb, var(--lh-card) 80%, transparent);
+  font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; letter-spacing: .1em; text-transform: uppercase; opacity: 0; transform: rotate(-14deg) scale(2.4); pointer-events: none; }
+@media (max-width: 600px) {
+  .lh-bp { grid-template-columns: 1fr; }
+  .lh-bp-stub { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 16px 20px; border-left: 0; border-top: 2px dashed var(--lh-line-2); }
+  .lh-bp-stub::before, .lh-bp-stub::after { top: -12px; bottom: auto; }
+  .lh-bp-stub::before { left: -12px; } .lh-bp-stub::after { left: auto; right: -12px; }
+  .lh-bp-stub b { margin: 0; }
+  .lh-bp-stub .lh-barcode { width: 120px; margin-left: auto; }
+  .lh-bp-glyph { display: none; }
+  .lh-bp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lh-bp-route b { font-size: 1.3rem; }
+}
+.lh-co-pay.is-busy, form[data-ticket-buy] .is-busy { opacity: .7; cursor: progress; }
+
+/* ticket printer overlay */
+.lh-print { position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center; padding: 16px;
+  background: rgba(17, 10, 32, .72); backdrop-filter: blur(6px); opacity: 0; transition: opacity .3s; }
+.lh-print[hidden] { display: none; }
+.lh-print.is-printing { opacity: 1; }
+.lh-print-box { width: min(560px, 100%); }
+.lh-print-slot { position: relative; z-index: 2; height: 26px; margin: 0 -10px; border-radius: 14px; background: linear-gradient(#2A1D45, #120A22);
+  box-shadow: 0 10px 24px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.12); }
+.lh-print-slot i { position: absolute; left: 18px; right: 18px; top: 50%; height: 4px; margin-top: -2px; border-radius: 4px; background: #05020A; box-shadow: 0 0 10px rgba(167,139,250,.7); }
+.lh-print-paper { position: relative; z-index: 1; margin-top: -8px; overflow: hidden; border-radius: 0 0 24px 24px; padding: 0 2px 16px; }
+.lh-print-paper .lh-bp { --notch: #1b1230; transform: translateY(-104%); }
+.lh-print.is-printing .lh-print-paper .lh-bp { animation: lhPrint 1.35s steps(9, end) .15s forwards; }
+@keyframes lhPrint { to { transform: translateY(0); } }
+.lh-print.is-booked .lh-bp-stamp { animation: lhBpStamp .5s var(--lh-spring) forwards; }
+@keyframes lhBpStamp { 0% { opacity: 0; transform: rotate(-14deg) scale(2.4); } 70% { opacity: 1; transform: rotate(-14deg) scale(.9); } 100% { opacity: 1; transform: rotate(-14deg) scale(1); } }
+.lh-print.is-booked .lh-bp-stub { transform: translate(18px, 10px) rotate(7deg); transition-delay: .45s; }
+.lh-print.is-booked .lh-bp-plane .material-icons-round { transform: translate(140px, -46px) rotate(60deg); opacity: 0; transition: transform 1s .5s var(--lh-ease), opacity .4s 1.1s; }
+.lh-print-msg { margin: 18px 0 0; text-align: center; color: #fff; font-weight: 700; font-size: 1.05rem; }
+.lh-print-msg [data-step="2"], .lh-print-msg [data-step="2m"], .lh-print.is-booked .lh-print-msg [data-step="1"] { display: none; }
+.lh-print.is-booked:not(.is-manual) .lh-print-msg [data-step="2"], .lh-print.is-booked.is-manual .lh-print-msg [data-step="2m"] { display: inline; animation: lhPop .4s var(--lh-ease); }
+/* manual bKash/Nagad payment: "checking" stamp in amber, the stub stays on (not boarded yet) */
+.lh-bp-stamp-wait, .is-manual .lh-bp-stamp-ok { display: none; }
+.is-manual .lh-bp-stamp-wait { display: inline; }
+.lh-print.is-manual .lh-bp-stamp { color: #B45309; border-color: #B45309; font-size: 1.1rem; }
+.lh-print.is-manual.is-booked .lh-bp-stub { transform: none; }
+.lh-print.is-manual.is-booked .lh-bp-plane .material-icons-round { transform: rotate(90deg); opacity: 1; }
+
+/* classroom welcome after buying: boarding pass issued */
+.lh-welcome-pass { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; padding: 6px 14px 6px 6px; border-radius: 12px;
+  border: 2px dashed #D99E00; background: rgba(255,255,255,.6); font-weight: 700; font-size: .88rem; }
+html[data-theme="dark"] .lh-welcome-pass { background: rgba(255,255,255,.06); }
+.lh-welcome-pass .lh-stamp-sm { animation: lhStamp .7s var(--lh-spring) .5s both; }
+@media (prefers-reduced-motion: reduce) {
+  .lh-print-paper .lh-bp { transform: none; }
+}
+
+/* forgot / reset password screens */
+.lh-forgot-link { display: block; margin: -4px 0 12px; text-align: right; font-size: .88rem; font-weight: 600; color: var(--lh-brand-2); text-decoration: none; }
+.lh-forgot-link:hover { text-decoration: underline; }
+.lh-forgot-sent { display: grid; gap: 12px; text-align: center; }
+.lh-forgot-sent p { margin: 0; line-height: 1.6; color: var(--lh-ink-2); }
+.lh-forgot-ico { width: 64px; height: 64px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center; color: #0E8A5F; background: color-mix(in srgb, #0E8A5F 12%, transparent); }
+.lh-forgot-ico .material-icons-round { font-size: 32px; }
+.lh-forgot-ico.is-bad { color: #DC2626; background: color-mix(in srgb, #DC2626 12%, transparent); }

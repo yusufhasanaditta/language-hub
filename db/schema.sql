@@ -318,3 +318,25 @@ CREATE TABLE IF NOT EXISTS course_details (
   created_at  timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS course_details_course_idx ON course_details(course_id, kind, sort_order);
+
+-- "Forgot password" help: a learner asks, an admin answers with a one-time reset link.
+CREATE TABLE IF NOT EXISTS password_requests (
+  id          serial PRIMARY KEY,
+  user_id     int REFERENCES users(id) ON DELETE SET NULL,   -- the matching account, if any
+  contact     varchar(190) NOT NULL,                           -- email or phone they typed
+  name        varchar(150),
+  note        varchar(500),
+  status      varchar(10) NOT NULL DEFAULT 'open' CHECK (status IN ('open','done','dismissed')),
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS password_requests_status_idx ON password_requests(status, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS password_resets (
+  id          serial PRIMARY KEY,
+  user_id     int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash  varchar(64) NOT NULL UNIQUE,                     -- sha256 of the link token
+  created_by  int REFERENCES users(id) ON DELETE SET NULL,
+  expires_at  timestamptz NOT NULL,
+  used_at     timestamptz,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);

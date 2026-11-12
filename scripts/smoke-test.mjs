@@ -63,6 +63,11 @@ for (const p of ['/dashboard', '/my-courses', '/orders', '/admin', '/teacher', '
 { const r = await g.req('/do/login/password', { form: { email: ACC.admin[0], password: 'wrong-password' } }); ok(r.status === 303 && g.flash().includes('Wrong'), 'wrong password is rejected'); }
 { const r = await g.req('/do/login/password', { form: { email: ACC.admin[0], password: ACC.admin[1] }, origin: 'https://evil.example' }); ok(r.status === 403, `cross-site login POST blocked (${r.status})`); }
 { const r = await g.req('/do/contact', { form: { name: 'Smoke Test', email: 'smoke@example.com', subject: 'smoke-test', message: 'Automated smoke test message' } }); ok(r.status === 303 && g.flash().includes('Thank'), 'contact form'); }
+// Forgot password: request page, request (unknown address gets the same answer), dead reset link
+await page(g, '/forgot');
+{ const r = await g.req('/do/forgot', { form: { contact: 'smoke-forgot@example.com', name: 'Smoke Forgot', note: 'smoke-test' } }); ok(r.status === 303 && r.loc === '/forgot?sent=1', `forgot request (${r.status} ${r.loc})`); }
+{ const r = await page(g, '/reset?token=not-a-real-token-xxxxxxxxxxxx'); ok(/no longer works|কাজ করছে না/.test(r.text), 'invalid reset link is refused'); }
+{ const r = await g.req('/do/reset', { form: { token: 'not-a-real-token-xxxxxxxxxxxx', password: 'whatever123', confirm: 'whatever123' } }); ok(r.status === 303 && g.flash().includes('no longer works'), 'reset with a bad token is refused'); }
 
 // ── Student ──────────────────────────────────────────────────────────────────
 console.log('Student');
@@ -89,7 +94,12 @@ const trx = 'SMOKE' + Date.now().toString(36).toUpperCase();
 console.log('Admin');
 const a = await login('admin');
 for (const p of ['/admin', '/admin/courses', '/admin/courses?status=draft', '/admin/courses/new', '/admin/courses/5', '/admin/categories', '/admin/users', '/admin/users?role=2', '/admin/users/new', '/admin/users/11',
-  '/admin/enrollments', '/admin/orders', '/admin/orders?status=pending', '/admin/coupons', '/admin/messages', '/admin/settings', '/teacher', '/learn?course=4']) await page(a, p);
+  '/admin/enrollments', '/admin/orders', '/admin/orders?status=pending', '/admin/coupons', '/admin/messages', '/admin/settings', '/admin/password-help', '/teacher', '/learn?course=4']) await page(a, p);
+{ // the smoke request shows up for the admin; close it
+  const id = (await a.req('/admin/password-help')).text.match(/Smoke Forgot[^]*?help-status[^]*?name="id" value="(\d+)"/)?.[1];
+  ok(!!id, 'forgot request listed in Password help');
+  if (id) { await a.req('/do/admin/help-status', { form: { id, status: 'dismissed' } }); ok(a.flash().includes('closed'), 'close a password-help request'); }
+}
 // Approve the student's payment
 const ordersHtml = (await a.req('/admin/orders?status=pending')).text;
 const m = ordersHtml.match(new RegExp(`name="id" value="(\\d+)"[^]*?${trx}`)) || ordersHtml.match(new RegExp(`${trx}[^]*?order-approve[^]*?name="id" value="(\\d+)"`));

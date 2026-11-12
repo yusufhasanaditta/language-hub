@@ -11,7 +11,8 @@ export const metadata: Metadata = { title: 'Invoice', robots: { index: false } }
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
   const id = Number((await params).id) || 0;
-  const o = await one`SELECT * FROM orders WHERE id = ${id} AND status = 'paid'`;
+  // Refunded orders keep their invoice (marked REFUNDED) so old links in notifications still work.
+  const o = await one`SELECT * FROM orders WHERE id = ${id} AND status IN ('paid', 'refunded')`;
   // Students see only their own invoices; admins can open any.
   if (!o || (o.user_id !== user.id && !isAdmin(user))) notFound();
   const [items, s] = await Promise.all([q`SELECT title, price FROM order_items WHERE order_id = ${id}`, getSettings()]);
@@ -29,6 +30,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <h2 style={{ margin: 0 }}>INVOICE</h2>
             <p style={{ margin: 0 }}><b>{o.invoice_no}</b></p>
             <p className="lh-muted" style={{ margin: 0 }}>{fmtDate(o.paid_at)}</p>
+            {o.status === 'refunded' && <p style={{ margin: '6px 0 0', display: 'inline-block', padding: '2px 10px', border: '2px solid #DC2626', borderRadius: 6, color: '#DC2626', fontWeight: 800, letterSpacing: '.08em' }}>REFUNDED</p>}
           </div>
         </div>
         <hr style={{ margin: '20px 0', border: 0, borderTop: '1px solid var(--lh-line, #e5e5e5)' }} />

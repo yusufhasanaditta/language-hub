@@ -287,6 +287,60 @@
     }
   });
 
+  // ── Menu dropdowns (Languages): click/tap toggles, hover opens on desktop ──
+  $$('[data-lh-drop]').forEach(function (wrap) {
+    var btn = wrap.querySelector('button'), menu = wrap.querySelector('.dropdown-menu'), timer, hoverAt = 0;
+    if (!btn || !menu) return;
+    function set(open) {
+      clearTimeout(timer);
+      menu.classList.toggle('open', open);
+      wrap.classList.toggle('is-open', open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      // A click right after hover opened it should keep it open, not close it again.
+      set(Date.now() - hoverAt < 600 || !menu.classList.contains('open'));
+    });
+    if (fine) {
+      wrap.addEventListener('mouseenter', function () { hoverAt = Date.now(); set(true); });
+      wrap.addEventListener('mouseleave', function () { timer = setTimeout(function () { set(false); }, 180); });
+    }
+    document.addEventListener('click', function (e) { if (!wrap.contains(e.target)) set(false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && menu.classList.contains('open')) { set(false); btn.focus(); }
+    });
+  });
+
+  // ── Buying a course = printing a ticket ────────────────────────────────────
+  // The form still submits normally; the printer scene only plays first (≈2.7 s).
+  var printer = document.querySelector('[data-ticket-printer]');
+  $$('form[data-ticket-buy]').forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+      if (form.getAttribute('data-sent')) { e.preventDefault(); return; }   // no double payments
+      form.setAttribute('data-sent', '1');
+      var btn = form.querySelector('[type=submit]');
+      if (btn) { btn.disabled = true; btn.classList.add('is-busy'); }
+      if (reduce || !printer) return;
+      e.preventDefault();
+      printer.classList.toggle('is-manual', form.getAttribute('data-ticket-buy') === 'manual'); // bKash/Nagad: awaits approval
+      printer.hidden = false;
+      document.body.classList.add('no-scroll');
+      requestAnimationFrame(function () { requestAnimationFrame(function () { printer.classList.add('is-printing'); }); });
+      setTimeout(function () { printer.classList.add('is-booked'); }, 1500);
+      setTimeout(function () { HTMLFormElement.prototype.submit.call(form); }, 2700);
+    });
+  });
+  // Coming back with the browser's Back button: reset the scene and the buttons.
+  window.addEventListener('pageshow', function (e) {
+    if (!e.persisted) return;
+    $$('form[data-ticket-buy]').forEach(function (f) {
+      f.removeAttribute('data-sent');
+      var b = f.querySelector('[type=submit]'); if (b) { b.disabled = false; b.classList.remove('is-busy'); }
+    });
+    if (printer) { printer.hidden = true; printer.classList.remove('is-printing', 'is-booked'); document.body.classList.remove('no-scroll'); }
+  });
+
   // ── Sliding switch (Live / Recorded): tap or swipe ────────────────────────
   $$('[data-switch]').forEach(function (sw) {
     var tabs = $$('[data-tab]', sw);

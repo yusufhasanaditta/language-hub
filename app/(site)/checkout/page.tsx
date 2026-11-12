@@ -7,9 +7,10 @@ import { findCoupon, couponDiscount } from '@/lib/orders';
 import { sslczConfigured } from '@/lib/sslcommerz';
 import { setting } from '@/lib/settings';
 import { T, N, bnNum } from '@/lib/i18n';
-import { lang, langStyle } from '@/lib/langs';
 import { formatPrice, priceOf, isFreeCourse } from '@/lib/format';
 import { Icon } from '@/components/ui';
+import { BoardingPass, TicketPrinter } from '@/components/BoardingPass';
+import { seatsLeft } from '@/lib/courses';
 
 export const metadata: Metadata = { title: 'Checkout', robots: { index: false } };
 
@@ -33,7 +34,8 @@ export default async function CheckoutPage({ searchParams }: Props) {
   const pending = await one`SELECT o.id, o.pay_ref FROM orders o JOIN order_items i ON i.order_id = o.id
                              WHERE o.user_id = ${user.id} AND i.course_id = ${course.id} AND o.status = 'pending' AND o.pay_method = 'manual'
                              ORDER BY o.id DESC LIMIT 1`;
-  const L = lang(course.cat_slug);
+  const left = seatsLeft(course);
+  const ticket = { course, passenger: user.name, total, seat: left === 0 ? null : Number(course.student_count ?? 0) + 1 };
 
   return (
     <section className="container lh-co">
@@ -54,14 +56,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
 
       <div className="lh-co-grid">
         <div className="lh-co-main">
-          <article className="lh-co-item" style={langStyle(course.cat_slug)} data-reveal>
-            <span className="lh-co-glyph" aria-hidden="true">{L.glyph}</span>
-            <div>
-              <p className="lh-ticket-meta"><T bn={course.cat_name} en={course.cat_name_en} /> · {course.type === 'live' ? <T bn="লাইভ ব্যাচ" en="Live batch" /> : <T bn="রেকর্ডেড" en="Recorded" />}</p>
-              <h2><T bn={course.title_bn} en={course.title_en || course.title_bn} /></h2>
-              <p className="lh-ticket-teacher">{course.teacher_name ?? ''}</p>
-            </div>
-          </article>
+          <div data-reveal><BoardingPass {...ticket} /></div>
 
           <form method="get" action="/checkout" className="lh-co-coupon" data-reveal>
             <input type="hidden" name="course" value={course.id} />
@@ -82,7 +77,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
             <div className="lh-co-line lh-co-total"><span><T bn="মোট" en="Total" /></span><span className="lh-price">৳<N v={formatPrice(total)} /></span></div>
 
             {total <= 0 || online ? (
-              <form method="post" action="/do/checkout">
+              <form method="post" action="/do/checkout" data-ticket-buy>
                 <input type="hidden" name="course_id" value={course.id} />
                 <input type="hidden" name="coupon" value={coupon ? coupon.code : ''} />
                 <input type="hidden" name="method" value="online" />
@@ -101,7 +96,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
                 <p>{manualNumbers
                   ? <T bn={`নিচের নম্বরে ৳${bnNum(formatPrice(total))} Send Money করুন, তারপর TrxID দিন:\n${manualNumbers}`} en={`Send ৳${formatPrice(total)} with Send Money to the number below, then enter the TrxID:\n${manualNumbers}`} />
                   : <T bn="পেমেন্ট নম্বর জানতে আমাদের সাথে যোগাযোগ করুন, তারপর TrxID দিন।" en="Contact us for the payment number, then enter your TrxID here." />}</p>
-                <form method="post" action="/do/checkout" className="lh-form">
+                <form method="post" action="/do/checkout" className="lh-form" data-ticket-buy="manual">
                   <input type="hidden" name="course_id" value={course.id} />
                   <input type="hidden" name="coupon" value={coupon ? coupon.code : ''} />
                   <input type="hidden" name="method" value="manual" />
@@ -120,6 +115,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
           </div>
         </aside>
       </div>
+      <TicketPrinter {...ticket} />
     </section>
   );
 }

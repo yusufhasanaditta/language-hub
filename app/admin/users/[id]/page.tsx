@@ -27,6 +27,7 @@ export default async function UserEditPage({ params }: { params: Promise<{ id: s
   return (
     <>
       <PageHead title={isNew ? 'Add user' : u!.name} sub={isNew ? 'Create a student, teacher or admin account with a password.' : <>Joined {fmtDate(u!.created_at)} · <Badge s={ROLE_NAMES[u!.role_id]} /></>}>
+        {u && <ActionButton action="/do/admin/reset-link" fields={{ user_id: u.id }} label="Create password reset link" cls="btn btn-outline btn-sm" />}
         <a href="/admin/users" className="btn btn-outline btn-sm">← All users</a>
       </PageHead>
 

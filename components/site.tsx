@@ -79,9 +79,11 @@ export async function SiteHeader() {
           <div className="navbar-categories lh-nav">
             <a href="/" {...item('home')}><Icon name="home" /><T bn="হোম" en="Home" /></a>
             <a href="/courses" {...item('courses')}><T bn="কোর্স" en="Courses" /></a>
-            <div className="nav-cat-dropdown">
-              <button className={`nav-cat ${here === 'lang' ? 'is-active' : ''}`} type="button"><T bn="ভাষা" en="Languages" /> <span className="material-icons-round" style={{ fontSize: 16 }}>expand_more</span></button>
-              <div className="dropdown-menu nav-categories-drop lh-lang-drop" style={{ display: 'none' }}>
+            <div className="nav-cat-dropdown" data-lh-drop>
+              <button className={`nav-cat ${here === 'lang' ? 'is-active' : ''}`} type="button" aria-expanded="false" aria-haspopup="true" aria-controls="langMenu">
+                <T bn="ভাষা" en="Languages" /> <span className="material-icons-round lh-drop-caret" style={{ fontSize: 16 }}>expand_more</span>
+              </button>
+              <div className="dropdown-menu lh-lang-drop" id="langMenu" role="menu">
                 {cats.map(cat => (
                   <a key={cat.id} href={`/category/${cat.slug}`} className="dropdown-item" style={{ '--lang': cat.color } as React.CSSProperties}>
                     <Glyph cat={cat} /> <T bn={cat.name_bn} en={cat.name_en} />
@@ -294,7 +296,7 @@ export async function SiteFooter() {
 /** The original site scripts (menus, filters, carousel, countdowns, theme/lang toggles). */
 export function PageScripts({ loggedIn, only }: { loggedIn: boolean; only?: 'lh' }) {
   const srcs = only === 'lh'
-    ? ['/assets/js/lh.js?v=2.1.0']
-    : ['/assets/js/main.js?v=2.1.0', '/assets/js/app.js?v=2.1.0', '/assets/js/lh.js?v=2.1.0'];
+    ? ['/assets/js/lh.js?v=2.2.0']
+    : ['/assets/js/main.js?v=2.2.0', '/assets/js/app.js?v=2.2.0', '/assets/js/lh.js?v=2.2.0'];
   return <LegacyScripts srcs={srcs} globals={{ APP_URL: '', CSRF_TOKEN: '', IS_LOGGED_IN: loggedIn, VAPID_PUBLIC_KEY: '' }} />;
 }

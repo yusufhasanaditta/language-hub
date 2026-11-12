@@ -8,6 +8,7 @@ import { enroll, markOrderPaid, notify } from '@/lib/orders';
 import { safeUrl, slugify } from '@/lib/format';
 import { EDITABLE_SETTINGS } from '@/lib/settings';
 import { setLead } from '@/lib/team';
+import { createReset, showResetOnce } from '@/lib/reset';
 
 type H = (f: FormData, me: User) => Promise<string | void>;
 
@@ -186,6 +187,38 @@ const handlers: Record<string, H> = {
     await q`DELETE FROM courses WHERE id = ${int(f, 'id')}`;
     await flash('success', 'Course deleted.');
     return '/admin/courses';
+  },
+
+  // ── Password help ("forgot password") ─────────────────────────────────────
+  async 'reset-link'(f, me) {
+    const userId = int(f, 'user_id');
+    if (!(await one`SELECT 1 FROM users WHERE id = ${userId} AND is_active`)) fail('That account was not found or is disabled.');
+    const token = await createReset(userId, me.id);
+    // Only the hash is stored; the plaintext link reaches the Password help page through a
+    // short-lived httpOnly cookie (never the URL, so it stays out of history and server logs).
+    await showResetOnce(token, userId);
+    return '/admin/password-help#link';
+  },
+
+  async 'temp-password'(f, me) {
+    const userId = int(f, 'user_id'), pw = String(f.get('password') ?? '');
+    if (pw.length < 8) fail('The temporary password must be at least 8 characters.');
+    if (!(await one`SELECT 1 FROM users WHERE id = ${userId}`)) fail('That account was not found.');
+    await q`UPDATE users SET password_hash = ${await hashPassword(pw)}, updated_at = now() WHERE id = ${userId}`;
+    await q`UPDATE password_resets SET used_at = now() WHERE user_id = ${userId} AND used_at IS NULL`; // old links stop working
+    // Sign the learner out everywhere (but don't log an admin out of their own current session).
+    if (userId === me.id) await q`DELETE FROM user_sessions WHERE user_id = ${userId} AND id <> ${me.session_id}`;
+    else await q`DELETE FROM user_sessions WHERE user_id = ${userId}`;
+    await q`UPDATE password_requests SET status = 'done' WHERE user_id = ${userId} AND status = 'open'`;
+    await flash('success', 'Temporary password set. Give it to the learner and ask them to change it in Edit profile.');
+    return '/admin/password-help';
+  },
+
+  async 'help-status'(f) {
+    const status = ['open', 'done', 'dismissed'].includes(str(f, 'status')) ? str(f, 'status') : 'done';
+    await q`UPDATE password_requests SET status = ${status} WHERE id = ${int(f, 'id')}`;
+    await flash('success', status === 'open' ? 'Request reopened.' : 'Request closed.');
+    return '/admin/password-help';
   },
 
   async 'category-save'(f) {

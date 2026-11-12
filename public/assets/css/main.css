@@ -170,7 +170,6 @@ p:last-child { margin-bottom: 0; }
   .d-md-flex  { display: flex !important; }
   .d-md-none  { display: none !important; }
   .d-md-block { display: block !important; }
-  .d-none { display: none !important; }
 }
 @media (min-width: 768px) {
   .d-md-inline { display: inline !important; }
