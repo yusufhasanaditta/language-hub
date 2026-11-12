@@ -4,14 +4,14 @@ import { isAdmin } from '@/lib/auth';
 import { requireTeacherProfile } from '@/lib/teacher';
 import { formAction, fail, flash, str, int, optStr } from '@/lib/http';
 import { safeUrl } from '@/lib/format';
+import { teachesCourse } from '@/lib/team';
 
 type Ctx = Awaited<ReturnType<typeof requireTeacherProfile>>;
 
 const handlers: Record<string, (f: FormData, t: Ctx) => Promise<string | void>> = {
   async 'course-text'(f, { user, tp }) {
     const id = int(f, 'course_id');
-    const c = await one<{ teacher_id: number }>`SELECT teacher_id FROM courses WHERE id = ${id}`;
-    if (!c || (c.teacher_id !== tp.id && !isAdmin(user))) fail('You can only edit your own courses.');
+    if (!isAdmin(user) && !(await teachesCourse(tp.id, id))) fail('You can only edit your own courses.');
     await q`UPDATE courses SET short_desc = ${optStr(f, 'short_desc', 300)}, description_bn = ${optStr(f, 'description_bn', 20000)},
             what_you_learn = ${optStr(f, 'what_you_learn', 5000)}, requirements = ${optStr(f, 'requirements', 5000)},
             intro_video_url = ${safeUrl(str(f, 'intro_video_url', 500))}, fb_group_link = ${safeUrl(str(f, 'fb_group_link', 500))},

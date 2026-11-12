@@ -32,6 +32,7 @@ export function Journey({ courseId, modules, catSlug, enrolled, done }: {
           <span>বাংলা</span><i></i><Icon name="flight" /><i></i><span>{L.native || L.exam || '—'}</span>
         </div>
       </div>
+      <div className="lh-jtrack" aria-hidden="true"><i></i><span className="material-icons-round">flight</span></div>
       <ul className="lh-journey-sum">
         <li><Icon name="route" /><N v={modules.length} /> <T bn="অধ্যায়" en="legs" /></li>
         <li><Icon name="confirmation_number" /><N v={all.length} /> <T bn="ক্লাস" en="classes" /></li>

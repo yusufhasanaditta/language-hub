@@ -3,6 +3,8 @@ import { one, q } from '@/lib/db';
 import { isAdmin } from '@/lib/auth';
 import { requireTeacherProfile } from '@/lib/teacher';
 import { curriculum } from '@/lib/courses';
+import { teachesCourse, courseTeam, courseDetails } from '@/lib/team';
+import { DetailsEditor, MemberRow } from '@/components/CourseExtrasEditor';
 import { fmtDate } from '@/lib/format';
 import { PageHead, Badge } from '@/components/panel';
 import { CurriculumEditor, LiveEditor } from '@/components/CurriculumEditor';
@@ -14,12 +16,14 @@ export default async function TeacherCourse({ params }: { params: Promise<{ id: 
   const id = Number((await params).id) || 0;
   const c = await one`SELECT * FROM courses WHERE id = ${id}`;
   // Teachers see only their own courses (admins may look at any).
-  if (!c || (c.teacher_id !== tp.id && !isAdmin(user))) notFound();
-  const [modules, sessions, students] = await Promise.all([
+  if (!c || (!isAdmin(user) && !(await teachesCourse(tp.id, c.id)))) notFound();
+  const [modules, sessions, students, team, details] = await Promise.all([
     curriculum(c.id, true),
     q`SELECT * FROM live_sessions WHERE course_id = ${c.id} ORDER BY scheduled_at DESC`,
     q`SELECT u.name, u.email, u.phone, e.progress_pct, e.enrolled_at FROM enrollments e JOIN users u ON u.id = e.user_id
       WHERE e.course_id = ${c.id} AND e.status = 'active' ORDER BY e.enrolled_at DESC`,
+    courseTeam(c.id),
+    courseDetails(c.id),
   ]);
   return (
     <>
@@ -41,6 +45,16 @@ export default async function TeacherCourse({ params }: { params: Promise<{ id: 
         </form>
       </div>
 
+      {team.length > 0 && (
+        <div className="pn-card" id="team">
+          <h2>Teaching team <span className="pn-count">{team.length}</span></h2>
+          <ul className="pn-team">
+            {team.map(t => <MemberRow key={t.tp_id} t={t} sub={t.role} />)}
+          </ul>
+          <p className="pn-hint">Only an admin can change who teaches this course.</p>
+        </div>
+      )}
+      <DetailsEditor courseId={c.id} details={details} base="/do/course" />
       <CurriculumEditor courseId={c.id} modules={modules} base="/do/course" />
       <LiveEditor courseId={c.id} sessions={sessions} base="/do/course" />
 

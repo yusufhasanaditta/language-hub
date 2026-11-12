@@ -4,18 +4,19 @@ import { T, N } from '@/lib/i18n';
 import { lang, langStyle } from '@/lib/langs';
 import { avatarUrl } from '@/lib/format';
 import { teacherUrl } from '@/lib/courses';
+import { roleBn } from '@/lib/team';
 import { Icon } from './ui';
 
-/** t: { name, avatar, username, designation, headline, courses, students, cat_slug, tp_id } */
+/** t: { name, avatar, username, designation, headline, courses, students, cat_slug, tp_id, role?, is_lead? } */
 export function TeacherTicket({ t }: { t: Row }) {
   const L = lang(t.cat_slug);
   const code = `LH-T${String(t.tp_id ?? t.id ?? 0).padStart(3, '0')}`;
   const href = teacherUrl(t);
   return (
-    <a className="lh-crew" href={href} style={langStyle(t.cat_slug)}>
+    <a className={`lh-crew ${t.is_lead ? 'is-lead' : ''}`} href={href} style={langStyle(t.cat_slug)}>
       <div className="lh-crew-main">
         <span className="lh-crew-glyph" aria-hidden="true">{L.glyph}</span>
-        <p className="lh-crew-tag"><Icon name="badge" /><T bn="শিক্ষক" en="Instructor" /> · <span>{L.native || 'Language Hub'}</span></p>
+        <p className="lh-crew-tag"><Icon name={t.is_lead ? 'star' : 'badge'} />{t.role ? <T bn={roleBn(t.role)} en={t.role} /> : <T bn="শিক্ষক" en="Instructor" />} · <span>{L.native || 'Language Hub'}</span></p>
         <div className="lh-crew-id">
           <img src={avatarUrl(t.avatar, t.name)} alt="" width={56} height={56} loading="lazy" />
           <div>

@@ -8,6 +8,7 @@ import { lang, langStyle } from '@/lib/langs';
 import { embedUrl } from '@/lib/format';
 import { Countdown, Icon } from '@/components/ui';
 import { LiveCard } from '@/components/student';
+import { userTeachesCourse } from '@/lib/team';
 
 export const metadata: Metadata = { title: 'ক্লাসরুম' };
 
@@ -22,7 +23,7 @@ export default async function LearnPage({ searchParams }: Props) {
 
   const enrollment = await one<{ id: number }>`SELECT id FROM enrollments WHERE user_id = ${user.id} AND course_id = ${cid} AND status = 'active'`;
   // Staff preview: admins, and the course's own teacher (not every teacher).
-  const ownsCourse = isTeacher(user) && !!(await one`SELECT 1 FROM teacher_profiles WHERE id = ${course.teacher_id} AND user_id = ${user.id}`);
+  const ownsCourse = isTeacher(user) && await userTeachesCourse(user.id, course.id);
   if (!enrollment && !isAdmin(user) && !ownsCourse) redirect(courseUrl(course));
 
   const [modules, doneRows, liveNext, recordings] = await Promise.all([

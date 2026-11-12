@@ -6,6 +6,7 @@ import { lang, langStyle } from '@/lib/langs';
 import type { Row } from '@/lib/db';
 import { Flash, Icon } from './ui';
 import LegacyScripts from './LegacyScripts';
+import MotionFx from './MotionFx';
 
 type Item = [href: string, icon: string, label: string] | null;
 
@@ -42,6 +43,7 @@ export async function PanelShell({ user, kind, children }: { user: User; kind: '
   return (
     <>
       <Flash />
+      <MotionFx />
       <div className="admin-layout lh-panel">
         <header className="panel-topbar">
           <button className="icon-btn" id="panelNavToggle" aria-label="Menu" aria-controls="adminSidebar"><Icon name="menu" /></button>

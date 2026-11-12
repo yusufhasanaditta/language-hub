@@ -53,4 +53,8 @@ await copy('contact_messages');
 await copy('support_tickets');
 await copy('settings', { where: "WHERE setting_key NOT LIKE '%pass%' AND setting_key NOT LIKE '%api_key%'" });
 
+// Each course's lead teacher is the first member of its teaching team.
+await pg.query(`INSERT INTO course_teachers (course_id, teacher_id, role)
+  SELECT id, teacher_id, 'Lead instructor' FROM courses WHERE teacher_id IS NOT NULL ON CONFLICT DO NOTHING`);
+
 await my.end(); await pg.end();

@@ -4,6 +4,8 @@ import { requireAdmin } from '@/lib/auth';
 import { curriculum } from '@/lib/courses';
 import { PageHead, Badge, ActionButton } from '@/components/panel';
 import { CurriculumEditor, LiveEditor } from '@/components/CurriculumEditor';
+import { TeamEditor, DetailsEditor } from '@/components/CourseExtrasEditor';
+import { courseTeam, courseDetails, TEACHER_ROLE_IDS } from '@/lib/team';
 
 export const metadata = { title: 'Edit course' };
 
@@ -13,11 +15,15 @@ export default async function AdminCourseEdit({ params }: { params: Promise<{ id
   const isNew = idParam === 'new';
   const c = isNew ? null : await one`SELECT *, to_char(batch_start, 'YYYY-MM-DD') AS batch_date FROM courses WHERE id = ${Number(idParam) || 0}`;
   if (!isNew && !c) notFound();
-  const [cats, teachers, modules, sessions] = await Promise.all([
+  const [cats, teachers, modules, sessions, team, details] = await Promise.all([
     q`SELECT id, name_en FROM categories ORDER BY sort_order, id`,
-    q`SELECT tp.id, u.name FROM teacher_profiles tp JOIN users u ON u.id = tp.user_id WHERE u.role_id IN (2, 6) ORDER BY u.name`,
+    // Anyone with the teacher (or admin) role can be put on a course; a teacher profile is made on demand.
+    q`SELECT u.id, u.name, u.email, tp.id AS tp_id FROM users u LEFT JOIN teacher_profiles tp ON tp.user_id = u.id
+       WHERE u.role_id = ANY(${TEACHER_ROLE_IDS}) AND u.is_active ORDER BY u.role_id, u.name`,
     c ? curriculum(c.id, true) : [],
     c ? q`SELECT * FROM live_sessions WHERE course_id = ${c.id} ORDER BY scheduled_at DESC` : [],
+    c ? courseTeam(c.id) : [],
+    c ? courseDetails(c.id) : [],
   ]);
   const v = (k: string) => (c?.[k] ?? '') as string;
 
@@ -38,11 +44,19 @@ export default async function AdminCourseEdit({ params }: { params: Promise<{ id
             <select name="category_id" className="form-control" required defaultValue={c?.category_id ?? ''}>
               <option value="">Choose…</option>{cats.map(x => <option key={x.id} value={x.id}>{x.name_en}</option>)}
             </select></div>
-          <div><label>Teacher</label>
-            <select name="teacher_id" className="form-control" defaultValue={c?.teacher_id ?? ''}>
-              <option value="">— none —</option>{teachers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-            </select>
-            <p className="pn-hint">Only users with the teacher role appear here (Users → set role to teacher).</p></div>
+          {isNew ? (
+            <div><label>Lead teacher</label>
+              <select name="teacher_id" className="form-control" defaultValue="">
+                <option value="">— add later —</option>{teachers.filter(t => t.tp_id).map(t => <option key={t.tp_id} value={t.tp_id}>{t.name}</option>)}
+              </select>
+              <p className="pn-hint">After saving you can add more teachers in “Teaching team”.</p></div>
+          ) : (
+            <div><label>Teachers</label>
+              <a href="#team" className="pn-team-peek">
+                {team.length ? team.slice(0, 4).map(t => <span key={t.tp_id} title={t.name}>{t.name.split(' ')[0]}</span>) : <span>None yet</span>}
+                <em>Manage team ↓</em>
+              </a></div>
+          )}
           <div><label>Status</label>
             <select name="status" className="form-control" defaultValue={c?.status ?? 'draft'}>
               {['draft', 'published', 'archived'].map(x => <option key={x} value={x}>{x}</option>)}
@@ -75,6 +89,8 @@ export default async function AdminCourseEdit({ params }: { params: Promise<{ id
 
       {c && (
         <>
+          <TeamEditor courseId={c.id} team={team} teachers={teachers} />
+          <DetailsEditor courseId={c.id} details={details} base="/do/course" />
           <CurriculumEditor courseId={c.id} modules={modules} base="/do/course" />
           <LiveEditor courseId={c.id} sessions={sessions} base="/do/course" />
           <div className="pn-card" style={{ borderColor: 'var(--c-error)' }}>

@@ -290,3 +290,31 @@ CREATE TABLE IF NOT EXISTS live_sessions (
   created_at       timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS live_sessions_course_idx ON live_sessions(course_id, scheduled_at);
+
+-- Teaching team: every teacher on a course (the lead is also courses.teacher_id).
+CREATE TABLE IF NOT EXISTS course_teachers (
+  course_id   int NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+  teacher_id  int NOT NULL REFERENCES teacher_profiles(id) ON DELETE CASCADE,
+  role        varchar(60) NOT NULL DEFAULT 'Instructor',
+  sort_order  int NOT NULL DEFAULT 0,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (course_id, teacher_id)
+);
+CREATE INDEX IF NOT EXISTS course_teachers_teacher_idx ON course_teachers(teacher_id);
+INSERT INTO course_teachers (course_id, teacher_id, role)
+  SELECT id, teacher_id, 'Lead instructor' FROM courses WHERE teacher_id IS NOT NULL
+  ON CONFLICT DO NOTHING;
+
+-- Extra course details the admin/teacher can add any number of:
+--   fact = "at a glance" item (label + value), section = titled card, faq = question + answer.
+CREATE TABLE IF NOT EXISTS course_details (
+  id          serial PRIMARY KEY,
+  course_id   int NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+  kind        varchar(10) NOT NULL DEFAULT 'section' CHECK (kind IN ('fact','section','faq')),
+  icon        varchar(40),
+  title       varchar(200) NOT NULL,
+  body        text,
+  sort_order  int NOT NULL DEFAULT 0,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS course_details_course_idx ON course_details(course_id, kind, sort_order);

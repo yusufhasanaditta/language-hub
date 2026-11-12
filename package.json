@@ -20,6 +20,7 @@
     "@neondatabase/serverless": "^1.2.0",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.17",
+    "motion": "14.7.1",
     "next": "^16.4.6",
     "nodemailer": "^10.5.0",
     "react": "^19.3.1",

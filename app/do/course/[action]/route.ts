@@ -5,6 +5,7 @@ import { requireTeacher, requireUser, isAdmin, type User } from '@/lib/auth';
 import { formAction, fail, flash, back, str, int, bool } from '@/lib/http';
 import { safeUrl, fromLocalInput } from '@/lib/format';
 import { notify } from '@/lib/orders';
+import { userTeachesCourse, isDetailKind } from '@/lib/team';
 
 /** Admins may edit any course; teachers only the courses they teach. */
 async function assertCanEdit(user: User, courseId: number) {
@@ -12,8 +13,8 @@ async function assertCanEdit(user: User, courseId: number) {
     if (!(await one`SELECT 1 FROM courses WHERE id = ${courseId}`)) fail('Course not found.');
     return;
   }
-  const ok = await one`SELECT 1 FROM courses c JOIN teacher_profiles tp ON tp.id = c.teacher_id WHERE c.id = ${courseId} AND tp.user_id = ${user.id}`;
-  if (!ok) fail('You can only edit your own courses.');
+  // Any teacher on the course's team (lead or member).
+  if (!(await userTeachesCourse(user.id, courseId))) fail('You can only edit your own courses.');
 }
 
 type H = (f: FormData, courseId: number) => Promise<string | void>;
@@ -79,6 +80,42 @@ const handlers: Record<string, [H, string]> = {
     }
     await flash('success', 'Live class saved.');
   }, '#live'],
+
+  'detail-save': [async (f, courseId) => {
+    const id = int(f, 'id'), title = str(f, 'title', 200);
+    const kind = isDetailKind(str(f, 'kind')) ? str(f, 'kind') : 'section';
+    if (!title) fail(kind === 'faq' ? 'Write the question.' : 'A title is required.');
+    const iconRaw = str(f, 'icon', 40);
+    const icon = /^[a-z_]{2,40}$/.test(iconRaw) ? iconRaw : null;
+    const body = str(f, 'body', 5000) || null;
+    if (id) {
+      await q`UPDATE course_details SET kind = ${kind}, icon = ${icon}, title = ${title}, body = ${body}
+              WHERE id = ${id} AND course_id = ${courseId}`;
+    } else {
+      await q`INSERT INTO course_details (course_id, kind, icon, title, body, sort_order)
+              SELECT ${courseId}, ${kind}, ${icon}, ${title}, ${body}, COALESCE(max(sort_order), 0) + 1 FROM course_details WHERE course_id = ${courseId}`;
+    }
+    await flash('success', 'Detail saved.');
+  }, '#details'],
+
+  'detail-move': [async (f, courseId) => {
+    // Swap places with the neighbour of the same kind (dir -1 = up, 1 = down), then renumber 1…n.
+    const id = int(f, 'id'), step = int(f, 'dir') < 0 ? -1 : 1;
+    const me = await one<{ kind: string }>`SELECT kind FROM course_details WHERE id = ${id} AND course_id = ${courseId}`;
+    if (!me) return;
+    const ids = (await q<{ id: number }>`SELECT id FROM course_details WHERE course_id = ${courseId} AND kind = ${me.kind}
+                 ORDER BY sort_order, id`).map(r => r.id);
+    const i = ids.indexOf(id), j = i + step;
+    if (j < 0 || j >= ids.length) return;
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+    await q`UPDATE course_details d SET sort_order = o.n FROM unnest(${ids}::int[]) WITH ORDINALITY AS o(id, n)
+            WHERE d.id = o.id AND d.course_id = ${courseId}`;
+  }, '#details'],
+
+  'detail-delete': [async (f, courseId) => {
+    await q`DELETE FROM course_details WHERE id = ${int(f, 'id')} AND course_id = ${courseId}`;
+    await flash('success', 'Detail removed.');
+  }, '#details'],
 
   'live-delete': [async (f, courseId) => {
     await q`DELETE FROM live_sessions WHERE id = ${int(f, 'id')} AND course_id = ${courseId}`;

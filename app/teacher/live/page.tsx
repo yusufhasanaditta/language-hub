@@ -8,7 +8,7 @@ export const metadata = { title: 'Live classes' };
 export default async function TeacherLive() {
   const { tp } = await requireTeacherProfile();
   const sessions = await q`SELECT ls.*, c.title_bn FROM live_sessions ls JOIN courses c ON c.id = ls.course_id
-    WHERE c.teacher_id = ${tp.id} ORDER BY (ls.scheduled_at >= now() - interval '3 hours') DESC, ls.scheduled_at LIMIT 200`;
+    WHERE c.id IN (SELECT course_id FROM course_teachers WHERE teacher_id = ${tp.id}) ORDER BY (ls.scheduled_at >= now() - interval '3 hours') DESC, ls.scheduled_at LIMIT 200`;
   return (
     <>
       <PageHead title="Live classes" sub="All live classes across your courses. To add one, open the course." />

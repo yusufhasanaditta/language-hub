@@ -3,6 +3,7 @@ import { one, q } from '@/lib/db';
 import { requireAdmin, ROLE_NAMES, ROLE } from '@/lib/auth';
 import { fmtDate, fmtDateTime } from '@/lib/format';
 import { PageHead, Badge, ActionButton } from '@/components/panel';
+import { RoleList, TeamAddForm } from '@/components/CourseExtrasEditor';
 
 export const metadata = { title: 'Edit user' };
 
@@ -12,12 +13,15 @@ export default async function UserEditPage({ params }: { params: Promise<{ id: s
   const isNew = idParam === 'new';
   const u = isNew ? null : await one`SELECT u.*, (u.password_hash IS NOT NULL) AS has_pw FROM users u WHERE u.id = ${Number(idParam) || 0}`;
   if (!isNew && !u) notFound();
-  const [tp, enrolls, sessions, courses] = u ? await Promise.all([
+  const [tp, enrolls, sessions, courses, teaching] = u ? await Promise.all([
     one`SELECT * FROM teacher_profiles WHERE user_id = ${u.id}`,
     q`SELECT e.id, e.status, e.progress_pct, e.enrolled_at, c.title_bn, c.id AS course_id FROM enrollments e JOIN courses c ON c.id = e.course_id WHERE e.user_id = ${u.id} ORDER BY e.enrolled_at DESC`,
     q`SELECT id, device_name, ip, last_seen_at FROM user_sessions WHERE user_id = ${u.id} ORDER BY last_seen_at DESC`,
     q`SELECT id, title_bn FROM courses ORDER BY title_bn`,
-  ]) : [null, [], [], []];
+    q`SELECT c.id, c.title_bn, c.status, ct.role, (c.teacher_id = ct.teacher_id) AS is_lead
+       FROM course_teachers ct JOIN courses c ON c.id = ct.course_id JOIN teacher_profiles tp ON tp.id = ct.teacher_id
+       WHERE tp.user_id = ${u.id} ORDER BY c.title_bn`,
+  ]) : [null, [], [], [], []];
   const v = (k: string) => (u?.[k] ?? '') as string;
 
   return (
@@ -62,6 +66,28 @@ export default async function UserEditPage({ params }: { params: Promise<{ id: s
             <div className="pn-full"><label>Bio</label><textarea name="bio" className="form-control" maxLength={3000} defaultValue={tp?.bio ?? ''}></textarea></div>
             <div className="pn-full"><button type="submit" className="btn btn-primary">Save teacher profile</button></div>
           </form>
+        </div>
+      )}
+
+      {u && (u.role_id === ROLE.TEACHER || u.role_id === ROLE.ADMIN) && (
+        <div className="pn-card" id="teaching">
+          <h2>Courses taught <span className="pn-count">{teaching.length}</span></h2>
+          {teaching.length === 0 ? <p className="pn-muted">Not on any course yet.</p> : (
+            <ul className="pn-chips-list">
+              {teaching.map(t => (
+                <li key={t.id}><a className="pn-link" href={`/admin/courses/${t.id}#team`}>{t.title_bn}</a>
+                  <span className="pn-muted"> · {t.is_lead ? 'Lead' : t.role}{t.status !== 'published' ? ` · ${t.status}` : ''}</span></li>
+              ))}
+            </ul>
+          )}
+          <RoleList />
+          <TeamAddForm hidden={{ user_id: u.id, from: 'user' }} pick={
+            <div><label htmlFor="add-course">Add to course</label>
+              <select id="add-course" name="course_id" className="form-control" required defaultValue="">
+                <option value="" disabled>Choose a course…</option>
+                {courses.filter(c => !teaching.some(t => t.id === c.id)).map(c => <option key={c.id} value={c.id}>{c.title_bn}</option>)}
+              </select></div>
+          } />
         </div>
       )}
 

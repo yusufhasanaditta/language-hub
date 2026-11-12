@@ -1,12 +1,13 @@
 // Admin form actions. Every handler re-checks admin access (never rely on the page alone).
 import type { NextRequest } from 'next/server';
 import { one, q } from '@/lib/db';
-import { requireAdmin, ROLE, ROLE_NAMES, type User } from '@/lib/auth';
+import { requireAdmin, isTeacher, ROLE, ROLE_NAMES, type User } from '@/lib/auth';
 import { formAction, fail, flash, str, int, num, bool, optStr, isEmail } from '@/lib/http';
 import { hashPassword } from '@/lib/login';
 import { enroll, markOrderPaid, notify } from '@/lib/orders';
 import { safeUrl, slugify } from '@/lib/format';
 import { EDITABLE_SETTINGS } from '@/lib/settings';
+import { setLead } from '@/lib/team';
 
 type H = (f: FormData, me: User) => Promise<string | void>;
 
@@ -94,7 +95,8 @@ const handlers: Record<string, H> = {
     if (!(await one`SELECT 1 FROM categories WHERE id = ${categoryId}`)) fail('Choose a language.');
     let slug = slugify(str(f, 'slug', 200) || title_en || '') || `course-${Date.now().toString(36)}`;
     if (await one`SELECT 1 FROM courses WHERE slug = ${slug} AND id <> ${id}`) slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
-    const teacherId = int(f, 'teacher_id') || null;
+    // The lead teacher is picked here only for a new course; afterwards the Teaching team card manages it.
+    const teacherId = id ? null : int(f, 'teacher_id') || null;
     const price = Math.max(0, num(f, 'price'));
     const saleRaw = str(f, 'sale_price', 20);
     const sale = saleRaw === '' ? null : Math.max(0, Number(saleRaw) || 0);
@@ -113,7 +115,7 @@ const handlers: Record<string, H> = {
     let courseId = id;
     if (id) {
       await q`UPDATE courses SET title_bn = ${vals.title_bn}, title_en = ${vals.title_en}, slug = ${vals.slug}, category_id = ${vals.category_id},
-        teacher_id = ${vals.teacher_id}, price = ${vals.price}, sale_price = ${vals.sale_price}, type = ${vals.type}, level = ${vals.level},
+        price = ${vals.price}, sale_price = ${vals.sale_price}, type = ${vals.type}, level = ${vals.level},
         status = ${vals.status}, batch_start = ${vals.batch_start}, max_students = ${vals.max_students}, total_lessons = ${vals.total_lessons},
         thumbnail = ${vals.thumbnail}, intro_video_url = ${vals.intro_video_url}, fb_group_link = ${vals.fb_group_link},
         short_desc = ${vals.short_desc}, description_bn = ${vals.description_bn}, what_you_learn = ${vals.what_you_learn},
@@ -127,9 +129,57 @@ const handlers: Record<string, H> = {
         ${vals.fb_group_link}, ${vals.short_desc}, ${vals.description_bn}, ${vals.what_you_learn}, ${vals.requirements}, ${vals.is_free}, ${vals.is_featured})
         RETURNING id`;
       courseId = c!.id;
+      // The lead picked on the create form is the first member of the teaching team.
+      if (vals.teacher_id) await q`INSERT INTO course_teachers (course_id, teacher_id, role) VALUES (${courseId}, ${vals.teacher_id}, 'Lead instructor')`;
     }
-    await flash('success', id ? 'Course saved.' : 'Course created — now add modules and lessons below.');
+    await flash('success', id ? 'Course saved.' : 'Course created — now add teachers, details and lessons below.');
     return `/admin/courses/${courseId}`;
+  },
+
+  // ── Teaching team (any number of teachers per course) ─────────────────────
+  async 'team-add'(f) {
+    const courseId = int(f, 'course_id'), userId = int(f, 'user_id');
+    const [course, u] = await Promise.all([
+      one<{ teacher_id: number | null }>`SELECT teacher_id FROM courses WHERE id = ${courseId}`,
+      one<{ role_id: number }>`SELECT role_id FROM users WHERE id = ${userId} AND is_active`,
+    ]);
+    if (!course) fail('Course not found.');
+    if (!u || !isTeacher(u)) fail('Choose a teacher (Users → set the role to teacher first).');
+    const tp = await one<{ id: number }>`INSERT INTO teacher_profiles (user_id) VALUES (${userId})
+      ON CONFLICT (user_id) DO UPDATE SET user_id = EXCLUDED.user_id RETURNING id`;
+    await q`INSERT INTO course_teachers (course_id, teacher_id, role, sort_order)
+            SELECT ${courseId}, ${tp!.id}, ${str(f, 'role', 60) || 'Instructor'}, COALESCE(max(sort_order), 0) + 1
+            FROM course_teachers WHERE course_id = ${courseId}
+            ON CONFLICT (course_id, teacher_id) DO UPDATE SET role = EXCLUDED.role`;
+    // The first teacher on a course (or one ticked as lead) becomes its lead teacher.
+    if (course!.teacher_id === null || bool(f, 'lead')) await setLead(courseId, tp!.id);
+    await flash('success', 'Teacher added to the course.');
+    return str(f, 'from') === 'user' ? `/admin/users/${userId}#teaching` : `/admin/courses/${courseId}#team`;
+  },
+
+  async 'team-update'(f) {
+    const courseId = int(f, 'course_id'), tpId = int(f, 'tp_id');
+    await q`UPDATE course_teachers SET role = ${str(f, 'role', 60) || 'Instructor'}, sort_order = ${int(f, 'sort_order')}
+            WHERE course_id = ${courseId} AND teacher_id = ${tpId}`;
+    await flash('success', 'Saved.');
+    return `/admin/courses/${courseId}#team`;
+  },
+
+  async 'team-lead'(f) {
+    const courseId = int(f, 'course_id'), tpId = int(f, 'tp_id');
+    if (!(await one`SELECT 1 FROM course_teachers WHERE course_id = ${courseId} AND teacher_id = ${tpId}`)) fail('That teacher is not on this course.');
+    await setLead(courseId, tpId);
+    await flash('success', 'Lead teacher changed.');
+    return `/admin/courses/${courseId}#team`;
+  },
+
+  async 'team-remove'(f) {
+    const courseId = int(f, 'course_id'), tpId = int(f, 'tp_id');
+    await q`DELETE FROM course_teachers WHERE course_id = ${courseId} AND teacher_id = ${tpId}`;
+    // Removing the lead hands the lead role to the next teacher on the team (or none).
+    if (await one`SELECT 1 FROM courses WHERE id = ${courseId} AND teacher_id = ${tpId}`) await setLead(courseId, null);
+    await flash('success', 'Teacher removed from the course.');
+    return `/admin/courses/${courseId}#team`;
   },
 
   async 'course-delete'(f) {

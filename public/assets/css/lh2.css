@@ -145,3 +145,49 @@ html[data-theme="dark"] .lh-stamp-sm:not(.is-done) { color: #6EE7B7; border-colo
 @media (prefers-reduced-motion: reduce) {
   .lh-journey-route .material-icons-round, .lh-seats-bar span { animation: none; }
 }
+
+/* ═══ v2.2 — Motion layer (components/MotionFx.tsx) ═════════════════════════ */
+/* reading progress */
+.lh-readbar { position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 1200; pointer-events: none; transform: scaleX(0); transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--lh-brand-2), var(--lh-brand), #F59E0B); }
+/* spring tilt: the transform comes from CSS vars that Motion springs */
+.lh-mtilt { transform: perspective(900px) rotateX(var(--mrx, 0deg)) rotateY(var(--mry, 0deg)) translateY(var(--mlift, 0px)) !important;
+  transition: box-shadow .35s var(--lh-ease), border-color .2s !important; box-shadow: var(--lh-shadow-lg); will-change: transform; }
+/* magnetic buttons use the separate `translate` property, so they never fight other transforms */
+.lh-magnetic { translate: var(--mx, 0px) var(--my, 0px); }
+
+/* journey: a plane flies along the track as you scroll through the classes */
+.lh-jtrack { --p: 0; position: relative; height: 26px; margin: 4px 0 10px; }
+.lh-jtrack i { position: absolute; left: 0; right: 0; top: 50%; border-top: 2px dashed var(--lh-line-2); }
+.lh-jtrack i::after { content: ""; position: absolute; left: 0; top: -2px; width: 100%; border-top: 2px solid var(--lang, var(--lh-brand)); transform: scaleX(var(--p)); transform-origin: 0 50%; }
+.lh-jtrack span { position: absolute; top: 50%; left: calc(var(--p) * (100% - 24px)); font-size: 24px; color: var(--lang, var(--lh-brand)); transform: translateY(-50%) rotate(90deg);
+  filter: drop-shadow(0 3px 4px color-mix(in srgb, var(--lang, var(--lh-brand)) 40%, transparent)); }
+
+/* teaching team on the course page */
+.lh-crew-list { display: grid; gap: 18px; }
+.lh-crew.is-lead { border-color: color-mix(in srgb, var(--lang, var(--lh-brand)) 45%, var(--lh-line)); }
+.lh-crew.is-lead .lh-crew-tag .material-icons-round { color: #F59E0B; }
+
+/* "At a glance": boarding-pass fields */
+.lh-glance { display: flex; flex-wrap: wrap; margin: 0;
+  border: 1px solid var(--lh-line); border-radius: 16px; overflow: hidden; background: var(--lh-card); }
+.lh-glance-item { flex: 1 1 190px; position: relative; display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; padding: 14px 16px;
+  border-right: 2px dashed var(--lh-line-2); border-bottom: 1px solid var(--lh-line); margin: 0 -2px -1px 0; transition: background .25s; }
+.lh-glance-item:hover { background: color-mix(in srgb, var(--lh-brand-2) 6%, var(--lh-card)); }
+.lh-glance-ico { grid-row: span 2; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--lh-brand-2); background: var(--lh-bg-tint); }
+.lh-glance-ico .material-icons-round { font-size: 21px; }
+.lh-glance dt { font-size: .68rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--lh-ink-3); }
+.lh-glance dd { margin: 2px 0 0; font-weight: 700; color: var(--lh-ink); line-height: 1.4; }
+
+/* custom info sections + course FAQ */
+.lh-info h2 { display: flex; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; }
+.lh-info-ico { width: 34px; height: 34px; flex: none; border-radius: 10px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, var(--lh-brand-2), var(--lh-brand)); }
+.lh-info-ico .material-icons-round { font-size: 19px; }
+.lh-info .lh-prose { margin: 0 0 10px; line-height: 1.75; color: var(--lh-ink-2); }
+.lh-faq-q { display: inline-flex; align-items: center; gap: 10px; }
+.lh-faq-q .material-icons-round { color: var(--lh-brand-2); }
+.lh-faq-a .lh-prose, .lh-faq-a .lh-ticks { margin: 0; padding: 0 18px 14px; color: var(--lh-ink-2); line-height: 1.7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lh-readbar { display: none; }
+}

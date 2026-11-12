@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TeacherProfilePage({ params }: Props) {
   const t = await load((await params).username);
   if (!t) notFound();
-  const courses = await publishedCourses('AND c.teacher_id = $1', [t.tp_id]);
+  const courses = await publishedCourses('AND c.id IN (SELECT course_id FROM course_teachers WHERE teacher_id = $1)', [t.tp_id]);
   const links = [['fb_url', 'Facebook'], ['yt_url', 'YouTube'], ['website', 'Website']]
     .map(([k, label]) => [safeUrl(t[k]), label] as const).filter(([u]) => u);
   const bio = t.tp_bio || t.bio;

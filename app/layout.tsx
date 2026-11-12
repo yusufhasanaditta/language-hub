@@ -30,8 +30,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="stylesheet" href="/assets/css/main.css?v=2.0.0" />
         <link rel="stylesheet" href="/assets/css/app.css?v=2.0.0" />
         <link rel="stylesheet" href="/assets/css/lh.css?v=2.0.0" />
-        <link rel="stylesheet" href="/assets/css/lh2.css?v=2.1.0" />
-        <link rel="stylesheet" href="/assets/css/panel.css?v=2.1.0" />
+        <link rel="stylesheet" href="/assets/css/lh2.css?v=2.2.0" />
+        <link rel="stylesheet" href="/assets/css/panel.css?v=2.2.0" />
       </head>
       <body suppressHydrationWarning>{children}</body>
     </html>

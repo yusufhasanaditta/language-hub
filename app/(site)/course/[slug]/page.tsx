@@ -9,6 +9,8 @@ import { priceOf, isFreeCourse, formatPrice, avatarUrl, lines, embedUrl } from '
 import { Countdown, Icon, Price } from '@/components/ui';
 import { Journey } from '@/components/Journey';
 import { TeacherTicket } from '@/components/TeacherTicket';
+import { Glance, InfoSections, CourseFaq } from '@/components/CourseDetails';
+import { courseTeam, courseDetails, byKind } from '@/lib/team';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -25,15 +27,13 @@ export default async function CoursePage({ params }: Props) {
   const c = await courseBy('slug', decodeURIComponent((await params).slug));
   if (!c) notFound();
   const user = await currentUser();
-  const [modules, reviews, enrolled, teacher] = await Promise.all([
+  const [modules, reviews, enrolled, team, details] = await Promise.all([
     curriculum(c.id),
     q`SELECT r.rating, r.body, u.name, u.avatar FROM reviews r JOIN users u ON u.id = r.user_id
       WHERE r.course_id = ${c.id} AND r.is_approved ORDER BY r.created_at DESC LIMIT 6`,
     user ? one<{ id: number }>`SELECT id FROM enrollments WHERE user_id = ${user.id} AND course_id = ${c.id} AND status = 'active'` : null,
-    c.tp_id ? one`SELECT u.name, u.avatar, u.username, tp.id AS tp_id, tp.designation, tp.headline, ${c.cat_slug}::text AS cat_slug,
-        (SELECT count(*)::int FROM courses x WHERE x.teacher_id = tp.id AND x.status = 'published') AS courses,
-        (SELECT count(DISTINCT e.user_id)::int FROM enrollments e JOIN courses x ON x.id = e.course_id WHERE x.teacher_id = tp.id AND e.status = 'active') AS students
-      FROM teacher_profiles tp JOIN users u ON u.id = tp.user_id WHERE tp.id = ${c.tp_id}` : null,
+    courseTeam(c.id, { catSlug: c.cat_slug, withStats: true }),
+    courseDetails(c.id),
   ]);
   const done = new Set(enrolled
     ? (await q<{ lesson_id: number }>`SELECT lesson_id FROM lesson_progress WHERE enrollment_id = ${enrolled.id} AND completed`).map(r => r.lesson_id)
@@ -84,7 +84,7 @@ export default async function CoursePage({ params }: Props) {
           </div>
           <h1 className="lh-c-title"><T bn={c.title_bn} en={c.title_en || c.title_bn} /></h1>
           {c.short_desc && <p className="lh-c-desc">{c.short_desc}</p>}
-          <div className="lh-c-meta">
+          <div className="lh-c-meta" data-countup>
             {c.rating_count > 0 && <span><Icon name="star" className="lh-star" /><b><N v={Number(c.rating_avg).toFixed(1)} /></b>&nbsp;(<N v={c.rating_count} />)</span>}
             <span><Icon name="group" /><N v={c.student_count} /> <T bn="শিক্ষার্থী" en="learners" /></span>
             <span><Icon name="play_lesson" /><N v={lessonCount} /> <T bn="ক্লাস" en="lessons" /></span>
@@ -114,6 +114,8 @@ export default async function CoursePage({ params }: Props) {
             </section>
           )}
 
+          <Glance facts={byKind(details, 'fact')} />
+
           {learn.length > 0 && (
             <section className="lh-c-card" data-reveal>
               <h2><T bn="যা শিখবেন" en="What you will learn" /></h2>
@@ -125,10 +127,12 @@ export default async function CoursePage({ params }: Props) {
             <Journey courseId={c.id} modules={modules.filter(m => m.lessons.length > 0)} catSlug={c.cat_slug} enrolled={!!enrolled} done={done} />
           )}
 
-          {teacher && (
+          {team.length > 0 && (
             <section className="lh-c-card" data-reveal>
-              <h2><T bn="আপনার শিক্ষক" en="Your teacher" /></h2>
-              <TeacherTicket t={teacher} />
+              <h2>{team.length > 1 ? <T bn="আপনার শিক্ষক দল" en="Your teaching team" /> : <T bn="আপনার শিক্ষক" en="Your teacher" />}</h2>
+              <div className="lh-crew-list" data-reveal-group>
+                {team.map(t => <TeacherTicket key={t.tp_id} t={t} />)}
+              </div>
             </section>
           )}
 
@@ -145,6 +149,9 @@ export default async function CoursePage({ params }: Props) {
               <ul className="lh-ticks lh-ticks-muted">{reqs.map((r, i) => <li key={i}>{r}</li>)}</ul>
             </section>
           )}
+
+          <InfoSections sections={byKind(details, 'section')} />
+          <CourseFaq faqs={byKind(details, 'faq')} />
 
           {reviews.length > 0 && (
             <section className="lh-c-card" data-reveal>

@@ -9,7 +9,7 @@ export default async function TeacherStudents() {
   const { tp } = await requireTeacherProfile();
   const rows = await q`SELECT u.name, u.email, u.phone, c.title_bn, e.progress_pct, e.enrolled_at
     FROM enrollments e JOIN courses c ON c.id = e.course_id JOIN users u ON u.id = e.user_id
-    WHERE c.teacher_id = ${tp.id} AND e.status = 'active' ORDER BY e.enrolled_at DESC LIMIT 500`;
+    WHERE c.id IN (SELECT course_id FROM course_teachers WHERE teacher_id = ${tp.id}) AND e.status = 'active' ORDER BY e.enrolled_at DESC LIMIT 500`;
   return (
     <>
       <PageHead title="Students" sub="Everyone enrolled in your courses." />

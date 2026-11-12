@@ -12,7 +12,7 @@ export default async function TeacherDashboard() {
   const [courses, upcoming] = await Promise.all([
     myCourses(tp.id),
     q`SELECT ls.*, c.title_bn FROM live_sessions ls JOIN courses c ON c.id = ls.course_id
-      WHERE c.teacher_id = ${tp.id} AND ls.status IN ('scheduled', 'live') AND ls.scheduled_at + make_interval(mins => ls.duration_minutes) >= now()
+      WHERE c.id IN (SELECT course_id FROM course_teachers WHERE teacher_id = ${tp.id}) AND ls.status IN ('scheduled', 'live') AND ls.scheduled_at + make_interval(mins => ls.duration_minutes) >= now()
       ORDER BY ls.scheduled_at LIMIT 5`,
   ]);
   const students = courses.reduce((n, c) => n + c.students, 0);
