@@ -49,6 +49,11 @@ Module._initPaths();
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 process.env.HOSTNAME = process.env.HOSTNAME || '0.0.0.0';
 process.chdir(__dirname);
+// Settings can also come from a .env.production file in this folder (Next.js loads it on start).
+const fs = require('fs');
+const fromFile = fs.existsSync('.env.production') ? fs.readFileSync('.env.production', 'utf8') : '';
+const missing = ['DATABASE_URL', 'SESSION_SECRET'].filter(k => !process.env[k] && !new RegExp('^' + k + '=.+', 'm').test(fromFile));
+if (missing.length) console.error('[Language Hub] Missing settings: ' + missing.join(', ') + ' — add them in Setup Node.js App → Environment variables (then Save + Restart) or in .env.production.');
 require('./server.js');
 `);
 

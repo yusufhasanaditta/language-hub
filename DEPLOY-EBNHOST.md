@@ -81,6 +81,10 @@ When it finishes you have:
    - `SITE_URL` = your address, e.g. `https://languagehub.com.bd` (used in password-reset links and payment returns)
 3. Click **Save**.
 
+> **Easier alternative:** upload a file named `.env.production` into the `language-hub` folder with the lines
+> `DATABASE_URL=…`, `SESSION_SECRET=…`, `SITE_URL=https://your-domain` (one per line), then **Restart**.
+> If the site shows *“This page couldn't load — A server error occurred”*, these settings are missing or wrong.
+>
 > Do **not** click *Run NPM Install* — everything the app needs is already inside `vendor_modules`.
 > (If the host ever asks for it, *Run NPM Install* also works: `package.json` lists the same libraries.)
 
