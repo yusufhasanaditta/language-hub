@@ -126,6 +126,7 @@ When it finishes you have:
 1. On your computer: make your changes → `npm run build:cpanel`.
 2. cPanel → Setup Node.js App → **Stop App**.
 3. File Manager → in `language-hub`, delete `.next`, `public`, `vendor_modules`, `server.js`, `app.js`.
+   **Keep** `.env.production` (your settings), `node_modules`, `stderr.log`.
 4. Upload and extract the new zip (Step 3), then **Start App**.
    Your data is safe — it lives in the Neon database, not in these files.
 
