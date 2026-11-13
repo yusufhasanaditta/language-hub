@@ -44,7 +44,7 @@ export const POST = formAction(async (f, req) => {
   }
 
   if (method === 'online') {
-    if (!sslczConfigured()) fail('অনলাইন পেমেন্ট এখন চালু নেই — বিকাশ/নগদে পেমেন্ট করুন।', 'Online payment is not available right now — please pay with bKash/Nagad.');
+    if (!(await sslczConfigured())) fail('অনলাইন পেমেন্ট এখন চালু নেই — বিকাশ/নগদে পেমেন্ট করুন।', 'Online payment is not available right now — please pay with bKash/Nagad.');
     const orderId = await createOrder('sslcommerz', null, null);
     const site = await siteUrl();
     const gateway = await startPayment({ orderId, amount: total, product: c.title_en || c.title_bn, siteUrl: site, name: user.name, email: user.email, phone: user.phone });

@@ -2,11 +2,12 @@
 import type { NextRequest } from 'next/server';
 import { one, q } from '@/lib/db';
 import { requireAdmin, isTeacher, ROLE, ROLE_NAMES, type User } from '@/lib/auth';
-import { formAction, fail, flash, str, int, num, bool, optStr, isEmail } from '@/lib/http';
+import { formAction, fail, flash, str, int, num, bool, optStr, isEmail, siteUrl } from '@/lib/http';
 import { hashPassword } from '@/lib/login';
 import { enroll, markOrderPaid, notify } from '@/lib/orders';
 import { safeUrl, slugify } from '@/lib/format';
 import { EDITABLE_SETTINGS } from '@/lib/settings';
+import { SSLCZ_KEYS, sslczConfig, openSession } from '@/lib/sslcommerz';
 import { setLead } from '@/lib/team';
 import { createReset, showResetOnce } from '@/lib/reset';
 
@@ -287,6 +288,38 @@ const handlers: Record<string, H> = {
               ON CONFLICT (setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value, updated_at = now()`;
     }
     await flash('success', 'Settings saved.');
+  },
+
+  // ── Online payment (SSLCommerz) — main admin only ─────────────────────────
+  async 'sslcz-save'(f, me) {
+    if (me.role_id !== ROLE.ADMIN) fail('Only the main admin can change payment settings.');
+    const id = str(f, 'store_id', 100), pass = str(f, 'store_pass', 200);
+    const mode = str(f, 'mode') === 'live' ? 'live' : 'test';
+    if (!/^[w.-]{3,100}$/.test(id)) fail('Enter the Store ID from SSLCommerz (letters, numbers, - _ .).');
+    const hasPass = !!(await one`SELECT 1 FROM settings WHERE setting_key = ${SSLCZ_KEYS.pass} AND setting_value <> ''`);
+    if (!pass && !hasPass) fail('Enter the Store Password from SSLCommerz.');
+    const save = (k: string, v: string) => q`INSERT INTO settings (setting_key, setting_value) VALUES (${k}, ${v})
+      ON CONFLICT (setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value, updated_at = now()`;
+    await save(SSLCZ_KEYS.id, id);
+    await save(SSLCZ_KEYS.mode, mode);
+    if (pass) await save(SSLCZ_KEYS.pass, pass); // empty = keep the saved password
+    await flash('success', `SSLCommerz saved (${mode === 'live' ? 'LIVE — real payments' : 'test mode'}). Press "Test connection" to check it.`);
+    return '/admin/settings#payment';
+  },
+  async 'sslcz-off'(_f, me) {
+    if (me.role_id !== ROLE.ADMIN) fail('Only the main admin can change payment settings.');
+    await q`DELETE FROM settings WHERE setting_key IN (${SSLCZ_KEYS.id}, ${SSLCZ_KEYS.pass}, ${SSLCZ_KEYS.mode})`;
+    await flash('success', 'SSLCommerz turned off. Checkout uses bKash / Nagad (manual) only.');
+    return '/admin/settings#payment';
+  },
+  async 'sslcz-test'(_f, me) {
+    const cfg = await sslczConfig();
+    if (!cfg) fail('SSLCommerz is not set up yet.');
+    // Opens (and abandons) a ৳10 gateway session — nothing is charged.
+    const r = await openSession({ orderId: 0, amount: 10, product: 'Connection test', siteUrl: await siteUrl(), name: me.name, email: me.email, phone: me.phone }, cfg);
+    if ('url' in r) await flash('success', `Connected to SSLCommerz (${cfg!.live ? 'LIVE' : 'test mode'}). Online payment is ready at checkout.`);
+    else await flash('error', `SSLCommerz refused the connection: ${r.error}. Check the Store ID, password and mode (test / live).`);
+    return '/admin/settings#payment';
   },
 };
 

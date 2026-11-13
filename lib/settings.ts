@@ -1,10 +1,13 @@
 import { cache } from 'react';
 import { q } from './db';
 
+const SECRET_KEYS = new Set(['sslcz_store_pass']);
+
 /** All rows of the settings table as { key: value }. Cached per request. */
 export const getSettings = cache(async () => {
   const rows = await q<{ setting_key: string; setting_value: string | null }>`SELECT setting_key, setting_value FROM settings`;
-  return Object.fromEntries(rows.map(r => [r.setting_key, r.setting_value ?? ''])) as Record<string, string>;
+  // Secrets (the SSLCommerz store password) are read only by lib/sslcommerz.ts, never handed to pages.
+  return Object.fromEntries(rows.filter(r => !SECRET_KEYS.has(r.setting_key)).map(r => [r.setting_key, r.setting_value ?? ''])) as Record<string, string>;
 });
 
 export async function setting(key: string, fallback = '') {
