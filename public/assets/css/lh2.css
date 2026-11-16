@@ -720,24 +720,14 @@ body.lh-vp-lock { overflow: hidden; }
 /* a dark band over YouTube's title line (it can't be clicked anyway — this also keeps it from being read) */
 .lh-vp-band { position: absolute; left: 0; right: 0; top: 0; height: 17%; z-index: 4; pointer-events: none; background: linear-gradient(180deg, rgba(8,4,20,.96) 0, rgba(8,4,20,.88) 55%, rgba(8,4,20,0) 100%); }
 .lh-vp.is-frame .lh-vp-band, .lh-vp:not(.is-started) .lh-vp-band { display: none; }
-/* watermark that never stops moving: name · email and the serial number glide around the picture */
+/* watermark: name · email and the serial number, fixed in the top-right corner (below the title band) */
 .lh-vp-mark {
-  position: absolute; z-index: 7; left: 6%; top: 10%; display: grid; gap: 2px; justify-items: center;
+  position: absolute; z-index: 7; right: 3%; top: 19%; left: auto; display: grid; gap: 2px; justify-items: center;
   padding: 4px 10px; border-radius: 6px; pointer-events: none; white-space: nowrap; user-select: none;
   font: 700 .8rem/1.25 var(--font-latin); letter-spacing: .03em;
   color: rgba(255,255,255,.52) !important; background: rgba(0,0,0,.2) !important; text-shadow: 0 1px 2px rgba(0,0,0,.65);
-  animation: lhVpDrift 30s ease-in-out infinite;
 }
 .lh-vp-mark small { font-size: .66rem; opacity: .85; }
-@keyframes lhVpDrift {
-  0%   { left: 5%;  top: 9%; }
-  16%  { left: 48%; top: 20%; }
-  33%  { left: 22%; top: 44%; }
-  50%  { left: 50%; top: 68%; }
-  66%  { left: 6%;  top: 74%; }
-  83%  { left: 36%; top: 30%; }
-  100% { left: 5%;  top: 9%; }
-}
 .lh-vp-tiles span { color: rgba(255,255,255,.085); }
 .lh-vp:fullscreen .lh-vp-mark, .lh-vp.is-fs .lh-vp-mark { font-size: 1.05rem; }
 @media (max-width: 560px) { .lh-vp-mark { font-size: .66rem; padding: 3px 7px; } .lh-vp-mark small { font-size: .58rem; } }
