@@ -296,7 +296,7 @@ export async function SiteFooter() {
 /** The original site scripts (menus, filters, carousel, countdowns, theme/lang toggles). */
 export function PageScripts({ loggedIn, only }: { loggedIn: boolean; only?: 'lh' }) {
   const srcs = only === 'lh'
-    ? ['/assets/js/lh.js?v=2.5.0']
-    : ['/assets/js/main.js?v=2.2.0', '/assets/js/app.js?v=2.2.0', '/assets/js/lh.js?v=2.5.0'];
+    ? ['/assets/js/lh.js?v=2.6.0']
+    : ['/assets/js/main.js?v=2.2.0', '/assets/js/app.js?v=2.2.0', '/assets/js/lh.js?v=2.6.0'];
   return <LegacyScripts srcs={srcs} globals={{ APP_URL: '', CSRF_TOKEN: '', IS_LOGGED_IN: loggedIn, VAPID_PUBLIC_KEY: '' }} />;
 }

@@ -305,22 +305,22 @@
     function block(e) { e.preventDefault(); }
 
     function message(box, text) {
-      var m = box.querySelector('.lh-pp-msg') || box.appendChild(document.createElement('div'));
-      m.className = 'lh-pp-msg'; m.setAttribute('role', 'alert'); m.textContent = text;
+      var m = box.querySelector('.lh-vp-msg') || box.appendChild(document.createElement('div'));
+      m.className = 'lh-vp-msg'; m.setAttribute('role', 'alert'); m.textContent = text;
     }
 
     function controls(box) {
       var bar = document.createElement('div');
-      bar.className = 'lh-pp-bar';
+      bar.className = 'lh-vp-bar';
       bar.innerHTML =
-        '<input type="range" class="lh-pp-seek" min="0" max="1000" value="0" step="1" aria-label="' + T('ভিডিওর অবস্থান', 'Seek') + '">' +
-        '<div class="lh-pp-row">' +
+        '<input type="range" class="lh-vp-seek" min="0" max="1000" value="0" step="1" aria-label="' + T('ভিডিওর অবস্থান', 'Seek') + '">' +
+        '<div class="lh-vp-row">' +
           '<button type="button" data-a="play" aria-label="' + T('চালান / থামান', 'Play / pause') + '">' + ICON('play_arrow') + '</button>' +
           '<button type="button" data-a="back" aria-label="' + T('১০ সেকেন্ড পিছনে', 'Back 10 seconds') + '">' + ICON('replay_10') + '</button>' +
           '<button type="button" data-a="fwd" aria-label="' + T('১০ সেকেন্ড সামনে', 'Forward 10 seconds') + '">' + ICON('forward_10') + '</button>' +
           '<button type="button" data-a="mute" aria-label="' + T('শব্দ', 'Mute') + '">' + ICON('volume_up') + '</button>' +
-          '<span class="lh-pp-time" aria-live="off">0:00 / 0:00</span>' +
-          '<span class="lh-pp-gap"></span>' +
+          '<span class="lh-vp-time" aria-live="off">0:00 / 0:00</span>' +
+          '<span class="lh-vp-gap"></span>' +
           '<select data-a="speed" aria-label="' + T('গতি', 'Speed') + '"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>' +
           '<button type="button" data-a="fs" aria-label="' + T('ফুল স্ক্রিন', 'Full screen') + '">' + ICON('fullscreen') + '</button>' +
         '</div>';
@@ -330,12 +330,12 @@
     function fsElement() { return document.fullscreenElement || document.webkitFullscreenElement; }
     function toggleFs(box) {
       if (fsElement()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
-      if (box.classList.contains('is-fs')) { box.classList.remove('is-fs'); document.body.classList.remove('lh-pp-lock'); return; }
+      if (box.classList.contains('is-fs')) { box.classList.remove('is-fs'); document.body.classList.remove('lh-vp-lock'); return; }
       var req = box.requestFullscreen || box.webkitRequestFullscreen;
       if (req) {
         var p = req.call(box);
         if (p && p.then) p.then(function () { try { screen.orientation.lock('landscape'); } catch (e) {} }).catch(function () { box.classList.add('is-fs'); });
-      } else { box.classList.add('is-fs'); document.body.classList.add('lh-pp-lock'); } // iPhone: fill the screen ourselves
+      } else { box.classList.add('is-fs'); document.body.classList.add('lh-vp-lock'); } // iPhone: fill the screen ourselves
     }
 
     function mount(box, req) {
@@ -360,8 +360,9 @@
         })
         .catch(function (e) {
           box.classList.remove('is-loading'); box.classList.add('is-error');
-          message(box, e.message === 'login' ? T('ভিডিও দেখতে আবার লগইন করুন।', 'Please log in again to watch.')
-            : e.message === 'forbidden' ? T('এই ভিডিও দেখার অনুমতি আপনার নেই।', 'You do not have access to this video.')
+          // Free classes need a sign-in (the watermark shows who is watching): go to login, then come back.
+          if (e.message === 'login') { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
+          message(box, e.message === 'forbidden' ? T('এই ভিডিও দেখার অনুমতি আপনার নেই।', 'You do not have access to this video.')
             : T('ভিডিও লোড করা যায়নি। ইন্টারনেট দেখে পেজটি রিফ্রেশ করুন।', 'Could not load the video. Check your internet and refresh the page.'));
         });
     }
@@ -370,13 +371,16 @@
       var holder = document.createElement('div');
       frame.appendChild(holder);
       var shield = document.createElement('div');
-      shield.className = 'lh-pp-shield';
+      shield.className = 'lh-vp-shield';
       var pause = document.createElement('div');
-      pause.className = 'lh-pp-pause';
-      pause.innerHTML = '<span class="lh-pp-big">' + ICON('play_arrow') + '</span>';
+      pause.className = 'lh-vp-pause';
+      pause.innerHTML = '<span class="lh-vp-big">' + ICON('play_arrow') + '</span>';
       var bar = controls(box);
-      box.appendChild(shield); box.appendChild(pause); box.appendChild(bar);
-      var seek = bar.querySelector('.lh-pp-seek'), time = bar.querySelector('.lh-pp-time');
+      var sound = document.createElement('button');
+      sound.type = 'button'; sound.className = 'lh-vp-unmute';
+      sound.innerHTML = ICON('volume_up') + '<span>' + T('শব্দ চালু করতে ট্যাপ করুন', 'Tap for sound') + '</span>';
+      box.appendChild(shield); box.appendChild(pause); box.appendChild(bar); box.appendChild(sound);
+      var seek = bar.querySelector('.lh-vp-seek'), time = bar.querySelector('.lh-vp-time');
       var playBtn = bar.querySelector('[data-a=play]'), muteBtn = bar.querySelector('[data-a=mute]');
       var key = 'lh_pos_' + (req.lesson ? 'l' + req.lesson : 'r' + req.recording);
       var timer = null, seeking = false, started = false, hideT = null;
@@ -393,9 +397,15 @@
             var saved = Number(store(key)) || 0, d = player.getDuration() || 0;
             if (saved > 10 && (!d || saved < d - 15)) player.seekTo(saved, true);
             player.playVideo();
-            // Phones may refuse to start without a tap on the video itself: let one tap through
-            // to YouTube's centre button while the edges (title, logo, links) stay covered.
-            setTimeout(function () { if (!started) box.classList.add('is-tap'); }, 1800);
+            // If the browser blocks sound, start muted (always allowed) with a "tap for sound" button —
+            // so no click ever has to reach YouTube itself. Only a phone that refuses even that gets
+            // one tap through to YouTube's centre button, with the title and logo edges still covered.
+            setTimeout(function () {
+              if (started) return;
+              player.mute(); player.playVideo();
+              box.classList.add('is-muted-start'); muteBtn.innerHTML = ICON('volume_off');
+              setTimeout(function () { if (!started && window.matchMedia('(pointer: coarse)').matches) box.classList.add('is-tap'); }, 3000);
+            }, 1500);
             timer = setInterval(tick, 250);
           },
           onStateChange: function (e) {
@@ -424,7 +434,10 @@
       function jump(s) { player.seekTo(Math.max(0, (player.getCurrentTime() || 0) + s), true); }
       function idle() { box.classList.remove('is-idle'); clearTimeout(hideT); hideT = setTimeout(function () { if (box.classList.contains('is-playing')) box.classList.add('is-idle'); }, 2600); }
 
-      shield.addEventListener('click', toggle);
+      function unmute() { player.unMute(); player.setVolume(100); box.classList.remove('is-muted-start'); muteBtn.innerHTML = ICON('volume_up'); }
+      sound.addEventListener('click', unmute);
+      // First tap on a muted start turns the sound on instead of pausing.
+      shield.addEventListener('click', function () { if (box.classList.contains('is-muted-start')) unmute(); else toggle(); });
       pause.addEventListener('click', toggle);
       shield.addEventListener('dblclick', function () { toggleFs(box); });
       box.addEventListener('mousemove', idle);
@@ -437,7 +450,7 @@
         if (a === 'play') toggle();
         else if (a === 'back') jump(-10);
         else if (a === 'fwd') jump(10);
-        else if (a === 'mute') { if (player.isMuted()) { player.unMute(); b.innerHTML = ICON('volume_up'); } else { player.mute(); b.innerHTML = ICON('volume_off'); } }
+        else if (a === 'mute') { if (player.isMuted()) { unmute(); } else { player.mute(); b.innerHTML = ICON('volume_off'); } }
         else if (a === 'fs') toggleFs(box);
         idle();
       });
@@ -457,9 +470,9 @@
         destroy: function () {
           clearInterval(timer); clearTimeout(hideT);
           try { player.destroy(); } catch (e) {}
-          [shield, pause, bar].forEach(function (n) { n.remove(); });
+          [shield, pause, bar, sound].forEach(function (n) { n.remove(); });
           frame.innerHTML = '';
-          box.classList.remove('is-started', 'is-playing', 'is-paused', 'is-ended', 'is-tap', 'is-idle', 'is-fs');
+          box.classList.remove('is-started', 'is-playing', 'is-paused', 'is-ended', 'is-tap', 'is-idle', 'is-fs', 'is-muted-start');
           box._pp = null;
         }
       };
@@ -472,20 +485,22 @@
       var start = box.querySelector('[data-pp-start]');
       if (start && box.dataset.lesson) start.addEventListener('click', function () { box.classList.add('is-started'); mount(box, { lesson: Number(box.dataset.lesson) }); });
     });
-    document.addEventListener('fullscreenchange', function () { if (!fsElement()) $$('.lh-pp').forEach(function (b) { b.classList.remove('is-fs'); }); });
+    document.addEventListener('fullscreenchange', function () { if (!fsElement()) $$('.lh-vp').forEach(function (b) { b.classList.remove('is-fs'); }); });
 
-    // Live-class recordings play in the same protected player, in a pop-up.
+    // Free classes, trailers and live-class recordings play in the same protected player, in a pop-up.
     var modal = document.querySelector('[data-pp-modal]');
     if (modal) {
       var mbox = modal.querySelector('[data-pp]');
-      var close = function () { if (mbox._pp) mbox._pp.destroy(); modal.hidden = true; document.body.classList.remove('lh-pp-lock'); };
-      $$('[data-pp-rec]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          modal.hidden = false; document.body.classList.add('lh-pp-lock');
-          mbox.classList.add('is-started');
-          mount(mbox, { recording: Number(b.dataset.ppRec) });
-          mbox.focus();
-        });
+      var close = function () { if (mbox._pp) mbox._pp.destroy(); modal.hidden = true; document.body.classList.remove('lh-vp-lock'); };
+      document.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('[data-pp-open]');
+        if (!b) return;
+        e.preventDefault();
+        var req = b.dataset.lesson ? { lesson: Number(b.dataset.lesson) } : b.dataset.recording ? { recording: Number(b.dataset.recording) } : { intro: Number(b.dataset.intro) };
+        modal.hidden = false; document.body.classList.add('lh-vp-lock');
+        mbox.classList.add('is-started');
+        mount(mbox, req);
+        mbox.focus();
       });
       modal.querySelector('[data-pp-close]').addEventListener('click', close);
       modal.addEventListener('click', function (e) { if (e.target === modal) close(); });

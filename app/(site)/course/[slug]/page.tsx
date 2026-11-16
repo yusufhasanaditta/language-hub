@@ -12,6 +12,7 @@ import { TeacherTicket } from '@/components/TeacherTicket';
 import { Glance, InfoSections, CourseFaq } from '@/components/CourseDetails';
 import { courseTeam, courseDetails, byKind } from '@/lib/team';
 import { Testimonials, loadTestimonials } from '@/components/Testimonials';
+import { VideoModal } from '@/components/VideoPlayer';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -69,8 +70,9 @@ export default async function CoursePage({ params }: Props) {
   );
   const price = <Price now={now} was={was} free={free} />;
   // The lightbox needs an embeddable URL (a plain YouTube link refuses to load in a frame).
-  const video = embedUrl(c.intro_video_url);
-  const freeVideo = embedUrl(modules.flatMap(m => m.lessons).find(l => l.is_free && l.video_url)?.video_url);
+  // Videos play only in the protected pop-up player (no YouTube links in this page).
+  const hasTrailer = !!embedUrl(c.intro_video_url);
+  const freeLesson = modules.flatMap(m => m.lessons).find(l => l.is_free && l.kind === 'video' && l.video_url);
 
   return (
     <>
@@ -99,8 +101,8 @@ export default async function CoursePage({ params }: Props) {
           <div className="lh-c-media" style={langStyle(c.cat_slug)} data-reveal>
             {c.thumbnail && /^https?:\/\//.test(c.thumbnail) ? <img src={c.thumbnail} alt="" />
               : <><span className="lh-ticket-glyph" aria-hidden="true">{L.glyph}</span><span className="lh-c-media-hello" aria-hidden="true">{L.hello}</span></>}
-            {video && <button type="button" className="lh-play" data-video={video} aria-label="Play trailer"><Icon name="play_arrow" /></button>}
-            {!video && freeVideo && <button type="button" className="lh-play" data-video={freeVideo} aria-label="Play free class"><Icon name="play_arrow" /></button>}
+            {hasTrailer && <button type="button" className="lh-play" data-pp-open data-intro={c.id} aria-label="Play trailer"><Icon name="play_arrow" /></button>}
+            {!hasTrailer && freeLesson && <button type="button" className="lh-play" data-pp-open data-lesson={freeLesson.id} aria-label="Play free class"><Icon name="play_arrow" /></button>}
           </div>
 
           {live && c.batch_date && (
@@ -203,6 +205,8 @@ export default async function CoursePage({ params }: Props) {
           </div>
         </aside>
       </div>
+
+      <VideoModal user={user} glyph={L.glyph} />
 
       <div className="lh-buybar">
         <div className="lh-buybar-price">{price}</div>

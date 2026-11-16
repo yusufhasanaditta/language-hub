@@ -1,6 +1,9 @@
-// Protected player: the classroom asks here for a class (or live-class recording) to play.
-// The video id is never written into the page HTML — it is handed out only to a signed-in
-// learner who may watch that course, from this site (same origin), and is never cached.
+// Protected player: every video on the site is requested here (class, free class, trailer, recording).
+// The video id is never written into a page — it is handed out only after the access check below,
+// only to this site (same origin), and never cached.
+//   class / recording : signed in + may watch the course (enrolled, admin, its teacher, or a free course)
+//   free preview class: signed in (so the watermark can show who is watching)
+//   course trailer    : anyone (it is the course's advert), published courses only
 import type { NextRequest } from 'next/server';
 import { one } from '@/lib/db';
 import { currentUser } from '@/lib/auth';
@@ -13,28 +16,40 @@ const json = (body: unknown, status = 200) => Response.json(body, {
   status, headers: { 'Cache-Control': 'private, no-store, max-age=0', 'X-Robots-Tag': 'noindex' },
 });
 
+function answer(url: string | null | undefined) {
+  const yt = youtubeId(String(url ?? '').trim());
+  if (yt) return json({ type: 'yt', v: yt });
+  const other = embedUrl(url);
+  return other ? json({ type: 'frame', src: other }) : json({ error: 'not found' }, 404);
+}
+
 export async function POST(req: NextRequest) {
   if (!sameOrigin(req)) return json({ error: 'forbidden' }, 403);
+  try { await rateLimit('player', 600, 600); } catch (e) { if (e instanceof UserError) return json({ error: 'slow down' }, 429); throw e; }
+  const body = await req.json().catch(() => ({})) as { lesson?: unknown; recording?: unknown; intro?: unknown };
+  const lessonId = Number(body.lesson) || 0, recId = Number(body.recording) || 0, introId = Number(body.intro) || 0;
+
+  if (introId) {
+    const c = await one<{ intro_video_url: string | null }>`SELECT intro_video_url FROM courses WHERE id = ${introId} AND status = 'published'`;
+    return c?.intro_video_url ? answer(c.intro_video_url) : json({ error: 'not found' }, 404);
+  }
+
   const user = await currentUser();
   if (!user) return json({ error: 'login' }, 401);
-  try { await rateLimit('player', 600, 600); } catch (e) { if (e instanceof UserError) return json({ error: 'slow down' }, 429); throw e; }
 
-  const body = await req.json().catch(() => ({})) as { lesson?: unknown; recording?: unknown };
-  const lessonId = Number(body.lesson) || 0, recId = Number(body.recording) || 0;
   const src = lessonId
-    ? await one<{ course_id: number; url: string | null }>`
-        SELECT m.course_id, l.video_url AS url FROM lessons l JOIN modules m ON m.id = l.module_id
+    ? await one<{ course_id: number; url: string | null; is_free: boolean }>`
+        SELECT m.course_id, l.video_url AS url, l.is_free FROM lessons l JOIN modules m ON m.id = l.module_id
         WHERE l.id = ${lessonId} AND l.is_published AND l.kind = 'video'`
     : recId
-      ? await one<{ course_id: number; url: string | null }>`SELECT course_id, recording_url AS url FROM live_sessions WHERE id = ${recId}`
+      ? await one<{ course_id: number; url: string | null; is_free: boolean }>`
+          SELECT course_id, recording_url AS url, false AS is_free FROM live_sessions WHERE id = ${recId}`
       : null;
   if (!src?.url) return json({ error: 'not found' }, 404);
 
   const course = await courseBy('id', src.course_id, false);
-  if (!course || !(await canWatchCourse(user, course))) return json({ error: 'forbidden' }, 403);
-
-  const yt = youtubeId(src.url.trim());
-  if (yt) return json({ type: 'yt', v: yt });
-  const other = embedUrl(src.url);
-  return other ? json({ type: 'frame', src: other }) : json({ error: 'not found' }, 404);
+  if (!course) return json({ error: 'not found' }, 404);
+  const freePreview = src.is_free && course.status === 'published';
+  if (!freePreview && !(await canWatchCourse(user, course))) return json({ error: 'forbidden' }, 403);
+  return answer(src.url);
 }

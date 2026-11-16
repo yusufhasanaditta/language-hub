@@ -56,7 +56,8 @@ export function Journey({ courseId, modules, catSlug, enrolled, done, freeCourse
                 const [icon, kbn, ken] = KIND[l.kind] ?? KIND.video;
                 const isDone = done.has(l.id);
                 const open = enrolled || freeCourse;
-                const video = !enrolled && (freeCourse || l.is_free) ? embedUrl(l.video_url) : '';
+                // Free classes open in the protected pop-up player (sign-in needed, so the watermark shows who watches).
+                const video = !enrolled && (freeCourse || l.is_free) && l.kind === 'video' && !!embedUrl(l.video_url);
                 const thumb = lessonThumb(l);
                 const state = isDone ? 'is-done' : enrolled ? 'is-open' : open || l.is_free ? 'is-free' : 'is-locked';
                 const card = (
@@ -82,7 +83,7 @@ export function Journey({ courseId, modules, catSlug, enrolled, done, freeCourse
                 return (
                   <li key={l.id} className={`lh-class ${state}`}>
                     {enrolled ? <a href={`/learn?course=${courseId}&lesson=${l.id}`}>{card}</a>
-                      : video ? <a href={l.video_url} data-video={video} aria-label={`${l.title} — play`}>{card}</a>
+                      : video ? <a href={`#class-${l.id}`} data-pp-open data-lesson={l.id} aria-label={`${l.title} — play`}>{card}</a>
                       : freeCourse ? <a href={`/learn?course=${courseId}&lesson=${l.id}`}>{card}</a>
                       : <div aria-label={`${l.title} — locked`}>{card}</div>}
                   </li>
