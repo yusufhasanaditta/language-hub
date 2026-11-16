@@ -1,16 +1,22 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { q, one } from '@/lib/db';
+import { q, one, type Row } from '@/lib/db';
 import { requireUser, isAdmin, isTeacher } from '@/lib/auth';
 import { courseBy, curriculum, courseUrl } from '@/lib/courses';
-import { T, N, DateBn } from '@/lib/i18n';
+import { T, N, DateBn, bnNum } from '@/lib/i18n';
 import { lang, langStyle } from '@/lib/langs';
-import { embedUrl, isFreeCourse } from '@/lib/format';
+import { embedUrl, isFreeCourse, lessonThumb } from '@/lib/format';
 import { Countdown, Icon } from '@/components/ui';
 import { LiveCard } from '@/components/student';
 import { userTeachesCourse } from '@/lib/team';
 
 export const metadata: Metadata = { title: 'ক্লাসরুম' };
+
+const KIND: Record<string, [string, string, string]> = {
+  video: ['smart_display', 'ভিডিও', 'Video'], pdf: ['description', 'নোট', 'Notes'], text: ['article', 'পাঠ', 'Reading'],
+  live: ['videocam', 'লাইভ', 'Live'], quiz: ['quiz', 'কুইজ', 'Quiz'],
+};
+const pad = (n: number) => String(n).padStart(2, '0');
 
 type Props = { searchParams: Promise<{ course?: string; lesson?: string; welcome?: string }> };
 
@@ -49,17 +55,40 @@ export default async function LearnPage({ searchParams }: Props) {
   const mark = user.phone || user.email || user.name; // watermark discourages screen recording
   const L = lang(course.cat_slug);
   const lessonHref = (id: number) => `/learn?course=${cid}&lesson=${id}`;
+  const minutes = flat.reduce((n, l) => n + (Number(l.duration) || 0), 0);
+  const classNo = (id: number) => flat.findIndex(l => l.id === id) + 1;
+  // "Continue" jumps to the first class not done yet (other than the one on screen).
+  const resume = flat.find(l => !done.has(l.id) && l.id !== lesson?.id) ?? null;
+  const [kIcon, kBn, kEn] = KIND[lesson?.kind ?? 'video'] ?? KIND.video;
   const startsLater = !!course.batch_date && new Date(`${course.batch_date}T00:00:00+06:00`).getTime() > Date.now();
 
   return (
     <>
-      <section className="lh-learn-head" style={langStyle(course.cat_slug)}>
+      <section className="lh-cr-head" style={langStyle(course.cat_slug)}>
+        <span className="lh-cr-glyph" aria-hidden="true">{L.glyph}</span>
         <div className="container">
           <a href="/my-courses" className="lh-c-back"><Icon name="arrow_back" /><T bn="আমার কোর্স" en="My courses" /></a>
-          <h1 className="lh-learn-title"><T bn={course.title_bn} en={course.title_en || course.title_bn} /></h1>
-          <div className="lh-progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-            <div className="lh-progress-bar"><span style={{ width: `${pct}%` }}></span></div>
-            <b data-pct><N v={pct} />%</b>
+          <div className="lh-cr-head-in">
+            <div className="lh-cr-head-text">
+              <p className="lh-cr-eyebrow"><Icon name="school" /><T bn="ক্লাসরুম" en="Classroom" /> · <T bn={course.cat_name} en={course.cat_name_en} /></p>
+              <h1 className="lh-cr-title"><T bn={course.title_bn} en={course.title_en || course.title_bn} /></h1>
+              {course.teacher_name && <p className="lh-cr-teacher"><Icon name="badge" />{course.teacher_name}</p>}
+              <ul className="lh-cr-stats">
+                <li><Icon name="play_lesson" /><N v={flat.length} /> <T bn="ক্লাস" en="classes" /></li>
+                {minutes > 0 && <li><Icon name="schedule" /><T bn={`${bnNum(Math.round(minutes / 6) / 10)} ঘণ্টা`} en={`${Math.round(minutes / 6) / 10} h`} /></li>}
+                <li><Icon name="task_alt" /><N v={doneCount} />/<N v={flat.length} /> <T bn="সম্পন্ন" en="done" /></li>
+              </ul>
+              {resume && (
+                <a className="btn btn-accent lh-cr-resume" href={lessonHref(resume.id)}>
+                  <Icon name="play_arrow" />
+                  <T bn={`চালিয়ে যান · ক্লাস ${bnNum(pad(classNo(resume.id)))}`} en={`Continue · Class ${pad(classNo(resume.id))}`} />
+                </a>
+              )}
+            </div>
+            <div className="lh-cr-ring" style={{ '--p': pct } as React.CSSProperties} role="progressbar"
+                 aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Course progress">
+              <b data-pct><N v={pct} />%</b><small><T bn="সম্পন্ন" en="complete" /></small>
+            </div>
           </div>
         </div>
       </section>
@@ -80,8 +109,8 @@ export default async function LearnPage({ searchParams }: Props) {
         </div>
       )}
 
-      <div className="container lh-learn">
-        <div className="lh-learn-main">
+      <div className="container lh-cr">
+        <div className="lh-cr-main">
           {liveNext ? <LiveCard s={liveNext} /> : course.type === 'live' && (
             <section className="lh-live" data-reveal>
               <div className="lh-live-top"><span className="lh-chip"><T bn="লাইভ ক্লাস" en="Live classes" /></span></div>
@@ -109,9 +138,14 @@ export default async function LearnPage({ searchParams }: Props) {
                 )}
                 {lesson.kind !== 'text' && <span className="lh-watermark" aria-hidden="true" data-watermark>{mark}</span>}
               </div>
-              <div className="lh-player-bar">
-                <div>
-                  <p className="lh-ticket-meta"><T bn="ক্লাস" en="Lesson" /> <N v={idx + 1} />/<N v={flat.length} /></p>
+
+              <div className="lh-cr-now">
+                <div className="lh-cr-now-text">
+                  <p className="lh-cr-now-meta">
+                    <span className="lh-cr-chip"><T bn={`ক্লাস ${bnNum(pad(idx + 1))}/${bnNum(pad(flat.length))}`} en={`Class ${pad(idx + 1)}/${pad(flat.length)}`} /></span>
+                    <span><Icon name={kIcon} /><T bn={kBn} en={kEn} /></span>
+                    {Number(lesson.duration) > 0 && <span><Icon name="schedule" /><N v={lesson.duration} /> <T bn="মিনিট" en="min" /></span>}
+                  </p>
                   <h2>{lesson.title}</h2>
                 </div>
                 {enrollment && (
@@ -121,10 +155,18 @@ export default async function LearnPage({ searchParams }: Props) {
                   </button>
                 )}
               </div>
-              <div className="lh-player-nav">
-                {prev ? <a className="btn btn-outline" href={lessonHref(prev.id)}><Icon name="arrow_back" /><T bn="আগের" en="Previous" /></a> : <span></span>}
-                {next && <a className="btn btn-outline" href={lessonHref(next.id)}><T bn="পরের" en="Next" /><Icon name="arrow_forward" /></a>}
-              </div>
+              {lesson.kind !== 'pdf' && lesson.pdf_url && (
+                <a className="lh-cr-notes" href={lesson.pdf_url} target="_blank" rel="noopener">
+                  <Icon name="description" /><T bn="এই ক্লাসের নোট (PDF)" en="Notes for this class (PDF)" /><Icon name="open_in_new" />
+                </a>
+              )}
+
+              {(prev || next) && (
+                <nav className="lh-cr-nav" aria-label="Lesson navigation">
+                  {prev ? <StepCard href={lessonHref(prev.id)} l={prev} no={idx} dir="prev" glyph={L.glyph} /> : <span></span>}
+                  {next ? <StepCard href={lessonHref(next.id)} l={next} no={idx + 2} dir="next" glyph={L.glyph} /> : <span></span>}
+                </nav>
+              )}
             </section>
           ) : course.type !== 'live' && (
             <section className="lh-c-card lh-empty" data-reveal>
@@ -148,33 +190,72 @@ export default async function LearnPage({ searchParams }: Props) {
           )}
         </div>
 
-        <aside className="lh-learn-side">
-          {modules.length > 0 && (
-            <section className="lh-c-card lh-learn-list" data-reveal="right">
-              <h2><T bn="সব ক্লাস" en="All lessons" /> <small><N v={doneCount} />/<N v={flat.length} /></small></h2>
-              {modules.map((m, mi) => m.lessons.length > 0 && (
-                <div key={m.id}>
-                  <p className="lh-learn-mod"><span className="lh-curr-n"><N v={mi + 1} /></span>{m.title}</p>
-                  <ol className="lh-curr-list">
-                    {m.lessons.map(ls => {
-                      const cur = lesson?.id === ls.id;
-                      return (
-                        <li key={ls.id} className={`${cur ? 'is-current' : ''} ${done.has(ls.id) ? 'is-done' : ''}`}>
-                          <a href={lessonHref(ls.id)} aria-current={cur ? 'true' : undefined}>
-                            <Icon name={done.has(ls.id) ? 'check_circle' : cur ? 'play_circle' : 'radio_button_unchecked'} />
-                            <span className="lh-curr-t">{ls.title}</span>
-                            {ls.duration > 0 && <small><N v={ls.duration} />m</small>}
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ol>
-                </div>
-              ))}
+        <aside className="lh-cr-side">
+          {flat.length > 0 && (
+            <section className="lh-pl" data-reveal="right" aria-label="All classes">
+              <header className="lh-pl-head">
+                <h2><T bn="সব ক্লাস" en="All classes" /></h2>
+                <span className="lh-pl-count"><N v={doneCount} />/<N v={flat.length} /></span>
+                <div className="lh-pl-bar" aria-hidden="true"><span style={{ width: `${pct}%` }}></span></div>
+              </header>
+              <div className="lh-pl-scroll" data-pl-scroll>
+                {modules.map((m, mi) => m.lessons.length > 0 && (
+                  <div key={m.id} className="lh-pl-mod">
+                    <p className="lh-pl-mod-title">
+                      <span className="lh-curr-n"><N v={mi + 1} /></span>
+                      <span className="lh-pl-mod-name">{m.title}</span>
+                      <small><N v={m.lessons.filter(l => done.has(l.id)).length} />/<N v={m.lessons.length} /></small>
+                    </p>
+                    <ol className="lh-pl-list">
+                      {m.lessons.map(ls => {
+                        const cur = lesson?.id === ls.id;
+                        const isDone = done.has(ls.id);
+                        const thumb = lessonThumb(ls);
+                        const [icon, kbn, ken] = KIND[ls.kind] ?? KIND.video;
+                        return (
+                          <li key={ls.id} className={`lh-pl-item${cur ? ' is-current' : ''}${isDone ? ' is-done' : ''}`}>
+                            <a href={lessonHref(ls.id)} aria-current={cur ? 'true' : undefined}>
+                              <span className="lh-pl-thumb">
+                                {thumb ? <img src={thumb} alt="" loading="lazy" decoding="async" /> : <span className="lh-pl-glyph" aria-hidden="true">{L.glyph}</span>}
+                                {Number(ls.duration) > 0 && <span className="lh-pl-dur"><N v={ls.duration} />m</span>}
+                                {cur && <span className="lh-pl-eq" aria-hidden="true"><i></i><i></i><i></i></span>}
+                              </span>
+                              <span className="lh-pl-body">
+                                <small>{cur ? <T bn="এখন চলছে" en="Now playing" />
+                                  : <><T bn={`ক্লাস ${bnNum(pad(classNo(ls.id)))}`} en={`Class ${pad(classNo(ls.id))}`} /> · <Icon name={icon} /><T bn={kbn} en={ken} /></>}</small>
+                                <b>{ls.title}</b>
+                              </span>
+                              <span className="material-icons-round lh-pl-state" data-pl-icon aria-hidden="true">{isDone ? 'check_circle' : cur ? 'play_circle' : 'radio_button_unchecked'}</span>
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </div>
+                ))}
+              </div>
             </section>
           )}
         </aside>
       </div>
     </>
+  );
+}
+
+/** Previous / next class as a small card with its thumbnail. */
+function StepCard({ href, l, no, dir, glyph }: {
+  href: string; l: Row; no: number; dir: 'prev' | 'next'; glyph: string;
+}) {
+  const thumb = lessonThumb(l);
+  return (
+    <a href={href} className={`lh-cr-step is-${dir}`}>
+      <span className="lh-cr-step-thumb">{thumb ? <img src={thumb} alt="" loading="lazy" /> : <span aria-hidden="true">{glyph}</span>}</span>
+      <span className="lh-cr-step-body">
+        <small>{dir === 'next'
+          ? <><T bn="পরের ক্লাস" en="Next class" /><Icon name="arrow_forward" /></>
+          : <><Icon name="arrow_back" /><T bn="আগের ক্লাস" en="Previous" /></>}</small>
+        <b><T bn={`${bnNum(pad(no))}. `} en={`${pad(no)}. `} />{l.title}</b>
+      </span>
+    </a>
   );
 }

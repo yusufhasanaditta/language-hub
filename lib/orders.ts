@@ -40,15 +40,23 @@ export async function markOrderPaid(orderId: number, method: string, ref: string
 
 export type Coupon = { id: number; code: string; type: 'percent' | 'flat'; value: string };
 
-/** A coupon that is valid right now for this amount, or null. */
-export async function findCoupon(code: string, amount: number) {
+/** A coupon that is valid right now for this course and amount, or null. */
+export async function findCoupon(code: string, amount: number, courseId: number) {
   if (!code) return null;
   return one<Coupon>`
     SELECT id, code, type, value FROM coupons
     WHERE upper(code) = upper(${code}) AND is_active
       AND (expires_at IS NULL OR expires_at >= (now() AT TIME ZONE 'Asia/Dhaka')::date)
       AND (max_uses = 0 OR used_count < max_uses)
-      AND min_order <= ${amount}`;
+      AND min_order <= ${amount}
+      AND (all_courses OR EXISTS (SELECT 1 FROM coupon_courses cc WHERE cc.coupon_id = coupons.id AND cc.course_id = ${courseId}))`;
+}
+
+/** True when the code exists and is active but is limited to other courses (for a clearer message). */
+export async function couponForOtherCourses(code: string, courseId: number) {
+  if (!code) return false;
+  return !!(await one`SELECT 1 FROM coupons c WHERE upper(c.code) = upper(${code}) AND c.is_active AND NOT c.all_courses
+    AND NOT EXISTS (SELECT 1 FROM coupon_courses cc WHERE cc.coupon_id = c.id AND cc.course_id = ${courseId})`);
 }
 
 export function couponDiscount(c: Coupon | null, price: number) {

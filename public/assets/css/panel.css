@@ -313,3 +313,16 @@ html[data-theme="dark"] .pn-help-match { color: #6EE7B7 !important; } html[data-
 .pn-temp summary { cursor: pointer; font-size: .8rem; font-weight: 700; color: var(--lh-brand-2); list-style: none; padding: 4px 8px; }
 .pn-temp[open] form { margin-top: 6px; }
 .pn-temp .form-control { min-height: 34px; width: 180px; }
+
+/* Coupons: which courses a code works on */
+.pn-coupon-scope { border: 1px solid var(--lh-line); border-radius: 14px; padding: 12px 16px; margin: 0; }
+.pn-coupon-scope legend { padding: 0 6px; font-weight: 700; }
+.pn-coupon-scope > .pn-check { min-height: 36px; }
+.pn-coupon-courses { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 20px; max-height: 320px; overflow: auto; margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: var(--lh-bg-tint); }
+.pn-coupon-scope:has(input[value="all"]:checked) .pn-coupon-courses { display: none; }
+.pn-coupon-lang { margin: 6px 0 2px; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--lh-ink-3); }
+.pn-coupon-courses .pn-check { min-height: 36px; font-weight: 500 !important; }
+.pn-coupon-edit { margin-top: 6px; }
+.pn-coupon-edit summary { cursor: pointer; font-size: .82rem; color: var(--lh-brand-2); }
+.pn-coupon-edit form { display: grid; gap: 10px; margin-top: 8px; min-width: 280px; }
+.pn-danger-text { color: #DC2626; font-weight: 600; }

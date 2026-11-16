@@ -1,7 +1,7 @@
 import { one, q, val } from '@/lib/db';
 import { requireUser, ROLE } from '@/lib/auth';
 import { courseBy, courseUrl, isFull } from '@/lib/courses';
-import { findCoupon, couponDiscount, markOrderPaid, notify } from '@/lib/orders';
+import { findCoupon, couponDiscount, couponForOtherCourses, markOrderPaid, notify } from '@/lib/orders';
 import { sslczConfigured, startPayment } from '@/lib/sslcommerz';
 import { formAction, fail, flash, rateLimit, int, str, seeOther, siteUrl } from '@/lib/http';
 import { priceOf, isFreeCourse } from '@/lib/format';
@@ -20,8 +20,11 @@ export const POST = formAction(async (f, req) => {
   // The order keeps the regular price and the whole saving (offer + coupon), so the invoice shows the discount.
   const listPrice = regular ?? price;
   const code = str(f, 'coupon', 50);
-  const coupon = code ? await findCoupon(code, price) : null;
-  if (code && !coupon) fail('কুপনটি সঠিক নয় বা মেয়াদ শেষ।', 'This coupon is invalid or expired.');
+  const coupon = code ? await findCoupon(code, price, c.id) : null;
+  if (code && !coupon) {
+    if (await couponForOtherCourses(code, c.id)) fail('এই কুপনটি এই কোর্সের জন্য প্রযোজ্য নয়।', 'This coupon does not work for this course.');
+    fail('কুপনটি সঠিক নয় বা মেয়াদ শেষ।', 'This coupon is invalid or expired.');
+  }
   const discount = couponDiscount(coupon, price);
   const total = Math.max(0, price - discount);
   const method = str(f, 'method', 10);

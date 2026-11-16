@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { one } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { courseBy, courseUrl } from '@/lib/courses';
-import { findCoupon, couponDiscount } from '@/lib/orders';
+import { findCoupon, couponDiscount, couponForOtherCourses } from '@/lib/orders';
 import { sslczConfigured } from '@/lib/sslcommerz';
 import { setting } from '@/lib/settings';
 import { T, N, bnNum } from '@/lib/i18n';
@@ -27,7 +27,8 @@ export default async function CheckoutPage({ searchParams }: Props) {
   const [price, regular] = priceOf(course);
   const offer = regular ? regular - price : 0;
   const code = (sp.coupon ?? '').trim().toUpperCase().slice(0, 50);
-  const coupon = code ? await findCoupon(code, price) : null;
+  const coupon = code ? await findCoupon(code, price, course.id) : null;
+  const otherCourse = code && !coupon ? await couponForOtherCourses(code, course.id) : false;
   const discount = couponDiscount(coupon, price);
   const total = Math.max(0, price - discount);
   const online = await sslczConfigured();
@@ -66,7 +67,9 @@ export default async function CheckoutPage({ searchParams }: Props) {
               <input type="text" id="coupon" name="coupon" className="lh-input" defaultValue={code} autoComplete="off" autoCapitalize="characters" placeholder="LH10" />
               <button type="submit" className="btn btn-outline"><T bn="প্রয়োগ" en="Apply" /></button>
             </div>
-            {code && !coupon && <p className="lh-auth-error" role="alert"><T bn="কুপনটি সঠিক নয় বা মেয়াদ শেষ।" en="This coupon is invalid or expired." /></p>}
+            {code && !coupon && <p className="lh-auth-error" role="alert">{otherCourse
+              ? <T bn="এই কুপনটি এই কোর্সের জন্য প্রযোজ্য নয়।" en="This coupon does not work for this course." />
+              : <T bn="কুপনটি সঠিক নয় বা মেয়াদ শেষ।" en="This coupon is invalid or expired." />}</p>}
             {coupon && <p className="lh-c-save"><T bn="কুপন প্রয়োগ হয়েছে!" en="Coupon applied!" /></p>}
           </form>
         </div>

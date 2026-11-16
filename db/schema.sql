@@ -343,3 +343,11 @@ CREATE TABLE IF NOT EXISTS password_resets (
 
 -- Class card picture (optional; YouTube lessons use the video thumbnail).
 ALTER TABLE lessons ADD COLUMN IF NOT EXISTS thumbnail varchar(500);
+
+-- Coupons can be limited to chosen courses (all_courses = false → only the courses listed here).
+ALTER TABLE coupons ADD COLUMN IF NOT EXISTS all_courses boolean NOT NULL DEFAULT true;
+CREATE TABLE IF NOT EXISTS coupon_courses (
+  coupon_id int NOT NULL REFERENCES coupons(id) ON DELETE CASCADE,
+  course_id int NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+  PRIMARY KEY (coupon_id, course_id)
+);

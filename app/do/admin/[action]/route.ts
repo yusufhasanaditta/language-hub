@@ -13,6 +13,20 @@ import { createReset, showResetOnce } from '@/lib/reset';
 
 type H = (f: FormData, me: User) => Promise<string | void>;
 
+/** Reads the coupon "Works on" picker: all courses, or the ticked (existing) courses. */
+async function couponScope(f: FormData, field: string) {
+  if (str(f, field) !== 'selected') return { all: true, ids: [] as number[] };
+  const picked = [...new Set(f.getAll('course_ids').map(v => parseInt(String(v), 10)).filter(n => n > 0))].slice(0, 500);
+  if (!picked.length) fail('Tick at least one course, or choose "All courses".');
+  const ids = (await q<{ id: number }>`SELECT id FROM courses WHERE id = ANY(${picked})`).map(r => r.id);
+  if (!ids.length) fail('Those courses no longer exist.');
+  return { all: false, ids };
+}
+async function setCouponCourses(couponId: number, ids: number[]) {
+  await q`DELETE FROM coupon_courses WHERE coupon_id = ${couponId}`;
+  if (ids.length) await q`INSERT INTO coupon_courses (coupon_id, course_id) SELECT ${couponId}, unnest(${ids}::int[])`;
+}
+
 const handlers: Record<string, H> = {
   // ── Users ──────────────────────────────────────────────────────────────────
   async 'user-save'(f, me) {
@@ -268,9 +282,19 @@ const handlers: Record<string, H> = {
     if (value <= 0 || (type === 'percent' && value > 100)) fail('Enter a valid discount.');
     if (await one`SELECT 1 FROM coupons WHERE upper(code) = ${code}`) fail('That code already exists.');
     const exp = /^\d{4}-\d{2}-\d{2}$/.test(str(f, 'expires_at')) ? str(f, 'expires_at') : null;
-    await q`INSERT INTO coupons (code, type, value, min_order, max_uses, expires_at)
-            VALUES (${code}, ${type}, ${value}, ${Math.max(0, num(f, 'min_order'))}, ${Math.max(0, int(f, 'max_uses'))}, ${exp})`;
-    await flash('success', `Coupon ${code} created.`);
+    const scope = await couponScope(f, 'new_scope');
+    const c = await one<{ id: number }>`INSERT INTO coupons (code, type, value, min_order, max_uses, expires_at, all_courses)
+            VALUES (${code}, ${type}, ${value}, ${Math.max(0, num(f, 'min_order'))}, ${Math.max(0, int(f, 'max_uses'))}, ${exp}, ${scope.all}) RETURNING id`;
+    await setCouponCourses(c!.id, scope.ids);
+    await flash('success', `Coupon ${code} created${scope.all ? ' (all courses)' : ` for ${scope.ids.length} course${scope.ids.length === 1 ? '' : 's'}`}.`);
+  },
+  async 'coupon-courses'(f) {
+    const id = int(f, 'id');
+    if (!(await one`SELECT 1 FROM coupons WHERE id = ${id}`)) fail('Coupon not found.');
+    const scope = await couponScope(f, `c${id}_scope`);
+    await q`UPDATE coupons SET all_courses = ${scope.all} WHERE id = ${id}`;
+    await setCouponCourses(id, scope.ids);
+    await flash('success', scope.all ? 'Coupon now works on all courses.' : `Coupon now works on ${scope.ids.length} course${scope.ids.length === 1 ? '' : 's'}.`);
   },
   async 'coupon-toggle'(f) { await q`UPDATE coupons SET is_active = NOT is_active WHERE id = ${int(f, 'id')}`; },
   async 'coupon-delete'(f) { await q`DELETE FROM coupons WHERE id = ${int(f, 'id')}`; await flash('success', 'Coupon deleted.'); },

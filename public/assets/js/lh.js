@@ -223,8 +223,8 @@
         btn.classList.remove('btn-primary'); btn.classList.add('btn-outline', 'is-done');
         btn.querySelector('.material-icons-round').textContent = 'check_circle';
         btn.querySelector('[data-done-label]').innerHTML = '<span class="i18n" lang="bn">সম্পন্ন</span><span class="i18n" lang="en">Done</span>';
-        var li = document.querySelector('.lh-curr-list li.is-current');
-        if (li) { li.classList.add('is-done'); li.querySelector('.material-icons-round').textContent = 'check_circle'; }
+        var li = document.querySelector('.lh-pl-item.is-current, .lh-curr-list li.is-current');
+        if (li) { li.classList.add('is-done'); var ic = li.querySelector('[data-pl-icon]') || li.querySelector('.material-icons-round'); if (ic) ic.textContent = 'check_circle'; }
         if (btn.dataset.next) setTimeout(function () { location.href = btn.dataset.next; }, 700);
         else setTimeout(function () { location.reload(); }, 700);
       }).catch(function () {
@@ -232,6 +232,12 @@
         alert(lang() === 'en' ? 'Could not save. Please try again.' : 'সেভ করা যায়নি। আবার চেষ্টা করুন।');
       });
     });
+  });
+
+  // ── Classroom playlist: bring the class on screen into view (inside the list only) ──
+  $$('[data-pl-scroll]').forEach(function (box) {
+    var cur = box.querySelector('.lh-pl-item.is-current');
+    if (cur && box.scrollHeight > box.clientHeight) box.scrollTop = Math.max(0, cur.offsetTop - box.offsetTop - 80);
   });
 
   // ── Watermark: drifts to a new spot every few seconds ─────────────────────
