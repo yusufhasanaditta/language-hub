@@ -360,7 +360,7 @@
         })
         .catch(function (e) {
           box.classList.remove('is-loading'); box.classList.add('is-error');
-          // Free classes need a sign-in (the watermark shows who is watching): go to login, then come back.
+          // Paid classes need a sign-in: go to login, then come back.
           if (e.message === 'login') { location.href = '/login?next=' + encodeURIComponent(location.pathname + location.search); return; }
           message(box, e.message === 'forbidden' ? T('এই ভিডিও দেখার অনুমতি আপনার নেই।', 'You do not have access to this video.')
             : T('ভিডিও লোড করা যায়নি। ইন্টারনেট দেখে পেজটি রিফ্রেশ করুন।', 'Could not load the video. Check your internet and refresh the page.'));

@@ -1,16 +1,17 @@
 // Protected player: every video on the site is requested here (class, free class, trailer, recording).
 // The video id is never written into a page — it is handed out only after the access check below,
 // only to this site (same origin), and never cached.
-//   class / recording : signed in + may watch the course (enrolled, admin, its teacher, or a free course)
-//   free preview class: signed in (so the watermark can show who is watching)
-//   course trailer    : anyone (it is the course's advert), published courses only
+//   paid class / recording: signed in + may watch the course (enrolled, admin, its teacher)
+//   free class (free preview lesson, or any class of a free course): anyone, no sign-in needed
+//   course trailer        : anyone (it is the course's advert), published courses only
+// Guests see a "Language Hub" watermark; signed-in viewers see their name, email and ID.
 import type { NextRequest } from 'next/server';
 import { one } from '@/lib/db';
 import { currentUser } from '@/lib/auth';
 import { courseBy } from '@/lib/courses';
 import { canWatchCourse } from '@/lib/access';
 import { sameOrigin, rateLimit, UserError } from '@/lib/http';
-import { youtubeId, embedUrl } from '@/lib/format';
+import { youtubeId, embedUrl, isFreeCourse } from '@/lib/format';
 
 const json = (body: unknown, status = 200) => Response.json(body, {
   status, headers: { 'Cache-Control': 'private, no-store, max-age=0', 'X-Robots-Tag': 'noindex' },
@@ -34,9 +35,6 @@ export async function POST(req: NextRequest) {
     return c?.intro_video_url ? answer(c.intro_video_url) : json({ error: 'not found' }, 404);
   }
 
-  const user = await currentUser();
-  if (!user) return json({ error: 'login' }, 401);
-
   const src = lessonId
     ? await one<{ course_id: number; url: string | null; is_free: boolean }>`
         SELECT m.course_id, l.video_url AS url, l.is_free FROM lessons l JOIN modules m ON m.id = l.module_id
@@ -49,7 +47,12 @@ export async function POST(req: NextRequest) {
 
   const course = await courseBy('id', src.course_id, false);
   if (!course) return json({ error: 'not found' }, 404);
-  const freePreview = src.is_free && course.status === 'published';
-  if (!freePreview && !(await canWatchCourse(user, course))) return json({ error: 'forbidden' }, 403);
+  // Free to everyone: a free preview class, or any class of a free course (recordings stay members-only).
+  const open = course.status === 'published' && lessonId > 0 && (src.is_free || isFreeCourse(course));
+  if (!open) {
+    const user = await currentUser();
+    if (!user) return json({ error: 'login' }, 401);
+    if (!(await canWatchCourse(user, course))) return json({ error: 'forbidden' }, 403);
+  }
   return answer(src.url);
 }

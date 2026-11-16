@@ -56,7 +56,7 @@ export function Journey({ courseId, modules, catSlug, enrolled, done, freeCourse
                 const [icon, kbn, ken] = KIND[l.kind] ?? KIND.video;
                 const isDone = done.has(l.id);
                 const open = enrolled || freeCourse;
-                // Free classes open in the protected pop-up player (sign-in needed, so the watermark shows who watches).
+                // Free classes open in the protected pop-up player (no sign-in needed).
                 const video = !enrolled && (freeCourse || l.is_free) && l.kind === 'video' && !!embedUrl(l.video_url);
                 const thumb = lessonThumb(l);
                 const state = isDone ? 'is-done' : enrolled ? 'is-open' : open || l.is_free ? 'is-free' : 'is-locked';
