@@ -94,10 +94,11 @@ export default async function CheckoutPage({ searchParams }: Props) {
               </form>
             ) : null}
 
-            {total > 0 && (
-              <div className={online ? 'lh-manual-pay' : ''}>
-                {online && <p className="lh-co-secure"><Icon name="verified_user" /><T bn="বিকাশ, নগদ, রকেট, কার্ড — SSLCommerz-এর মাধ্যমে নিরাপদ পেমেন্ট" en="bKash, Nagad, Rocket, cards — secure payment by SSLCommerz" /></p>}
-                <h3 style={{ fontSize: '1rem', margin: '8px 0' }}>{online ? <T bn="অথবা নিজে বিকাশ / নগদে Send Money করুন" en="Or send money yourself (bKash / Nagad)" /> : <T bn="বিকাশ / নগদে পেমেন্ট" en="Pay with bKash / Nagad" />}</h3>
+            {total > 0 && online && <p className="lh-co-secure"><Icon name="verified_user" /><T bn="বিকাশ, নগদ, রকেট, কার্ড — SSLCommerz-এর মাধ্যমে নিরাপদ পেমেন্ট" en="bKash, Nagad, Rocket, cards — secure payment by SSLCommerz" /></p>}
+            {/* Manual bKash / Nagad (TrxID) only when online payment is off. */}
+            {total > 0 && !online && (
+              <div>
+                <h3 style={{ fontSize: '1rem', margin: '8px 0' }}><T bn="বিকাশ / নগদে পেমেন্ট" en="Pay with bKash / Nagad" /></h3>
                 <p>{manualNumbers
                   ? <T bn={`নিচের নম্বরে ৳${bnNum(formatPrice(total))} Send Money করুন, তারপর TrxID দিন:\n${manualNumbers}`} en={`Send ৳${formatPrice(total)} with Send Money to the number below, then enter the TrxID:\n${manualNumbers}`} />
                   : <T bn="পেমেন্ট নম্বর জানতে আমাদের সাথে যোগাযোগ করুন, তারপর TrxID দিন।" en="Contact us for the payment number, then enter your TrxID here." />}</p>
