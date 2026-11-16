@@ -11,7 +11,7 @@ export default async function CategoriesPage() {
     <>
       <input name="name_bn" className="form-control" placeholder="নাম (বাংলা)" required maxLength={100} defaultValue={(c?.name_bn as string) ?? ''} />
       <input name="name_en" className="form-control" placeholder="Name (English)" required maxLength={100} defaultValue={(c?.name_en as string) ?? ''} />
-      <input name="slug" className="form-control" placeholder="slug" pattern="[a-z0-9-]+" required maxLength={100} defaultValue={(c?.slug as string) ?? ''} style={{ maxWidth: 140 }} />
+      <input name="slug" className="form-control" placeholder="slug" pattern="[a-z0-9\-]+" required maxLength={100} defaultValue={(c?.slug as string) ?? ''} style={{ maxWidth: 140 }} />
       <input name="color" type="color" className="form-control" defaultValue={(c?.color as string) ?? '#5B21B6'} style={{ maxWidth: 60, minWidth: 60, padding: 2 }} />
       <input name="sort_order" type="number" className="form-control" defaultValue={(c?.sort_order as number) ?? 0} style={{ maxWidth: 80, minWidth: 70 }} title="Order" />
     </>

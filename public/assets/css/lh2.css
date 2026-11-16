@@ -570,3 +570,70 @@ html[data-lang="en"] .lh-cr-title { font-family: var(--font-latin); font-weight:
   .lh-pl-thumb { width: 96px; }
 }
 @media (prefers-reduced-motion: reduce) { .lh-cr-ring, .lh-pl-eq i { animation: none; } .lh-cr-step { transition: none; } }
+
+/* ── Photo picker (admin user, teacher profile, my profile, testimonials) ── */
+.lh-photo-in { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.lh-photo-in > img { width: 96px; height: 96px; object-fit: cover; border-radius: 18px; flex: none; background: var(--lh-bg-tint); box-shadow: 0 0 0 3px var(--lh-card), 0 0 0 5px var(--lh-line); }
+.lh-photo-in > img.is-round { border-radius: 50%; }
+.lh-photo-in-body { display: grid; gap: 6px; min-width: 0; flex: 1 1 200px; justify-items: start; }
+.lh-photo-pick { position: relative; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; overflow: hidden; }
+.lh-photo-pick input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+.lh-photo-pick:focus-within { outline: 3px solid var(--lh-brand-2); outline-offset: 2px; }
+.lh-photo-hint { font-size: .78rem; color: var(--lh-ink-3); }
+.lh-photo-remove { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; color: #B91C1C; cursor: pointer; }
+.lh-photo-link summary { cursor: pointer; font-size: .8rem; color: var(--lh-brand-2); }
+.lh-photo-link input { margin-top: 6px; min-width: 240px; }
+.lh-label { display: block; font-weight: 600; font-size: .9rem; color: var(--lh-ink-2); }
+
+/* teacher photos: larger on the Teachers page and the teacher's own page */
+.lh-crew-grid .lh-crew-id img { width: 92px; height: 92px; border-radius: 24px; }
+.lh-teacher-me img { width: 120px !important; height: 120px !important; border-radius: 30px !important; object-fit: cover; box-shadow: 0 0 0 4px var(--lh-card), 0 0 0 7px color-mix(in srgb, var(--lh-brand-2) 45%, transparent), var(--lh-shadow-lg); }
+@media (max-width: 560px) { .lh-crew-grid .lh-crew-id img { width: 72px; height: 72px; border-radius: 20px; } .lh-teacher-me img { width: 92px !important; height: 92px !important; border-radius: 24px !important; } }
+
+/* ── Testimonials ── */
+.lh-tms { background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--lh-brand-2) 6%, transparent)); }
+.lh-tm-tabs { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+.lh-tm-tabs label { cursor: pointer; }
+.lh-tm-tabs input { position: absolute; opacity: 0; pointer-events: none; }
+.lh-tm-tabs label > span { display: inline-flex; align-items: center; gap: 6px; min-height: 42px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--lh-line); background: var(--lh-card); font-weight: 700; font-size: .9rem; color: var(--lh-ink-2); transition: background .2s, color .2s, border-color .2s; }
+.lh-tm-tabs label > span .material-icons-round { font-size: 18px; }
+.lh-tm-tabs input:checked + span { background: var(--lh-brand); border-color: var(--lh-brand); color: #fff; }
+.lh-tm-tabs input:focus-visible + span { outline: 3px solid var(--lh-brand-2); outline-offset: 2px; }
+.lh-tm-filter:has(input[value="student"]:checked) .lh-tm:not([data-kind="student"]),
+.lh-tm-filter:has(input[value="guardian"]:checked) .lh-tm:not([data-kind="guardian"]),
+.lh-tm-filter:has(input[value="teacher"]:checked) .lh-tm:not([data-kind="teacher"]) { display: none; }
+.lh-tm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; align-items: start; }
+.lh-tm-grid.is-compact { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); margin-top: 12px; }
+.lh-tm { position: relative; margin: 0; padding: 22px 22px 18px; border-radius: 22px; background: var(--lh-card); border: 1px solid var(--lh-line); box-shadow: var(--lh-shadow); display: flex; flex-direction: column; gap: 10px; transition: transform .35s var(--lh-ease), box-shadow .35s var(--lh-ease); }
+.lh-tm:hover { transform: translateY(-4px); box-shadow: var(--lh-shadow-lg); }
+.lh-tm-mark { position: absolute; top: -6px; right: 18px; font-family: Georgia, serif; font-size: 5.5rem; line-height: 1; color: color-mix(in srgb, var(--lh-brand-2) 22%, transparent); pointer-events: none; }
+.lh-tm-stars { color: #F5A524; letter-spacing: 2px; font-size: 1rem; }
+.lh-tm-stars span { color: var(--lh-line-2, #D9D3E6); }
+.lh-tm blockquote { margin: 0; font-size: .98rem; line-height: 1.75; color: var(--lh-ink); white-space: pre-line; }
+.lh-tm figcaption { display: flex; align-items: center; gap: 12px; margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--lh-line-2, var(--lh-line)); }
+.lh-tm figcaption img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex: none; box-shadow: 0 0 0 2px var(--lh-card), 0 0 0 4px color-mix(in srgb, var(--lh-brand-2) 35%, transparent); }
+.lh-tm-who { display: grid; min-width: 0; flex: 1; }
+.lh-tm-who b { font-weight: 800; color: var(--lh-ink); }
+.lh-tm-who small { font-size: .8rem; color: var(--lh-ink-3); }
+.lh-tm-kind { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: .72rem; font-weight: 800; background: var(--lh-bg-tint); color: var(--lh-ink-2); flex: none; }
+.lh-tm-kind .material-icons-round { font-size: 15px; }
+.lh-tm.is-guardian .lh-tm-kind { background: color-mix(in srgb, #F59E0B 16%, transparent); color: #B45309; }
+.lh-tm.is-teacher .lh-tm-kind { background: color-mix(in srgb, #0E8A5F 14%, transparent); color: #0A7A54; }
+html[data-theme="dark"] .lh-tm.is-guardian .lh-tm-kind { color: #FCD34D; }
+html[data-theme="dark"] .lh-tm.is-teacher .lh-tm-kind { color: #6EE7B7; }
+@media (max-width: 560px) { .lh-tm-grid { grid-template-columns: 1fr; } .lh-tm { padding: 18px; } }
+@media (prefers-reduced-motion: reduce) { .lh-tm { transition: none; } }
+
+/* admin testimonial list */
+.pn-quotes { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; align-items: start; }
+.pn-quote header { display: flex; align-items: center; gap: 12px; }
+.pn-quote header img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+.pn-quote header div { flex: 1; min-width: 0; display: grid; }
+.pn-quote header small { color: var(--lh-ink-3); }
+.pn-quote.is-hidden { opacity: .7; }
+.pn-quote blockquote { margin: 8px 0; white-space: pre-line; color: var(--lh-ink); }
+.pn-quote-stars { margin: 10px 0 0; color: #F5A524; letter-spacing: 2px; }
+.pn-quote-stars span { color: var(--lh-line); }
+.pn-quote-edit { margin-top: 12px; }
+.pn-quote-edit summary { cursor: pointer; color: var(--lh-brand-2); font-weight: 600; }
+.pn-quote-edit form { margin-top: 12px; }

@@ -234,6 +234,37 @@
     });
   });
 
+  // ── Photo picker: preview, and shrink big phone photos to 800px JPEG before upload ──
+  $$('input[type=file][data-img-resize]').forEach(function (input) {
+    var box = input.closest('.lh-photo-in');
+    var preview = box && box.querySelector('[data-photo-preview]');
+    input.addEventListener('change', function () {
+      var file = input.files && input.files[0];
+      if (!file || !/^image\//.test(file.type)) return;
+      var url = URL.createObjectURL(file);
+      if (preview) preview.src = url;
+      var rm = box && box.querySelector('input[type=checkbox]');
+      if (rm) rm.checked = false;
+      if (file.type === 'image/gif' || typeof DataTransfer === 'undefined') return;
+      var img = new Image();
+      img.onload = function () {
+        var max = 800, w = img.naturalWidth, h = img.naturalHeight;
+        if (w <= max && h <= max && file.size < 400 * 1024) return;
+        var s = Math.min(1, max / Math.max(w, h));
+        var c = document.createElement('canvas');
+        c.width = Math.round(w * s); c.height = Math.round(h * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(function (blob) {
+          if (!blob) return;
+          var dt = new DataTransfer();
+          dt.items.add(new File([blob], (file.name || 'photo').replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }));
+          input.files = dt.files;
+        }, 'image/jpeg', 0.86);
+      };
+      img.src = url;
+    });
+  });
+
   // ── Classroom playlist: bring the class on screen into view (inside the list only) ──
   $$('[data-pl-scroll]').forEach(function (box) {
     var cur = box.querySelector('.lh-pl-item.is-current');

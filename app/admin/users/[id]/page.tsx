@@ -4,6 +4,7 @@ import { requireAdmin, ROLE_NAMES, ROLE } from '@/lib/auth';
 import { fmtDate, fmtDateTime } from '@/lib/format';
 import { PageHead, Badge, ActionButton } from '@/components/panel';
 import { RoleList, TeamAddForm } from '@/components/CourseExtrasEditor';
+import { PhotoInput } from '@/components/PhotoInput';
 
 export const metadata = { title: 'Edit user' };
 
@@ -33,12 +34,13 @@ export default async function UserEditPage({ params }: { params: Promise<{ id: s
 
       <div className="pn-card">
         <h2>Account</h2>
-        <form method="post" action="/do/admin/user-save" className="pn-grid">
+        <form method="post" action="/do/admin/user-save" className="pn-grid" encType="multipart/form-data">
           <input type="hidden" name="id" value={u?.id ?? ''} />
+          <div className="pn-full"><label>Photo {isNew ? '' : '(shown on the teacher card and profile)'}</label><PhotoInput current={u?.avatar ?? null} name={u?.name ?? 'New'} /></div>
           <div><label>Full name</label><input name="name" className="form-control" required maxLength={100} defaultValue={v('name')} /></div>
           <div><label>Email</label><input name="email" type="email" className="form-control" required maxLength={150} defaultValue={v('email')} /></div>
           <div><label>Phone</label><input name="phone" className="form-control" maxLength={15} defaultValue={v('phone')} /></div>
-          <div><label>Username (public profile URL /t/username)</label><input name="username" className="form-control" maxLength={80} pattern="[a-z0-9-]+" defaultValue={v('username')} /></div>
+          <div><label>Username (public profile URL /t/username)</label><input name="username" className="form-control" maxLength={80} pattern="[a-z0-9\-]+" defaultValue={v('username')} /></div>
           <div>
             <label>Role</label>
             <select name="role_id" className="form-control" defaultValue={u?.role_id ?? ROLE.STUDENT} disabled={u?.id === me.id}>

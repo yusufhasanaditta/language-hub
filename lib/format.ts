@@ -63,9 +63,9 @@ export function slugify(text: string) {
     .replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 200);
 }
 
-/** Initials avatar, or the uploaded URL when it is an absolute URL. */
+/** The uploaded photo (/media/123) or an https link; otherwise an initials picture. */
 export function avatarUrl(avatar: string | null | undefined, name = 'U') {
-  if (avatar && /^https?:\/\//.test(avatar)) return avatar;
+  if (avatar && (/^https?:\/\//.test(avatar) || /^\/media\/\d+$/.test(avatar))) return avatar;
   const initials = encodeURIComponent([...name.trim()].slice(0, 2).join('').toUpperCase());
   return `https://placehold.co/400x400/5B21B6/ffffff?text=${initials}`;
 }

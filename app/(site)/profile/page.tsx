@@ -3,6 +3,7 @@ import { requireUser } from '@/lib/auth';
 import { T } from '@/lib/i18n';
 import { ListHead } from '@/components/ui';
 import { Passport, loadPassport } from '@/components/Passport';
+import { PhotoInput } from '@/components/PhotoInput';
 
 export const metadata: Metadata = { title: 'প্রোফাইল এডিট' };
 
@@ -17,7 +18,7 @@ export default async function ProfilePage() {
         <div className="lh-pp-forms">
         <div className="lh-c-card lh-ppage" id="edit-profile" data-page="03" data-reveal>
           <h2><T bn="আমার তথ্য" en="My details" /></h2>
-          <form method="post" action="/do/profile" className="lh-form">
+          <form method="post" action="/do/profile" className="lh-form" encType="multipart/form-data">
             <label htmlFor="name"><T bn="পুরো নাম" en="Full name" /></label>
             <input id="name" name="name" className="lh-input" required maxLength={100} defaultValue={user.name} />
             <label htmlFor="email"><T bn="ইমেইল" en="Email" /></label>
@@ -26,8 +27,8 @@ export default async function ProfilePage() {
             <input id="phone" name="phone" className="lh-input" inputMode="tel" maxLength={15} defaultValue={user.phone ?? ''} placeholder="01XXXXXXXXX" />
             <label htmlFor="address"><T bn="ঠিকানা" en="Address" /></label>
             <input id="address" name="address" className="lh-input" maxLength={500} defaultValue={user.address ?? ''} />
-            <label htmlFor="avatar"><T bn="ছবির লিংক (ঐচ্ছিক)" en="Photo URL (optional)" /></label>
-            <input id="avatar" name="avatar" type="url" className="lh-input" maxLength={500} defaultValue={user.avatar ?? ''} placeholder="https://…" />
+            <span className="lh-label"><T bn="আপনার ছবি (ঐচ্ছিক)" en="Your photo (optional)" /></span>
+            <PhotoInput current={user.avatar} name={user.name} />
             <label htmlFor="bio"><T bn="নিজের সম্পর্কে" en="About me" /></label>
             <textarea id="bio" name="bio" className="lh-input" rows={3} maxLength={1000} defaultValue={user.bio ?? ''}></textarea>
             <button type="submit" className="btn btn-primary lh-btn-block"><T bn="সেভ করুন" en="Save" /></button>

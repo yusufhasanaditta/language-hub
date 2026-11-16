@@ -5,6 +5,7 @@ import { requireTeacherProfile } from '@/lib/teacher';
 import { formAction, fail, flash, str, int, optStr } from '@/lib/http';
 import { safeUrl } from '@/lib/format';
 import { teachesCourse } from '@/lib/team';
+import { photoFromForm } from '@/lib/media';
 
 type Ctx = Awaited<ReturnType<typeof requireTeacherProfile>>;
 
@@ -23,7 +24,7 @@ const handlers: Record<string, (f: FormData, t: Ctx) => Promise<string | void>> 
     const username = str(f, 'username', 80).toLowerCase() || null;
     if (username && !/^[a-z0-9-]{3,80}$/.test(username)) fail('Username: 3+ lowercase letters, numbers or dashes.');
     if (username && await one`SELECT 1 FROM users WHERE username = ${username} AND id <> ${user.id}`) fail('That username is taken.');
-    await q`UPDATE users SET username = ${username}, avatar = ${safeUrl(str(f, 'avatar', 500))}, updated_at = now() WHERE id = ${user.id}`;
+    await q`UPDATE users SET username = ${username}, avatar = ${await photoFromForm(f, user.avatar)}, updated_at = now() WHERE id = ${user.id}`;
     await q`UPDATE teacher_profiles SET designation = ${optStr(f, 'designation', 100)}, headline = ${optStr(f, 'headline', 255)},
             bio = ${optStr(f, 'bio', 3000)}, expertise = ${optStr(f, 'expertise', 500)}, qualifications = ${optStr(f, 'qualifications', 2000)},
             fb_url = ${safeUrl(str(f, 'fb_url', 300))}, yt_url = ${safeUrl(str(f, 'yt_url', 300))}, website = ${safeUrl(str(f, 'website', 300))},

@@ -11,6 +11,7 @@ import { Journey } from '@/components/Journey';
 import { TeacherTicket } from '@/components/TeacherTicket';
 import { Glance, InfoSections, CourseFaq } from '@/components/CourseDetails';
 import { courseTeam, courseDetails, byKind } from '@/lib/team';
+import { Testimonials, loadTestimonials } from '@/components/Testimonials';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -27,13 +28,14 @@ export default async function CoursePage({ params }: Props) {
   const c = await courseBy('slug', decodeURIComponent((await params).slug));
   if (!c) notFound();
   const user = await currentUser();
-  const [modules, reviews, enrolled, team, details] = await Promise.all([
+  const [modules, reviews, enrolled, team, details, words] = await Promise.all([
     curriculum(c.id),
     q`SELECT r.rating, r.body, u.name, u.avatar FROM reviews r JOIN users u ON u.id = r.user_id
       WHERE r.course_id = ${c.id} AND r.is_approved ORDER BY r.created_at DESC LIMIT 6`,
     user ? one<{ id: number }>`SELECT id FROM enrollments WHERE user_id = ${user.id} AND course_id = ${c.id} AND status = 'active'` : null,
     courseTeam(c.id, { catSlug: c.cat_slug, withStats: true }),
     courseDetails(c.id),
+    loadTestimonials(c.id),
   ]);
   const done = new Set(enrolled
     ? (await q<{ lesson_id: number }>`SELECT lesson_id FROM lesson_progress WHERE enrollment_id = ${enrolled.id} AND completed`).map(r => r.lesson_id)
@@ -152,6 +154,8 @@ export default async function CoursePage({ params }: Props) {
 
           <InfoSections sections={byKind(details, 'section')} />
           <CourseFaq faqs={byKind(details, 'faq')} />
+
+          <Testimonials items={words} compact />
 
           {reviews.length > 0 && (
             <section className="lh-c-card" data-reveal>

@@ -5,6 +5,7 @@ import { lang, langStyle } from '@/lib/langs';
 import { priceOf, isFreeCourse } from '@/lib/format';
 import { HOME_FAQS } from '@/lib/content';
 import { CourseCard, Countdown, Icon, Price } from '@/components/ui';
+import { Testimonials, loadTestimonials } from '@/components/Testimonials';
 
 const SKY: [string, number, number, number, number][] = [
   ['中', 8, 14, 1.0, 7], ['あ', 84, 10, 0.6, 5.5], ['한', 76, 58, 1.3, 6], ['A', 14, 62, 0.8, 5],
@@ -12,10 +13,11 @@ const SKY: [string, number, number, number, number][] = [
 ];
 
 export default async function HomePage() {
-  const [all, langs] = await Promise.all([
+  const [all, langs, words] = await Promise.all([
     publishedCourses(),
     q`SELECT cat.*, (SELECT count(*)::int FROM courses c WHERE c.category_id = cat.id AND c.status = 'published') AS n
       FROM categories cat ORDER BY cat.sort_order, cat.id`,
+    loadTestimonials(),
   ]);
   const today = new Date(Date.now() + 6 * 3600_000).toISOString().slice(0, 10);
   const next = all
@@ -130,6 +132,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <Testimonials items={words} />
 
       <section className="lh-section">
         <div className="container lh-narrow">

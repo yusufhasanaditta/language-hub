@@ -351,3 +351,18 @@ CREATE TABLE IF NOT EXISTS coupon_courses (
   course_id int NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
   PRIMARY KEY (coupon_id, course_id)
 );
+
+-- Uploaded photos (served at /media/<id>); stored here so every host sees the same files.
+CREATE TABLE IF NOT EXISTS media (
+  id         serial PRIMARY KEY,
+  mime       varchar(40) NOT NULL,
+  bytes      int NOT NULL,
+  data       text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Testimonials (table above): who is speaking, their photo and an optional course.
+-- Columns reused: batch = subtitle line, text = the words, is_approved = published.
+ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS kind varchar(10) NOT NULL DEFAULT 'student';
+ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS photo varchar(500);
+ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS course_id int REFERENCES courses(id) ON DELETE SET NULL;

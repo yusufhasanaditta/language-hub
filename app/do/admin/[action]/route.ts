@@ -9,6 +9,7 @@ import { safeUrl, slugify } from '@/lib/format';
 import { EDITABLE_SETTINGS } from '@/lib/settings';
 import { SSLCZ_KEYS, sslczConfig, openSession } from '@/lib/sslcommerz';
 import { setLead } from '@/lib/team';
+import { photoFromForm, deleteImage } from '@/lib/media';
 import { createReset, showResetOnce } from '@/lib/reset';
 
 type H = (f: FormData, me: User) => Promise<string | void>;
@@ -48,13 +49,15 @@ const handlers: Record<string, H> = {
     const active = id === me.id ? true : bool(f, 'is_active');
     if (!ROLE_NAMES[role]) fail('Choose a valid role.');
 
+    const oldAvatar = id ? ((await one<{ avatar: string | null }>`SELECT avatar FROM users WHERE id = ${id}`)?.avatar ?? null) : null;
+    const avatar = await photoFromForm(f, oldAvatar);
     let userId = id;
     if (id) {
       await q`UPDATE users SET name = ${name}, email = ${email}, phone = ${phone}, username = ${username},
-              role_id = ${role}, is_active = ${active}, updated_at = now() WHERE id = ${id}`;
+              role_id = ${role}, is_active = ${active}, avatar = ${avatar}, updated_at = now() WHERE id = ${id}`;
     } else {
-      const u = await one<{ id: number }>`INSERT INTO users (name, email, phone, username, role_id, is_active, is_verified)
-        VALUES (${name}, ${email}, ${phone}, ${username}, ${role}, ${active}, true) RETURNING id`;
+      const u = await one<{ id: number }>`INSERT INTO users (name, email, phone, username, role_id, is_active, is_verified, avatar)
+        VALUES (${name}, ${email}, ${phone}, ${username}, ${role}, ${active}, true, ${avatar}) RETURNING id`;
       userId = u!.id;
     }
     if (pw) {
@@ -312,6 +315,36 @@ const handlers: Record<string, H> = {
               ON CONFLICT (setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value, updated_at = now()`;
     }
     await flash('success', 'Settings saved.');
+  },
+
+  // ── Testimonials ──────────────────────────────────────────────────────────
+  async 'testimonial-save'(f) {
+    const id = int(f, 'id');
+    const name = str(f, 'name', 100), text = str(f, 'text', 1200);
+    if (name.length < 2) fail('Enter the name.');
+    if (text.length < 5) fail('Write their words.');
+    const kind = ['student', 'guardian', 'teacher'].includes(str(f, 'kind')) ? str(f, 'kind') : 'student';
+    const rating = Math.min(5, Math.max(1, int(f, 'rating') || 5));
+    const courseId = int(f, 'course_id') || null;
+    if (courseId && !(await one`SELECT 1 FROM courses WHERE id = ${courseId}`)) fail('Course not found.');
+    const old = id ? await one<{ photo: string | null }>`SELECT photo FROM testimonials WHERE id = ${id}` : null;
+    if (id && !old) fail('Testimonial not found.');
+    const photo = await photoFromForm(f, old?.photo ?? null);
+    const v = { batch: str(f, 'subtitle', 150), order: Math.min(999, Math.max(0, int(f, 'sort_order'))), pub: bool(f, 'is_approved') };
+    if (id) {
+      await q`UPDATE testimonials SET name = ${name}, kind = ${kind}, batch = ${v.batch}, text = ${text}, rating = ${rating},
+              photo = ${photo}, course_id = ${courseId}, sort_order = ${v.order}, is_approved = ${v.pub} WHERE id = ${id}`;
+    } else {
+      await q`INSERT INTO testimonials (name, kind, batch, text, rating, photo, course_id, sort_order, is_approved)
+              VALUES (${name}, ${kind}, ${v.batch}, ${text}, ${rating}, ${photo}, ${courseId}, ${v.order}, ${v.pub})`;
+    }
+    await flash('success', id ? 'Testimonial saved.' : (v.pub ? 'Testimonial published.' : 'Testimonial saved (not published).'));
+  },
+  async 'testimonial-toggle'(f) { await q`UPDATE testimonials SET is_approved = NOT is_approved WHERE id = ${int(f, 'id')}`; },
+  async 'testimonial-delete'(f) {
+    const t = await one<{ photo: string | null }>`DELETE FROM testimonials WHERE id = ${int(f, 'id')} RETURNING photo`;
+    if (t) await deleteImage(t.photo);
+    await flash('success', 'Testimonial deleted.');
   },
 
   // ── Online payment (SSLCommerz) — main admin only ─────────────────────────

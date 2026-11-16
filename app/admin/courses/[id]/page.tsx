@@ -39,7 +39,7 @@ export default async function AdminCourseEdit({ params }: { params: Promise<{ id
           <input type="hidden" name="id" value={c?.id ?? ''} />
           <div><label>Title (Bangla)</label><input name="title_bn" className="form-control" required maxLength={200} defaultValue={v('title_bn')} /></div>
           <div><label>Title (English)</label><input name="title_en" className="form-control" maxLength={200} defaultValue={v('title_en')} /></div>
-          <div><label>URL slug</label><input name="slug" className="form-control" maxLength={200} pattern="[a-z0-9-]*" defaultValue={v('slug')} placeholder="made from the English title if empty" /></div>
+          <div><label>URL slug</label><input name="slug" className="form-control" maxLength={200} pattern="[a-z0-9\-]*" defaultValue={v('slug')} placeholder="made from the English title if empty" /></div>
           <div><label>Language</label>
             <select name="category_id" className="form-control" required defaultValue={c?.category_id ?? ''}>
               <option value="">Choose…</option>{cats.map(x => <option key={x.id} value={x.id}>{x.name_en}</option>)}

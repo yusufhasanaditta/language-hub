@@ -32,8 +32,8 @@ export default async function TeacherProfilePage({ params }: Props) {
     <>
       <section className="lh-dash-head">
         <div className="lh-glow" aria-hidden="true"></div>
-        <div className="container lh-dash-me" data-reveal>
-          <img src={avatarUrl(t.avatar, t.name)} alt="" width={64} height={64} />
+        <div className="container lh-dash-me lh-teacher-me" data-reveal>
+          <img src={avatarUrl(t.avatar, t.name)} alt={t.name} width={120} height={120} />
           <div>
             <p className="lh-eyebrow"><T bn="শিক্ষক" en="Teacher" /></p>
             <h1>{t.name}</h1>
