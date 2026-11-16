@@ -271,13 +271,235 @@
     if (cur && box.scrollHeight > box.clientHeight) box.scrollTop = Math.max(0, cur.offsetTop - box.offsetTop - 80);
   });
 
+  // ── Protected player (classroom) ─────────────────────────────────────────
+  // Nothing playable is in the page: pressing play asks /api/player (login + course access).
+  // YouTube runs without its own controls under a transparent shield, so its title, logo,
+  // share and "Watch on YouTube" links can't be clicked and its right-click menu never opens.
+  // Our own controls drive it through the IFrame API.
+  (function () {
+    var boxes = $$('[data-pp]');
+    if (!boxes.length) return;
+    var T = function (bn, en) { return lang() === 'en' ? en : bn; };
+    var ICON = function (n) { return '<span class="material-icons-round" aria-hidden="true">' + n + '</span>'; };
+    var ytReady = null;
+    function loadYT() {
+      if (ytReady) return ytReady;
+      ytReady = new Promise(function (res, rej) {
+        if (window.YT && window.YT.Player) return res();
+        var prev = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = function () { if (prev) prev(); res(); };
+        var s = document.createElement('script');
+        s.src = 'https://www.youtube.com/iframe_api';
+        s.onerror = function () { ytReady = null; rej(new Error('api')); };
+        document.head.appendChild(s);
+        setTimeout(function () { if (!(window.YT && window.YT.Player)) { ytReady = null; rej(new Error('api')); } }, 20000);
+      });
+      return ytReady;
+    }
+    function fmt(t) {
+      t = Math.max(0, Math.floor(t || 0));
+      var h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+      return (h ? h + ':' + (m < 10 ? '0' : '') : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }
+    function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } }
+    function block(e) { e.preventDefault(); }
+
+    function message(box, text) {
+      var m = box.querySelector('.lh-pp-msg') || box.appendChild(document.createElement('div'));
+      m.className = 'lh-pp-msg'; m.setAttribute('role', 'alert'); m.textContent = text;
+    }
+
+    function controls(box) {
+      var bar = document.createElement('div');
+      bar.className = 'lh-pp-bar';
+      bar.innerHTML =
+        '<input type="range" class="lh-pp-seek" min="0" max="1000" value="0" step="1" aria-label="' + T('ভিডিওর অবস্থান', 'Seek') + '">' +
+        '<div class="lh-pp-row">' +
+          '<button type="button" data-a="play" aria-label="' + T('চালান / থামান', 'Play / pause') + '">' + ICON('play_arrow') + '</button>' +
+          '<button type="button" data-a="back" aria-label="' + T('১০ সেকেন্ড পিছনে', 'Back 10 seconds') + '">' + ICON('replay_10') + '</button>' +
+          '<button type="button" data-a="fwd" aria-label="' + T('১০ সেকেন্ড সামনে', 'Forward 10 seconds') + '">' + ICON('forward_10') + '</button>' +
+          '<button type="button" data-a="mute" aria-label="' + T('শব্দ', 'Mute') + '">' + ICON('volume_up') + '</button>' +
+          '<span class="lh-pp-time" aria-live="off">0:00 / 0:00</span>' +
+          '<span class="lh-pp-gap"></span>' +
+          '<select data-a="speed" aria-label="' + T('গতি', 'Speed') + '"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>' +
+          '<button type="button" data-a="fs" aria-label="' + T('ফুল স্ক্রিন', 'Full screen') + '">' + ICON('fullscreen') + '</button>' +
+        '</div>';
+      return bar;
+    }
+
+    function fsElement() { return document.fullscreenElement || document.webkitFullscreenElement; }
+    function toggleFs(box) {
+      if (fsElement()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+      if (box.classList.contains('is-fs')) { box.classList.remove('is-fs'); document.body.classList.remove('lh-pp-lock'); return; }
+      var req = box.requestFullscreen || box.webkitRequestFullscreen;
+      if (req) {
+        var p = req.call(box);
+        if (p && p.then) p.then(function () { try { screen.orientation.lock('landscape'); } catch (e) {} }).catch(function () { box.classList.add('is-fs'); });
+      } else { box.classList.add('is-fs'); document.body.classList.add('lh-pp-lock'); } // iPhone: fill the screen ourselves
+    }
+
+    function mount(box, req) {
+      if (box._pp) box._pp.destroy();
+      box.classList.remove('is-error', 'is-ended', 'is-frame');
+      box.classList.add('is-loading');
+      var frame = box.querySelector('[data-pp-frame]');
+      frame.innerHTML = '';
+      fetch('/api/player', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(req) })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.error || String(r.status)); return j; }); })
+        .then(function (j) {
+          if (j.type === 'frame') {
+            var f = document.createElement('iframe');
+            f.src = j.src; f.allow = 'autoplay; fullscreen; picture-in-picture'; f.setAttribute('allowfullscreen', '');
+            f.referrerPolicy = 'strict-origin-when-cross-origin';
+            frame.appendChild(f);
+            box.classList.remove('is-loading'); box.classList.add('is-frame', 'is-started');
+            box._pp = { destroy: function () { frame.innerHTML = ''; } };
+            return;
+          }
+          return loadYT().then(function () { build(box, frame, j.v, req); });
+        })
+        .catch(function (e) {
+          box.classList.remove('is-loading'); box.classList.add('is-error');
+          message(box, e.message === 'login' ? T('ভিডিও দেখতে আবার লগইন করুন।', 'Please log in again to watch.')
+            : e.message === 'forbidden' ? T('এই ভিডিও দেখার অনুমতি আপনার নেই।', 'You do not have access to this video.')
+            : T('ভিডিও লোড করা যায়নি। ইন্টারনেট দেখে পেজটি রিফ্রেশ করুন।', 'Could not load the video. Check your internet and refresh the page.'));
+        });
+    }
+
+    function build(box, frame, videoId, req) {
+      var holder = document.createElement('div');
+      frame.appendChild(holder);
+      var shield = document.createElement('div');
+      shield.className = 'lh-pp-shield';
+      var pause = document.createElement('div');
+      pause.className = 'lh-pp-pause';
+      pause.innerHTML = '<span class="lh-pp-big">' + ICON('play_arrow') + '</span>';
+      var bar = controls(box);
+      box.appendChild(shield); box.appendChild(pause); box.appendChild(bar);
+      var seek = bar.querySelector('.lh-pp-seek'), time = bar.querySelector('.lh-pp-time');
+      var playBtn = bar.querySelector('[data-a=play]'), muteBtn = bar.querySelector('[data-a=mute]');
+      var key = 'lh_pos_' + (req.lesson ? 'l' + req.lesson : 'r' + req.recording);
+      var timer = null, seeking = false, started = false, hideT = null;
+
+      var player = new window.YT.Player(holder, {
+        videoId: videoId,
+        host: 'https://www.youtube-nocookie.com',
+        playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, rel: 0, modestbranding: 1, iv_load_policy: 3, playsinline: 1, cc_load_policy: 0, origin: location.origin },
+        events: {
+          onReady: function () {
+            var ifr = player.getIframe && player.getIframe();
+            if (ifr) { ifr.setAttribute('tabindex', '-1'); ifr.setAttribute('title', ''); ifr.referrerPolicy = 'strict-origin-when-cross-origin'; }
+            box.classList.remove('is-loading');
+            var saved = Number(store(key)) || 0, d = player.getDuration() || 0;
+            if (saved > 10 && (!d || saved < d - 15)) player.seekTo(saved, true);
+            player.playVideo();
+            // Phones may refuse to start without a tap on the video itself: let one tap through
+            // to YouTube's centre button while the edges (title, logo, links) stay covered.
+            setTimeout(function () { if (!started) box.classList.add('is-tap'); }, 1800);
+            timer = setInterval(tick, 250);
+          },
+          onStateChange: function (e) {
+            var S = window.YT.PlayerState;
+            if (e.data === S.PLAYING) { started = true; box.classList.remove('is-tap', 'is-paused', 'is-ended'); box.classList.add('is-started', 'is-playing'); playBtn.innerHTML = ICON('pause'); idle(); }
+            else if (e.data === S.PAUSED) { box.classList.remove('is-playing'); if (started) box.classList.add('is-paused'); playBtn.innerHTML = ICON('play_arrow'); box.classList.remove('is-idle'); }
+            else if (e.data === S.ENDED) { box.classList.remove('is-playing'); box.classList.add('is-ended'); playBtn.innerHTML = ICON('replay'); store(key, null); box.classList.remove('is-idle'); }
+          },
+          onError: function () { box.classList.add('is-error'); message(box, T('এই ভিডিওটি চালানো যাচ্ছে না। শিক্ষককে জানান।', 'This video cannot be played. Please tell your teacher.')); }
+        }
+      });
+
+      function tick() {
+        if (!player || !player.getDuration) return;
+        var d = player.getDuration() || 0, t = player.getCurrentTime() || 0;
+        if (!seeking && d) seek.value = Math.round(t / d * 1000);
+        seek.style.setProperty('--p', (d ? t / d * 100 : 0) + '%');
+        time.textContent = fmt(t) + ' / ' + fmt(d);
+        if (t > 5 && Math.floor(t) % 5 === 0) store(key, String(Math.floor(t)));
+      }
+      function toggle() {
+        var st = player.getPlayerState && player.getPlayerState();
+        if (st === window.YT.PlayerState.PLAYING) player.pauseVideo();
+        else { if (st === window.YT.PlayerState.ENDED) player.seekTo(0, true); player.playVideo(); }
+      }
+      function jump(s) { player.seekTo(Math.max(0, (player.getCurrentTime() || 0) + s), true); }
+      function idle() { box.classList.remove('is-idle'); clearTimeout(hideT); hideT = setTimeout(function () { if (box.classList.contains('is-playing')) box.classList.add('is-idle'); }, 2600); }
+
+      shield.addEventListener('click', toggle);
+      pause.addEventListener('click', toggle);
+      shield.addEventListener('dblclick', function () { toggleFs(box); });
+      box.addEventListener('mousemove', idle);
+      box.addEventListener('touchstart', idle, { passive: true });
+      seek.addEventListener('input', function () { seeking = true; var d = player.getDuration() || 0; time.textContent = fmt(seek.value / 1000 * d) + ' / ' + fmt(d); });
+      seek.addEventListener('change', function () { player.seekTo(seek.value / 1000 * (player.getDuration() || 0), true); seeking = false; });
+      bar.addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-a]'); if (!b) return;
+        var a = b.dataset.a;
+        if (a === 'play') toggle();
+        else if (a === 'back') jump(-10);
+        else if (a === 'fwd') jump(10);
+        else if (a === 'mute') { if (player.isMuted()) { player.unMute(); b.innerHTML = ICON('volume_up'); } else { player.mute(); b.innerHTML = ICON('volume_off'); } }
+        else if (a === 'fs') toggleFs(box);
+        idle();
+      });
+      bar.querySelector('[data-a=speed]').addEventListener('change', function (e) { player.setPlaybackRate(Number(e.target.value) || 1); });
+      box.onkeydown = function (e) {
+        if (e.target.closest('select, input')) return;
+        var k = e.key;
+        if (k === ' ' || k === 'k') { e.preventDefault(); toggle(); }
+        else if (k === 'ArrowRight') { e.preventDefault(); jump(5); }
+        else if (k === 'ArrowLeft') { e.preventDefault(); jump(-5); }
+        else if (k === 'f') toggleFs(box);
+        else if (k === 'm') muteBtn.click();
+        else if (k === 'Escape' && box.classList.contains('is-fs')) toggleFs(box);
+      };
+
+      box._pp = {
+        destroy: function () {
+          clearInterval(timer); clearTimeout(hideT);
+          try { player.destroy(); } catch (e) {}
+          [shield, pause, bar].forEach(function (n) { n.remove(); });
+          frame.innerHTML = '';
+          box.classList.remove('is-started', 'is-playing', 'is-paused', 'is-ended', 'is-tap', 'is-idle', 'is-fs');
+          box._pp = null;
+        }
+      };
+    }
+
+    boxes.forEach(function (box) {
+      // No right-click menu ("Copy video URL"), no dragging the picture out.
+      box.addEventListener('contextmenu', block);
+      box.addEventListener('dragstart', block);
+      var start = box.querySelector('[data-pp-start]');
+      if (start && box.dataset.lesson) start.addEventListener('click', function () { box.classList.add('is-started'); mount(box, { lesson: Number(box.dataset.lesson) }); });
+    });
+    document.addEventListener('fullscreenchange', function () { if (!fsElement()) $$('.lh-pp').forEach(function (b) { b.classList.remove('is-fs'); }); });
+
+    // Live-class recordings play in the same protected player, in a pop-up.
+    var modal = document.querySelector('[data-pp-modal]');
+    if (modal) {
+      var mbox = modal.querySelector('[data-pp]');
+      var close = function () { if (mbox._pp) mbox._pp.destroy(); modal.hidden = true; document.body.classList.remove('lh-pp-lock'); };
+      $$('[data-pp-rec]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          modal.hidden = false; document.body.classList.add('lh-pp-lock');
+          mbox.classList.add('is-started');
+          mount(mbox, { recording: Number(b.dataset.ppRec) });
+          mbox.focus();
+        });
+      });
+      modal.querySelector('[data-pp-close]').addEventListener('click', close);
+      modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden && !fsElement()) close(); });
+    }
+  })();
+
   // ── Watermark: drifts to a new spot every few seconds ─────────────────────
   $$('[data-watermark]').forEach(function (w) {
     function move() {
       w.style.left = (8 + Math.random() * 60) + '%';
       w.style.top = (10 + Math.random() * 70) + '%';
     }
-    move(); setInterval(move, 7000);
+    move(); setInterval(move, 5000);
   });
 
   // ── Live class Join button: opens 10 minutes before start ────────────────

@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { q, one, type Row } from '@/lib/db';
-import { requireUser, isAdmin, isTeacher } from '@/lib/auth';
+import { requireUser } from '@/lib/auth';
 import { courseBy, curriculum, courseUrl } from '@/lib/courses';
 import { T, N, DateBn, bnNum } from '@/lib/i18n';
 import { lang, langStyle } from '@/lib/langs';
-import { embedUrl, isFreeCourse, lessonThumb } from '@/lib/format';
+import { lessonThumb, youtubeId, embedUrl } from '@/lib/format';
 import { Countdown, Icon } from '@/components/ui';
 import { LiveCard } from '@/components/student';
-import { userTeachesCourse } from '@/lib/team';
+import { canWatchCourse } from '@/lib/access';
 
-export const metadata: Metadata = { title: 'ক্লাসরুম' };
+export const metadata: Metadata = { title: 'ক্লাসরুম', robots: { index: false, follow: false } };
 
 const KIND: Record<string, [string, string, string]> = {
   video: ['smart_display', 'ভিডিও', 'Video'], pdf: ['description', 'নোট', 'Notes'], text: ['article', 'পাঠ', 'Reading'],
@@ -28,10 +28,8 @@ export default async function LearnPage({ searchParams }: Props) {
   if (!course) redirect('/my-courses');
 
   const enrollment = await one<{ id: number }>`SELECT id FROM enrollments WHERE user_id = ${user.id} AND course_id = ${cid} AND status = 'active'`;
-  // Staff preview: admins, and the course's own teacher (not every teacher).
-  const ownsCourse = isTeacher(user) && await userTeachesCourse(user.id, course.id);
-  // Free courses are open to every signed-in learner (no enrolment step).
-  if (!enrollment && !isAdmin(user) && !ownsCourse && !(isFreeCourse(course) && course.status === 'published')) redirect(courseUrl(course));
+  // Enrolled learners, admins, the course's own teacher, or anyone signed in for a published free course.
+  if (!(await canWatchCourse(user, course))) redirect(courseUrl(course));
 
   const [modules, doneRows, liveNext, recordings] = await Promise.all([
     curriculum(cid),
@@ -51,8 +49,11 @@ export default async function LearnPage({ searchParams }: Props) {
   const next = idx >= 0 && idx + 1 < flat.length ? flat[idx + 1] : null;
   const doneCount = flat.filter(l => done.has(l.id)).length;
   const pct = flat.length ? Math.round((doneCount / flat.length) * 100) : 0;
-  const embed = lesson?.kind === 'video' ? embedUrl(lesson.video_url) : '';
-  const mark = user.phone || user.email || user.name; // watermark discourages screen recording
+  // The video itself is fetched by the protected player (/api/player) — never written into this page.
+  const playable = lesson?.kind === 'video' && !!(youtubeId(String(lesson.video_url ?? '')) || embedUrl(lesson.video_url));
+  // Watermark: who is watching (discourages screen recording and sharing).
+  const mark = [user.name, user.phone || user.email].filter(Boolean).join(' · ');
+  const markCode = `LH-${user.id}`;
   const L = lang(course.cat_slug);
   const lessonHref = (id: number) => `/learn?course=${cid}&lesson=${id}`;
   const minutes = flat.reduce((n, l) => n + (Number(l.duration) || 0), 0);
@@ -125,8 +126,8 @@ export default async function LearnPage({ searchParams }: Props) {
           {lesson ? (
             <section className="lh-player-card" data-reveal>
               <div className="lh-player" style={langStyle(course.cat_slug)}>
-                {lesson.kind === 'video' && embed ? (
-                  <iframe src={embed} title={lesson.title} allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin"></iframe>
+                {playable ? (
+                  <ProtectedPlayer lessonId={lesson.id} poster={lessonThumb(lesson)} mark={mark} code={markCode} glyph={L.glyph} title={lesson.title} />
                 ) : lesson.kind === 'pdf' && lesson.pdf_url ? (
                   <div className="lh-player-empty"><Icon name="description" />
                     <a className="btn btn-primary" href={lesson.pdf_url} target="_blank" rel="noopener"><T bn="PDF খুলুন" en="Open PDF" /></a></div>
@@ -136,7 +137,7 @@ export default async function LearnPage({ searchParams }: Props) {
                   <div className="lh-player-empty"><span className="lh-ticket-glyph" aria-hidden="true">{L.glyph}</span>
                     <p><T bn="এই ক্লাসের ভিডিও শীঘ্রই যোগ হবে।" en="The video for this lesson is coming soon." /></p></div>
                 )}
-                {lesson.kind !== 'text' && <span className="lh-watermark" aria-hidden="true" data-watermark>{mark}</span>}
+                {!playable && lesson.kind !== 'text' && <span className="lh-watermark" aria-hidden="true" data-watermark>{mark}</span>}
               </div>
 
               <div className="lh-cr-now">
@@ -181,11 +182,17 @@ export default async function LearnPage({ searchParams }: Props) {
               <h2><T bn="লাইভ ক্লাসের রেকর্ডিং" en="Live class recordings" /></h2>
               <ul className="lh-rec-list">
                 {recordings.map(r => (
-                  <li key={r.id}><a href={r.recording_url} data-video={embedUrl(r.recording_url) || undefined} target="_blank" rel="noopener">
+                  <li key={r.id}><button type="button" data-pp-rec={r.id}>
                     <Icon name="play_circle" /><span><b>{r.title}</b><small><DateBn date={r.scheduled_at} /></small></span>
-                  </a></li>
+                  </button></li>
                 ))}
               </ul>
+              <div className="lh-pp-modal" hidden data-pp-modal role="dialog" aria-modal="true" aria-label="Recording">
+                <div className="lh-pp-modal-box">
+                  <button type="button" className="lh-pp-close" data-pp-close aria-label="Close"><Icon name="close" /></button>
+                  <ProtectedPlayer mark={mark} code={markCode} glyph={L.glyph} title="" />
+                </div>
+              </div>
             </section>
           )}
         </div>
@@ -257,5 +264,30 @@ function StepCard({ href, l, no, dir, glyph }: {
         <b><T bn={`${bnNum(pad(no))}. `} en={`${pad(no)}. `} />{l.title}</b>
       </span>
     </a>
+  );
+}
+
+/**
+ * The class video behind a protective layer (see lh.js "Protected player"): nothing playable is in
+ * the HTML; pressing play asks /api/player, which checks the login and course access first.
+ * The layer blocks YouTube's title, logo, share and "Watch on YouTube" links and the right-click
+ * menu; the learner's name and phone float over the picture (also in full screen).
+ */
+function ProtectedPlayer({ lessonId, poster, mark, code, glyph, title }: {
+  lessonId?: number; poster?: string; mark: string; code: string; glyph: string; title: string;
+}) {
+  return (
+    <div className="lh-pp" data-pp data-lesson={lessonId ?? ''} tabIndex={0} aria-label={title ? `Video: ${title}` : 'Video'}>
+      <div className="lh-pp-frame" data-pp-frame></div>
+      <div className="lh-pp-band" aria-hidden="true"></div>
+      <div className="lh-pp-tiles" aria-hidden="true">
+        {Array.from({ length: 6 }, (_, i) => <span key={i}>{mark} · {code}</span>)}
+      </div>
+      <span className="lh-watermark lh-pp-mark" aria-hidden="true" data-watermark>{mark}<small>{code}</small></span>
+      <button type="button" className="lh-pp-cover" data-pp-start aria-label="Play">
+        {poster ? <img src={poster} alt="" draggable={false} /> : <span className="lh-pp-glyph" aria-hidden="true">{glyph}</span>}
+        <span className="lh-pp-big"><span className="material-icons-round" aria-hidden="true">play_arrow</span></span>
+      </button>
+    </div>
   );
 }

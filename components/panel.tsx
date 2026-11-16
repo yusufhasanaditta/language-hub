@@ -97,7 +97,7 @@ export async function PanelShell({ user, kind, children }: { user: User; kind: '
 
         <div className="admin-content">{children}</div>
       </div>
-      <LegacyScripts srcs={['/assets/js/main.js?v=2.2.0', '/assets/js/app.js?v=2.2.0', '/assets/js/lh.js?v=2.4.0']} globals={{ APP_URL: '', CSRF_TOKEN: '', IS_LOGGED_IN: true, VAPID_PUBLIC_KEY: '' }} />
+      <LegacyScripts srcs={['/assets/js/main.js?v=2.2.0', '/assets/js/app.js?v=2.2.0', '/assets/js/lh.js?v=2.5.0']} globals={{ APP_URL: '', CSRF_TOKEN: '', IS_LOGGED_IN: true, VAPID_PUBLIC_KEY: '' }} />
     </>
   );
 }

@@ -79,8 +79,8 @@ export function youtubeId(url: string) {
 export function lessonThumb(l: Row) {
   const own = String(l.thumbnail ?? '').trim();
   if (/^https:\/\//.test(own)) return own;
-  const yt = youtubeId(String(l.video_url ?? '').trim());
-  return yt ? `https://i.ytimg.com/vi/${yt}/hqdefault.jpg` : '';
+  // Through our own /thumb/<lesson id> so the YouTube id never appears in the page.
+  return l.id && youtubeId(String(l.video_url ?? '').trim()) ? `/thumb/${l.id}` : '';
 }
 
 /** Embeddable player URL for YouTube / Vimeo / any https link, else ''. */
