@@ -9,6 +9,7 @@ import { lessonThumb, youtubeId, embedUrl } from '@/lib/format';
 import { Countdown, Icon } from '@/components/ui';
 import { LiveCard } from '@/components/student';
 import { canWatchCourse } from '@/lib/access';
+import { PdfNotes } from '@/components/PdfNotes';
 import { VideoPlayer, VideoModal } from '@/components/VideoPlayer';
 
 export const metadata: Metadata = { title: 'ক্লাসরুম', robots: { index: false, follow: false } };
@@ -128,11 +129,11 @@ export default async function LearnPage({ searchParams }: Props) {
               <div className="lh-player" style={langStyle(course.cat_slug)}>
                 {playable ? (
                   <VideoPlayer user={user} lessonId={lesson.id} poster={lessonThumb(lesson)} glyph={L.glyph} title={lesson.title} />
-                ) : lesson.kind === 'pdf' && lesson.pdf_url ? (
-                  <div className="lh-player-empty"><Icon name="description" />
-                    <a className="btn btn-primary" href={lesson.pdf_url} target="_blank" rel="noopener"><T bn="PDF খুলুন" en="Open PDF" /></a></div>
                 ) : lesson.kind === 'text' && lesson.content ? (
                   <div className="lh-player-text lh-prose" style={{ whiteSpace: 'pre-line' }}>{lesson.content.replace(/<[^>]*>/g, '')}</div>
+                ) : lesson.kind === 'pdf' ? (
+                  <div className="lh-player-empty"><Icon name="picture_as_pdf" />
+                    <p><T bn="এই ক্লাসের PDF নিচে পড়ুন বা ডাউনলোড করুন।" en="Read or download this class's PDF below." /></p></div>
                 ) : (
                   <div className="lh-player-empty"><span className="lh-ticket-glyph" aria-hidden="true">{L.glyph}</span>
                     <p><T bn="এই ক্লাসের ভিডিও শীঘ্রই যোগ হবে।" en="The video for this lesson is coming soon." /></p></div>
@@ -156,12 +157,9 @@ export default async function LearnPage({ searchParams }: Props) {
                   </button>
                 )}
               </div>
-              {lesson.kind !== 'pdf' && lesson.pdf_url && (
-                <a className="lh-cr-notes" href={lesson.pdf_url} target="_blank" rel="noopener">
-                  <Icon name="description" /><T bn="এই ক্লাসের নোট (PDF)" en="Notes for this class (PDF)" /><Icon name="open_in_new" />
-                </a>
-              )}
+              {lesson.kind !== 'pdf' && <PdfNotes url={lesson.pdf_url} title={lesson.title} />}
 
+              {lesson.kind === 'pdf' && <PdfNotes url={lesson.pdf_url} title={lesson.title} />}
               {(prev || next) && (
                 <nav className="lh-cr-nav" aria-label="Lesson navigation">
                   {prev ? <StepCard href={lessonHref(prev.id)} l={prev} no={idx} dir="prev" glyph={L.glyph} /> : <span></span>}

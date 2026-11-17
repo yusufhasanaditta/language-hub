@@ -11,7 +11,9 @@ export default async function TeachersPage() {
     SELECT u.id, u.name, u.username, u.avatar, tp.id AS tp_id, tp.designation, tp.headline,
            (SELECT count(*)::int FROM courses c WHERE c.id IN (SELECT course_id FROM course_teachers WHERE teacher_id = tp.id) AND c.status = 'published') AS courses,
            (SELECT count(DISTINCT e.user_id)::int FROM enrollments e JOIN courses c ON c.id = e.course_id
-             WHERE c.id IN (SELECT course_id FROM course_teachers WHERE teacher_id = tp.id) AND e.status = 'active') AS students,
+             WHERE c.id IN (SELECT course_id FROM course_teachers WHERE teacher_id = tp.id) AND e.status = 'active')
+             + COALESCE((SELECT sum(x.extra_students)::int FROM courses x
+                 WHERE x.id IN (SELECT course_id FROM course_teachers WHERE teacher_id = tp.id) AND x.status = 'published'), 0) AS students,
            (SELECT cat.slug FROM courses c JOIN categories cat ON cat.id = c.category_id
              WHERE c.id IN (SELECT course_id FROM course_teachers WHERE teacher_id = tp.id) GROUP BY cat.slug ORDER BY count(*) DESC LIMIT 1) AS cat_slug
     FROM teacher_profiles tp JOIN users u ON u.id = tp.user_id

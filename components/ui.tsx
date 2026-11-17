@@ -26,7 +26,9 @@ export function CourseCard({ c }: { c: Row }) {
           : <><span className="lh-ticket-glyph" aria-hidden="true">{L.glyph}</span><span className="lh-ticket-hello" aria-hidden="true">{L.hello}</span></>}
         {live
           ? <span className="lh-chip lh-chip-live"><i></i><T bn="লাইভ" en="Live" /></span>
-          : <span className="lh-chip"><T bn="রেকর্ডেড" en="Recorded" /></span>}
+          : free
+            ? <span className="lh-chip lh-chip-free"><Icon name="play_circle" /><T bn="ফ্রি ক্লাস দেখুন" en="Watch free" /></span>
+            : <span className="lh-chip lh-chip-enroll"><Icon name="shopping_bag" /><T bn="এনরোল করুন" en="Enroll now" /></span>}
       </div>
       <div className="lh-ticket-body">
         <p className="lh-ticket-meta"><T bn={c.cat_name} en={c.cat_name_en} /> · <N v={c.lesson_count ?? 0} /> <T bn="ক্লাস" en="lessons" /></p>

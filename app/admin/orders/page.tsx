@@ -13,7 +13,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   const valid = STATUSES.includes(status) ? status : '';
   const orders = await raw(`
     SELECT o.*, u.name, u.email, (SELECT string_agg(title, ', ') FROM order_items WHERE order_id = o.id) AS items,
-      (SELECT bool_or(c.max_students > 0 AND (SELECT count(*) FROM enrollments e WHERE e.course_id = c.id AND e.status = 'active') >= c.max_students)
+      (SELECT bool_or(c.max_students > 0 AND (SELECT count(*) FROM enrollments e WHERE e.course_id = c.id AND e.status = 'active') + c.extra_students >= c.max_students)
          FROM order_items i JOIN courses c ON c.id = i.course_id WHERE i.order_id = o.id) AS course_full
     FROM orders o JOIN users u ON u.id = o.user_id
     WHERE NOT (o.status = 'pending' AND o.pay_method = 'sslcommerz' AND o.created_at < now() - interval '1 day')

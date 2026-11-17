@@ -3,14 +3,16 @@ import { raw, type Row } from './db';
 
 const LESSON_COUNT = `(SELECT count(*) FROM lessons l JOIN modules m ON m.id = l.module_id
                        WHERE m.course_id = c.id AND l.is_published)::int`;
-const STUDENT_COUNT = `(SELECT count(*) FROM enrollments e WHERE e.course_id = c.id AND e.status = 'active')::int`;
+const REAL_STUDENTS = `(SELECT count(*) FROM enrollments e WHERE e.course_id = c.id AND e.status = 'active')::int`;
+// What the site shows (and what fills seats): real buyers + the starting number admin set for the course.
+const STUDENT_COUNT = `(${REAL_STUDENTS} + COALESCE(c.extra_students, 0))`;
 
 export const COURSE_SELECT = `
   SELECT c.*, cat.slug AS cat_slug, cat.name_bn AS cat_name, cat.name_en AS cat_name_en,
          tp.id AS tp_id, tp.designation, u.name AS teacher_name, u.username AS teacher_username, u.avatar AS teacher_avatar,
          to_char(c.batch_start, 'YYYY-MM-DD') AS batch_date,
          GREATEST(${LESSON_COUNT}, c.total_lessons) AS lesson_count,
-         ${STUDENT_COUNT} AS student_count
+         ${STUDENT_COUNT} AS student_count, ${REAL_STUDENTS} AS real_students
   FROM courses c
   JOIN categories cat ON cat.id = c.category_id
   LEFT JOIN teacher_profiles tp ON tp.id = c.teacher_id

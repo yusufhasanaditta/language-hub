@@ -32,6 +32,7 @@ export default async function AdminDashboard() {
         sub={`${s!.courses} courses are boarding · ${s!.enrolls} active enrollments`} route={['বাংলা', '中文 · 日本語 · 한국어 · English']}>
         <a href="/admin/courses/new" className="btn btn-accent btn-sm"><Icon name="add" /> New course</a>
         <a href="/admin/orders?status=pending" className="btn btn-outline btn-sm"><Icon name="receipt" /> Payments</a>
+        <a href="/admin/analytics" className="btn btn-outline btn-sm"><Icon name="insights" /> Analytics</a>
       </PanelHero>
 
       {(s!.to_verify > 0 || s!.unread_msgs > 0) && (

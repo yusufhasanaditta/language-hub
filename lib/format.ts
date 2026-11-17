@@ -102,3 +102,15 @@ export function safeUrl(s: string | null | undefined) {
 
 export const lines = (s: string | null | undefined) =>
   (s ?? '').split(/\r?\n/).map(l => l.trim().replace(/^[-•*]\s*/, '')).filter(Boolean);
+
+/** Read-online and download links for a class PDF (Google Drive links get Drive's viewer and direct download). */
+export function pdfLinks(url: string | null | undefined): { read: string; download: string; open: string } | null {
+  const u = String(url ?? '').trim();
+  if (!/^https:\/\//i.test(u)) return null;
+  const drive = /drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([\w-]{10,})/.exec(u);
+  if (drive) {
+    const id = drive[1];
+    return { read: `https://drive.google.com/file/d/${id}/preview`, download: `https://drive.google.com/uc?export=download&id=${id}`, open: `https://drive.google.com/file/d/${id}/view` };
+  }
+  return { read: u, download: u, open: u };
+}

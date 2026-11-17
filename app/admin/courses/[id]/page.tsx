@@ -13,7 +13,10 @@ export default async function AdminCourseEdit({ params }: { params: Promise<{ id
   await requireAdmin();
   const idParam = (await params).id;
   const isNew = idParam === 'new';
-  const c = isNew ? null : await one`SELECT *, to_char(batch_start, 'YYYY-MM-DD') AS batch_date FROM courses WHERE id = ${Number(idParam) || 0}`;
+  const c = isNew ? null : await one`SELECT *, to_char(batch_start, 'YYYY-MM-DD') AS batch_date,
+      (SELECT count(*)::int FROM enrollments e WHERE e.course_id = courses.id AND e.status = 'active') AS real_students,
+      (SELECT count(*)::int FROM enrollments e WHERE e.course_id = courses.id AND e.status = 'active') + extra_students AS student_count
+    FROM courses WHERE id = ${Number(idParam) || 0}`;
   if (!isNew && !c) notFound();
   const [cats, teachers, modules, sessions, team, details] = await Promise.all([
     q`SELECT id, name_en FROM categories ORDER BY sort_order, id`,
@@ -73,6 +76,8 @@ export default async function AdminCourseEdit({ params }: { params: Promise<{ id
           <div><label>Offer / current price (BDT, optional)</label><input name="sale_price" type="number" min={0} step="1" className="form-control" defaultValue={c?.sale_price != null ? Number(c.sale_price) : ''} /><p className="pn-hint">What students pay, e.g. ৳4,999. The discount (−23%) shows on the course card, course page and checkout. Leave empty for no offer.</p></div>
           <div><label>Batch start date (live)</label><input name="batch_start" type="date" className="form-control" defaultValue={v('batch_date')} /></div>
           <div><label>Seat limit — max students</label><input name="max_students" type="number" min={0} max={10000} className="form-control" defaultValue={c?.max_students ?? 20} /><p className="pn-hint">Default 20. When the seats are full, enrolment and checkout close. 0 = no limit.</p></div>
+          <div><label>Learners shown — starting number</label><input name="extra_students" type="number" min={0} max={100000} className="form-control" defaultValue={c?.extra_students ?? 0} />
+            <p className="pn-hint">Added to real buyers{c ? <> (now <b>{c.real_students}</b> real → site shows <b>{c.student_count}</b>)</> : null}. Each new purchase adds 1. Also counts in the teacher&apos;s learner total and fills seats — keep it below the seat limit or the course shows full.</p></div>
           <div><label>Planned number of classes (shown before lessons are added)</label><input name="total_lessons" type="number" min={0} className="form-control" defaultValue={c?.total_lessons ?? 0} /></div>
           <div><label>Thumbnail image URL</label><input name="thumbnail" type="url" className="form-control" maxLength={500} defaultValue={v('thumbnail')} placeholder="https://…" /></div>
           <div><label>Intro / trailer video URL</label><input name="intro_video_url" type="url" className="form-control" maxLength={500} defaultValue={v('intro_video_url')} /></div>

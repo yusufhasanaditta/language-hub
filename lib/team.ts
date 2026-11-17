@@ -24,7 +24,9 @@ export const courseTeam = (courseId: number, { catSlug = '', withStats = false }
          CASE WHEN ${withStats} THEN (SELECT count(*)::int FROM course_teachers xt JOIN courses x ON x.id = xt.course_id
             WHERE xt.teacher_id = tp.id AND x.status = 'published') END AS courses,
          CASE WHEN ${withStats} THEN (SELECT count(DISTINCT e.user_id)::int FROM course_teachers xt JOIN enrollments e ON e.course_id = xt.course_id
-            WHERE xt.teacher_id = tp.id AND e.status = 'active') END AS students
+            WHERE xt.teacher_id = tp.id AND e.status = 'active')
+             + COALESCE((SELECT sum(x.extra_students)::int FROM courses x
+                 WHERE x.id IN (SELECT course_id FROM course_teachers WHERE teacher_id = tp.id) AND x.status = 'published'), 0) END AS students
   FROM course_teachers ct
   JOIN courses c ON c.id = ct.course_id
   JOIN teacher_profiles tp ON tp.id = ct.teacher_id

@@ -126,6 +126,7 @@ const handlers: Record<string, H> = {
     const vals = {
       title_bn, title_en: title_en || null, slug, category_id: categoryId, teacher_id: teacherId, price, sale_price: sale,
       type, level, status, batch_start: batch, max_students: str(f, 'max_students') === '' ? 20 : Math.min(10000, Math.max(0, int(f, 'max_students'))), total_lessons: Math.max(0, int(f, 'total_lessons')),
+      extra_students: Math.min(100000, Math.max(0, int(f, 'extra_students'))),
       thumbnail: safeUrl(str(f, 'thumbnail', 500)), intro_video_url: safeUrl(str(f, 'intro_video_url', 500)), fb_group_link: safeUrl(str(f, 'fb_group_link', 500)),
       short_desc: optStr(f, 'short_desc', 300), description_bn: optStr(f, 'description_bn', 20000),
       what_you_learn: optStr(f, 'what_you_learn', 5000), requirements: optStr(f, 'requirements', 5000),
@@ -135,16 +136,16 @@ const handlers: Record<string, H> = {
     if (id) {
       await q`UPDATE courses SET title_bn = ${vals.title_bn}, title_en = ${vals.title_en}, slug = ${vals.slug}, category_id = ${vals.category_id},
         price = ${vals.price}, sale_price = ${vals.sale_price}, type = ${vals.type}, level = ${vals.level},
-        status = ${vals.status}, batch_start = ${vals.batch_start}, max_students = ${vals.max_students}, total_lessons = ${vals.total_lessons},
+        status = ${vals.status}, batch_start = ${vals.batch_start}, max_students = ${vals.max_students}, total_lessons = ${vals.total_lessons}, extra_students = ${vals.extra_students},
         thumbnail = ${vals.thumbnail}, intro_video_url = ${vals.intro_video_url}, fb_group_link = ${vals.fb_group_link},
         short_desc = ${vals.short_desc}, description_bn = ${vals.description_bn}, what_you_learn = ${vals.what_you_learn},
         requirements = ${vals.requirements}, is_free = ${vals.is_free}, is_featured = ${vals.is_featured}, updated_at = now()
         WHERE id = ${id}`;
     } else {
       const c = await one<{ id: number }>`INSERT INTO courses (title_bn, title_en, slug, category_id, teacher_id, price, sale_price, type, level, status,
-        batch_start, max_students, total_lessons, thumbnail, intro_video_url, fb_group_link, short_desc, description_bn, what_you_learn, requirements, is_free, is_featured)
+        batch_start, max_students, total_lessons, extra_students, thumbnail, intro_video_url, fb_group_link, short_desc, description_bn, what_you_learn, requirements, is_free, is_featured)
         VALUES (${vals.title_bn}, ${vals.title_en}, ${vals.slug}, ${vals.category_id}, ${vals.teacher_id}, ${vals.price}, ${vals.sale_price}, ${vals.type},
-        ${vals.level}, ${vals.status}, ${vals.batch_start}, ${vals.max_students}, ${vals.total_lessons}, ${vals.thumbnail}, ${vals.intro_video_url},
+        ${vals.level}, ${vals.status}, ${vals.batch_start}, ${vals.max_students}, ${vals.total_lessons}, ${vals.extra_students}, ${vals.thumbnail}, ${vals.intro_video_url},
         ${vals.fb_group_link}, ${vals.short_desc}, ${vals.description_bn}, ${vals.what_you_learn}, ${vals.requirements}, ${vals.is_free}, ${vals.is_featured})
         RETURNING id`;
       courseId = c!.id;
@@ -340,6 +341,20 @@ const handlers: Record<string, H> = {
     }
     await flash('success', id ? 'Testimonial saved.' : (v.pub ? 'Testimonial published.' : 'Testimonial saved (not published).'));
   },
+  // Learners shown on the site = real buyers + this starting number (one field per course).
+  async 'course-extra'(f) {
+    let n = 0;
+    for (const [k, v] of f.entries()) {
+      const id = /^extra_(\d+)$/.exec(k)?.[1];
+      if (!id) continue;
+      const extra = Math.min(100000, Math.max(0, parseInt(String(v), 10) || 0));
+      await q`UPDATE courses SET extra_students = ${extra}, updated_at = now() WHERE id = ${Number(id)}`;
+      n++;
+    }
+    await flash('success', `Learner numbers saved for ${n} course(s).`);
+    return '/admin/analytics#learners';
+  },
+
   async 'testimonial-toggle'(f) { await q`UPDATE testimonials SET is_approved = NOT is_approved WHERE id = ${int(f, 'id')}`; },
   async 'testimonial-delete'(f) {
     const t = await one<{ photo: string | null }>`DELETE FROM testimonials WHERE id = ${int(f, 'id')} RETURNING photo`;

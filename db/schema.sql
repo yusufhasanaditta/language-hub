@@ -366,3 +366,24 @@ CREATE TABLE IF NOT EXISTS media (
 ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS kind varchar(10) NOT NULL DEFAULT 'student';
 ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS photo varchar(500);
 ALTER TABLE testimonials ADD COLUMN IF NOT EXISTS course_id int REFERENCES courses(id) ON DELETE SET NULL;
+
+-- Learners shown on the site = real active enrolments + this starting number (admin sets it per course).
+-- It also counts toward the seat limit.
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS extra_students int NOT NULL DEFAULT 0;
+
+-- Site visits for the admin analytics page. No IP or personal data is kept: `visitor` is a
+-- one-way hash that changes every day, so it only tells "same visitor today" apart.
+-- Rows older than 400 days are deleted automatically.
+CREATE TABLE IF NOT EXISTS page_views (
+  id         bigserial PRIMARY KEY,
+  day        date NOT NULL DEFAULT (now() AT TIME ZONE 'Asia/Dhaka')::date,
+  path       varchar(300) NOT NULL,
+  course_id  int REFERENCES courses(id) ON DELETE SET NULL,
+  visitor    char(24) NOT NULL,
+  user_id    int REFERENCES users(id) ON DELETE SET NULL,
+  referrer   varchar(120),
+  device     varchar(8) NOT NULL DEFAULT 'desktop',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS page_views_day_idx ON page_views (day);
+CREATE INDEX IF NOT EXISTS page_views_course_idx ON page_views (course_id, day) WHERE course_id IS NOT NULL;
